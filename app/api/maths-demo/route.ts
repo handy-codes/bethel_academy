@@ -1,0 +1,156 @@
+import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { db } from "@/lib/db";
+import { clerkClient } from "@clerk/nextjs/server";
+import { requireAdmin } from "@/lib/auth-utils";
+
+export async function POST(req: Request) {
+  try {
+    const { userId } = auth();
+
+    if (!userId) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const body = await req.json();
+    const { name, class: className, topic, trainingDate, whatsappGroup } = body;
+
+    if (!name || !className || !trainingDate) {
+      return new NextResponse("Missing required fields", { status: 400 });
+    }
+
+    // Check if demo mode is enabled
+    const classMode = await db.classMode.findFirst({
+      where: {
+        id: "1",
+      },
+    });
+
+    if (classMode?.mode !== "demo") {
+      return new NextResponse("Demo mode is not enabled", { status: 400 });
+    }
+
+    // Get user email from Clerk
+    const user = await clerkClient.users.getUser(userId);
+    const email = user.emailAddresses[0]?.emailAddress;
+
+    if (!email) {
+      return new NextResponse("User email not found", { status: 400 });
+    }
+
+    // First, ensure the user exists in our database
+    let dbUser = await db.user.findUnique({
+      where: { email }
+    });
+
+    if (!dbUser) {
+      // Create the user if they don't exist
+      dbUser = await db.user.create({
+        data: {
+          email,
+          name: user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : name,
+          id: userId,
+        }
+      });
+    }
+
+    // Check if user has already registered
+    const existingRegistration = await db.mathsDemo.findFirst({
+      where: {
+        userId: dbUser.id,
+      },
+    });
+
+    if (existingRegistration) {
+      return new NextResponse("User has already registered for demo", { status: 400 });
+    }
+
+    // Create new demo registration
+    const mathsDemo = await db.mathsDemo.create({
+      data: {
+        userId: dbUser.id,
+        name,
+        class: className,
+        topic,
+        trainingDate,
+        whatsappGroup: whatsappGroup || false,
+        startTime: new Date(),
+        duration: 60
+      },
+    });
+
+    return NextResponse.json(mathsDemo);
+  } catch (error) {
+    console.error("[MATHS_DEMO]", error);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}
+
+export async function GET() {
+  try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) {
+      return authCheck.response;
+    }
+
+    // Get all registrations
+    const registrations = await db.mathsDemo.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    // Get unique user IDs
+    const userIds = [...new Set(registrations.map(r => r.userId))];
+    
+    // Fetch user data in batches to avoid timeouts
+    const userDataMap = new Map();
+    const batchSize = 10;
+    
+    for (let i = 0; i < userIds.length; i += batchSize) {
+      const batch = userIds.slice(i, i + batchSize);
+      await Promise.all(
+        batch.map(async (userId) => {
+          try {
+            const user = await clerkClient.users.getUser(userId);
+            
+            // Extract email from the first email address
+            let email = "";
+            if (user.emailAddresses && user.emailAddresses.length > 0) {
+              email = user.emailAddresses[0].emailAddress || "";
+            }
+            
+            userDataMap.set(userId, {
+              email,
+              firstName: user.firstName || "",
+              lastName: user.lastName || "",
+            });
+            
+            console.log(`Fetched user data for ${userId}:`, { email, firstName: user.firstName, lastName: user.lastName });
+          } catch (error) {
+            console.error(`Error fetching user ${userId}:`, error);
+          }
+        })
+      );
+    }
+
+    // Combine registration data with user data
+    const registrationsWithUserInfo = registrations.map(registration => {
+      const userData = userDataMap.get(registration.userId);
+      
+      return {
+        ...registration,
+        userEmail: userData?.email || "",
+        userFirstName: userData?.firstName || "",
+        userLastName: userData?.lastName || "",
+      };
+    });
+
+    console.log(`Returning ${registrationsWithUserInfo.length} registrations with user data`);
+    
+    return NextResponse.json(registrationsWithUserInfo);
+  } catch (error) {
+    console.error("[MATHS_DEMO_GET] Error:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
+} 

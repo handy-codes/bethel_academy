@@ -1,0 +1,456 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model Course {
+  id                String              @id @default(uuid())
+  instructorId      String
+  title             String              @db.Text
+  subtitle          String?             @db.Text
+  description       String?             @db.Text
+  imageUrl          String?             @db.Text
+  price             Float?
+  isPublished       Boolean             @default(false)
+  categoryId        String
+  subCategoryId     String
+  levelId           String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @default(now())
+  liveCategoryId    String?
+  liveSubCategoryId String?
+  category          Category            @relation(fields: [categoryId], references: [id])
+  subCategory       SubCategory         @relation(fields: [subCategoryId], references: [id])
+  level             Level?              @relation(fields: [levelId], references: [id])
+  sections          Section[]
+  purchases         Purchase[]
+  zoomMeetings      CourseZoomMeeting[]
+
+  @@index([categoryId])
+  @@index([subCategoryId])
+  @@index([levelId])
+  @@index([liveCategoryId])
+  @@index([liveSubCategoryId])
+}
+
+model Category {
+  id            String        @id @default(uuid())
+  name          String        @unique
+  subCategories SubCategory[]
+  courses       Course[]
+}
+
+model SubCategory {
+  id         String   @id @default(uuid())
+  name       String
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+  courses    Course[]
+
+  @@index([categoryId])
+}
+
+model Level {
+  id      String   @id @default(uuid())
+  name    String   @unique
+  courses Course[]
+}
+
+model Section {
+  id          String     @id @default(uuid())
+  title       String
+  description String?    @db.Text
+  videoUrl    String?    @db.Text
+  position    Int
+  isPublished Boolean    @default(false)
+  isFree      Boolean    @default(false)
+  courseId    String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now())
+  course      Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  muxData     MuxData?
+  resources   Resource[]
+  progress    Progress[]
+
+  @@index([courseId])
+}
+
+model MuxData {
+  id         String  @id @default(uuid())
+  assetId    String
+  playbackId String?
+  sectionId  String  @unique
+  section    Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@index([sectionId])
+}
+
+model Resource {
+  id        String   @id @default(uuid())
+  name      String
+  fileUrl   String
+  sectionId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  section   Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@index([sectionId])
+}
+
+model Progress {
+  id          String   @id @default(uuid())
+  studentId   String
+  sectionId   String
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  section     Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, sectionId])
+  @@index([sectionId])
+}
+
+model Purchase {
+  id            String         @id @default(uuid())
+  customerId    String
+  courseId      String
+  status        PurchaseStatus @default(PENDING)
+  amount        Float
+  currency      String         @default("NGN")
+  transactionId String?
+  txRef         String?
+  isActive      Boolean        @default(false)
+  startDate     DateTime       @default(now())
+  endDate       DateTime
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  course        Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, courseId])
+  @@index([courseId])
+  @@index([status])
+  @@index([isActive])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+model StripeCustomer {
+  id               String   @id @default(uuid())
+  customerId       String   @unique
+  stripeCustomerId String   @unique
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now())
+}
+
+model LiveClassUser {
+  id          String              @id @default(uuid())
+  clerkUserId String              @unique
+  email       String              @unique
+  role        LiveClassUserRole   @default(LEARNER)
+  name        String?
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  liveClasses LiveClass[]
+  // ✅ This creates the other side of the relation
+  purchases   LiveClassPurchase[] @relation("StudentPurchases")
+
+  @@index([role])
+  @@index([isActive])
+  @@index([clerkUserId])
+}
+
+model LiveClass {
+  id            String                @id @default(uuid())
+  title         String
+  description   String?
+  zoomLink      String?
+  zoomMeetingId String?
+  zoomPassword  String?
+  startTime     DateTime
+  endTime       DateTime
+  isActive      Boolean               @default(false)
+  price         Float
+  maxStudents   Int?
+  duration      Int
+  batchNumber   Int
+  lecturerId    String
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  lecturer      LiveClassUser         @relation(fields: [lecturerId], references: [id])
+  purchases     LiveClassPurchase[]
+  materials     LiveClassMaterial[]
+  schedules     LiveClassSchedule[]
+  attendance    LiveClassAttendance[]
+  zoomMeetings  ZoomMeeting[]
+
+  @@index([lecturerId])
+  @@index([isActive])
+  @@index([startTime])
+  @@index([endTime])
+  @@index([price])
+  @@index([batchNumber])
+}
+
+model LiveClassPurchase {
+  id            String         @id @default(uuid())
+  studentId     String
+  liveClassId   String
+  status        PurchaseStatus @default(PENDING)
+  amount        Float
+  currency      String
+  symbol        String?        // Currency symbol for display
+  transactionId String?
+  flwRef        String?
+  txRef         String?
+  isActive      Boolean        @default(true)
+  startDate     DateTime       @default(now())
+  endDate       DateTime
+  courseName    String?
+  studentEmail  String?
+  studentName   String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  countryCode   String?
+
+  liveClass LiveClass @relation(fields: [liveClassId], references: [id])
+
+  // ✅ Connect studentId to LiveClassUser
+  student LiveClassUser @relation("StudentPurchases", fields: [studentId], references: [id])
+
+  @@unique([studentId, liveClassId])
+  @@index([liveClassId])
+  @@index([studentId])
+  @@index([status])
+  @@index([isActive])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+model SystemSettings {
+  id                             String   @id @default(uuid())
+  siteName                       String   @default("TechXOS Academy")
+  siteUrl                        String   @default("https://techxos.com")
+  maintenanceMode                Boolean  @default(false)
+  emailNotifications             Boolean  @default(true)
+  studentEnrollmentNotifications Boolean  @default(true)
+  paymentNotifications           Boolean  @default(true)
+  twoFactorAuth                  Boolean  @default(false)
+  sessionTimeout                 Boolean  @default(true)
+  sessionTimeoutMinutes          Int      @default(60)
+  createdAt                      DateTime @default(now())
+  updatedAt                      DateTime @updatedAt
+}
+
+model LiveClassMaterial {
+  id          String       @id @default(uuid())
+  title       String
+  fileUrl     String
+  type        MaterialType
+  liveClassId String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  liveClass   LiveClass    @relation(fields: [liveClassId], references: [id])
+
+  @@index([liveClassId])
+  @@index([type])
+}
+
+model LiveClassSchedule {
+  id          String    @id @default(uuid())
+  liveClassId String
+  startTime   DateTime
+  endTime     DateTime
+  isRecurring Boolean   @default(false)
+  recurrence  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  liveClass   LiveClass @relation(fields: [liveClassId], references: [id])
+
+  @@index([liveClassId])
+  @@index([startTime])
+  @@index([endTime])
+  @@index([isRecurring])
+}
+
+model LiveClassAttendance {
+  id          String           @id @default(uuid())
+  liveClassId String
+  studentId   String
+  joinTime    DateTime
+  leaveTime   DateTime?
+  duration    Int?
+  status      AttendanceStatus @default(PRESENT)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  liveClass   LiveClass        @relation(fields: [liveClassId], references: [id])
+
+  @@index([liveClassId])
+  @@index([studentId])
+  @@index([joinTime])
+  @@index([status])
+}
+
+model ZoomMeeting {
+  id            String            @id @default(uuid())
+  zoomMeetingId String?           @unique
+  topic         String
+  password      String?
+  startTime     DateTime
+  duration      Int
+  agenda        String?
+  status        ZoomMeetingStatus @default(SCHEDULED)
+  joinUrl       String?
+  startUrl      String?
+  hostEmail     String?
+  liveClassId   String
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  liveClass     LiveClass         @relation(fields: [liveClassId], references: [id], onDelete: Cascade)
+  recordings    ZoomRecording[]
+  attendees     ZoomAttendance[]
+
+  @@index([liveClassId])
+  @@index([status])
+  @@index([startTime])
+}
+
+model ZoomRecording {
+  id              String      @id @default(uuid())
+  zoomRecordingId String?     @unique
+  meetingId       String
+  recordingType   String
+  recordingStart  DateTime
+  recordingEnd    DateTime?
+  fileType        String
+  fileSize        Int?
+  playUrl         String?
+  downloadUrl     String?
+  status          String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  meeting         ZoomMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
+}
+
+model ZoomAttendance {
+  id        String            @id @default(uuid())
+  meetingId String
+  userId    String
+  userName  String
+  userEmail String
+  userRole  LiveClassUserRole
+  joinTime  DateTime
+  leaveTime DateTime?
+  duration  Int?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  meeting   ZoomMeeting       @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
+  @@index([userId])
+  @@index([joinTime])
+}
+
+model CourseZoomMeeting {
+  id        String   @id @default(uuid())
+  courseId  String
+  zoomLink  String   @db.Text
+  startTime DateTime @default(now())
+  duration  Int      @default(60)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@index([isActive])
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  name      String?
+  role      String     @default("user")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  mathsDemo MathsDemo?
+}
+
+model MathsDemo {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  name          String
+  class         String
+  topic         String?
+  trainingDate  String
+  whatsappGroup Boolean  @default(false)
+  startTime     DateTime @default(now())
+  duration      Int      @default(60)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id])
+}
+
+model ClassMode {
+  id        String   @id @default(uuid())
+  mode      String   @default("paid")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LiveCourseCategory {
+  id   String @id
+  name String @unique
+}
+
+model LiveCourseSubCategory {
+  id         String @id
+  name       String
+  categoryId String
+
+  @@index([categoryId])
+}
+
+enum LiveClassUserRole {
+  HEAD_ADMIN
+  ADMIN
+  LECTURER
+  LEARNER
+  VISITOR
+}
+
+enum PurchaseStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum MaterialType {
+  DOCUMENT
+  VIDEO
+  ASSIGNMENT
+  QUIZ
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  LEFT_EARLY
+}
+
+enum ZoomMeetingStatus {
+  SCHEDULED
+  STARTED
+  ENDED
+  CANCELLED
+}
