@@ -20,18 +20,18 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           <div>
-            <div className="flex items-center mb-6">
+            <div className="flex gap-1 items-center mb-6">
               {/* <div className="bg-white text-indigo-600 font-bold text-xl p-2 rounded mr-2">BA</div> */}
               <div className="mr-2 rounded-full overflow-hidden w-12 h-12">
                 <Image
-                  src="/bethel_logo.jpg"
+                  src="/bethel_logo2.jpg"
                   alt="Bethel Academy Logo"
                   width={50}
-                  height={50}
+                  height={30}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <span className="text-3xl font-bold">Bethel Academy</span>
+              <span className="text-2xl font-bold">The Bethel Academy</span>
             </div>
             <p className="text-blue-200 mb-6">
               Empowering the next generation of African leaders through

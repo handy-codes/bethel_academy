@@ -35,7 +35,7 @@ const Testimonials = () => {
       name: 'Tunde Williams',
       role: 'Alumni, Class of 2018',
       content: 'The mentorship I received at Bethel Academy shaped my career path. I still reach out to my professors for advice years after graduation.',
-      image: '',
+      image: '/girl.png',
     },
   ];
 

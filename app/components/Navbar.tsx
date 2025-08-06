@@ -43,20 +43,20 @@ const Navbar = () => {
             {/* <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold text-xl p-2 rounded mr-2">BA</div> */}
             <div className="mr-2 rounded-full overflow-hidden w-12 h-12">
               <Image
-                src="/bethel_logo.jpg"
+                src="/bethel_logo2.jpg"
                 alt="Bethel Academy Logo"
-                width={50}
-                height={50}
+                width={40}
+                height={40}
                 className="w-full h-full object-cover"
               />
             </div>
             {/* Updated logo text */}
             <span
-              className={`text-3xl font-bold ${
+              className={`text-2xl sm:text-3xl font-bold ${
                 isScrolled ? "text-indigo-900" : "text-white"
               }`}
             >
-              Bethel Academy
+              The Bethel Academy
             </span>
           </Link>
         </div>
