@@ -7,7 +7,8 @@ import {
   CheckCircle, 
   Clock,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  FileText
 } from "lucide-react";
 
 interface DashboardStats {

@@ -102,7 +102,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     } else if (timeLeft === 0 && !isSubmitted) {
       handleSubmit();
     }
-  }, [timeLeft, isSubmitted]);
+  }, [timeLeft, isSubmitted, handleSubmit]);
 
   // Auto-save answers
   const saveAnswer = useCallback((questionId: string, answer: string) => {
@@ -116,7 +116,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     saveAnswer(questionId, answer);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     setIsSubmitted(true);
     // Here you would submit the exam to the backend
     console.log("Submitting exam with answers:", answers);
@@ -125,7 +125,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     setTimeout(() => {
       router.push(`/student/results/${params.id}`);
     }, 2000);
-  };
+  }, [answers, router, params.id]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -164,7 +164,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
       <div className="text-center py-12">
         <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">Exam not found</h3>
-        <p className="text-gray-500">The exam you're looking for doesn't exist.</p>
+        <p className="text-gray-500">The exam you are looking for does not exist.</p>
       </div>
     );
   }
@@ -336,7 +336,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Submit Exam?</h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to submit your exam? You won't be able to make changes after submission.
+              Are you sure you want to submit your exam? You will not be able to make changes after submission.
             </p>
             <div className="flex space-x-3">
               <button
