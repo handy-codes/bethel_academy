@@ -4,12 +4,16 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import { useUser, SignOutButton, UserButton } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,6 +30,14 @@ const Navbar = () => {
     { name: "Tech", path: "/tech" },
     { name: "Externals", path: "/externals" },
   ];
+
+  // Get user role from metadata (you'll need to set this in Clerk)
+  const getUserRole = () => {
+    if (!user) return null;
+    return user.publicMetadata?.role as string || 'student';
+  };
+
+  const userRole = getUserRole();
 
   return (
     <header
@@ -82,10 +94,62 @@ const Navbar = () => {
           ))}
         </nav>
 
-        <div className="hidden md:flex items-center">
+        <div className="hidden md:flex items-center space-x-4">
+          {user ? (
+            <div className="flex items-center space-x-4">
+              {/* Role-based dashboard link */}
+              {userRole === 'admin' && (
+                <Link
+                  href="/admin"
+                  className={`font-medium transition-colors ${
+                    isScrolled
+                      ? "text-indigo-900 hover:text-indigo-600"
+                      : "text-white hover:text-gray-200"
+                  }`}
+                >
+                  Admin Dashboard
+                </Link>
+              )}
+              {userRole === 'student' && (
+                <Link
+                  href="/student"
+                  className={`font-medium transition-colors ${
+                    isScrolled
+                      ? "text-indigo-900 hover:text-indigo-600"
+                      : "text-white hover:text-gray-200"
+                  }`}
+                >
+                  Dashboard
+                </Link>
+              )}
+              {userRole === 'lecturer' && (
+                <Link
+                  href="/lecturer"
+                  className={`font-medium transition-colors ${
+                    isScrolled
+                      ? "text-indigo-900 hover:text-indigo-600"
+                      : "text-white hover:text-gray-200"
+                  }`}
+                >
+                  Lecturer Dashboard
+                </Link>
+              )}
+              <UserButton 
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    avatarBox: "w-8 h-8"
+                  }
+                }}
+              />
+            </div>
+          ) : (
+            <Link href="/sign-in">
           <button className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-full transition-all transform hover:scale-105">
             Login
           </button>
+            </Link>
+          )}
         </div>
 
         {/* Mobile menu button - Updated icon color */}
@@ -130,9 +194,52 @@ const Navbar = () => {
                 {link.name}
               </Link>
             ))}
+            {user ? (
+              <div className="flex flex-col items-center space-y-2">
+                {/* Role-based dashboard link for mobile */}
+                {userRole === 'admin' && (
+                  <Link
+                    href="/admin"
+                    className="text-indigo-600 hover:text-indigo-700 font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Admin Dashboard
+                  </Link>
+                )}
+                {userRole === 'student' && (
+                  <Link
+                    href="/student"
+                    className="text-indigo-600 hover:text-indigo-700 font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                )}
+                {userRole === 'lecturer' && (
+                  <Link
+                    href="/lecturer"
+                    className="text-indigo-600 hover:text-indigo-700 font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Lecturer Dashboard
+                  </Link>
+                )}
+                <UserButton 
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-8 h-8"
+                    }
+                  }}
+                />
+              </div>
+            ) : (
+              <Link href="/sign-in">
             <button className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-full transition-all">
               Login
             </button>
+              </Link>
+            )}
           </div>
         </div>
       )}

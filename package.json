@@ -16,7 +16,10 @@
     "postinstall": "prisma generate",
     "seed": "ts-node -T scripts/seed-live-classes.ts",
     "seed:categories": "ts-node -T scripts/seed.ts",
-    "fix-entities": "node scripts/fix-unescaped-entities.js"
+    "fix-entities": "node scripts/fix-unescaped-entities.js",
+    "setup-admin": "ts-node -T scripts/setup-admin.ts",
+    "make-admin": "ts-node -T scripts/make-user-admin.ts",
+    "create-user": "ts-node -T scripts/create-user.ts"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.20.4",

@@ -454,3 +454,147 @@ enum ZoomMeetingStatus {
   ENDED
   CANCELLED
 }
+
+// CBT System Models
+model Exam {
+  id          String      @id @default(uuid())
+  title       String
+  description String?     @db.Text
+  subject     ExamSubject
+  duration    Int         // Duration in minutes
+  totalQuestions Int
+  instructions String?    @db.Text
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  createdBy   String      // Admin/Instructor ID
+  
+  questions   Question[]
+  attempts    ExamAttempt[]
+  
+  @@index([subject])
+  @@index([isActive])
+  @@index([createdBy])
+}
+
+model Question {
+  id          String      @id @default(uuid())
+  examId      String
+  questionText String     @db.Text
+  optionA     String      @db.Text
+  optionB     String      @db.Text
+  optionC     String      @db.Text
+  optionD     String      @db.Text
+  optionE     String      @db.Text
+  correctAnswer String    // A, B, C, D, or E
+  explanation String?     @db.Text
+  difficulty  QuestionDifficulty @default(MEDIUM)
+  points      Int         @default(1)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  exam        Exam        @relation(fields: [examId], references: [id], onDelete: Cascade)
+  answers     StudentAnswer[]
+  
+  @@index([examId])
+  @@index([difficulty])
+}
+
+model ExamAttempt {
+  id          String      @id @default(uuid())
+  examId      String
+  studentId   String      // Clerk User ID
+  studentName String
+  studentEmail String
+  startTime   DateTime    @default(now())
+  endTime     DateTime?
+  submittedAt DateTime?
+  timeSpent   Int?        // Time spent in minutes
+  score       Float?      // Final score percentage
+  totalQuestions Int
+  correctAnswers Int      @default(0)
+  status      ExamStatus  @default(IN_PROGRESS)
+  isApproved  Boolean     @default(false)
+  approvedBy  String?     // Admin ID who approved
+  approvedAt  DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  exam        Exam        @relation(fields: [examId], references: [id], onDelete: Cascade)
+  answers     StudentAnswer[]
+  
+  @@index([examId])
+  @@index([studentId])
+  @@index([status])
+  @@index([isApproved])
+  @@index([submittedAt])
+}
+
+model StudentAnswer {
+  id          String      @id @default(uuid())
+  attemptId   String
+  questionId  String
+  selectedAnswer String?  // A, B, C, D, or E
+  isCorrect   Boolean?
+  timeSpent   Int?        // Time spent on this question in seconds
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  attempt     ExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question    Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  @@unique([attemptId, questionId])
+  @@index([attemptId])
+  @@index([questionId])
+}
+
+model ExamResult {
+  id          String      @id @default(uuid())
+  attemptId   String      @unique
+  studentId   String
+  examId      String
+  score       Float
+  totalQuestions Int
+  correctAnswers Int
+  percentage  Float
+  grade       String?     // A, B, C, D, F
+  isApproved  Boolean     @default(false)
+  approvedBy  String?     // Admin ID
+  approvedAt  DateTime?
+  feedback    String?     @db.Text
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  @@index([studentId])
+  @@index([examId])
+  @@index([isApproved])
+  @@index([approvedAt])
+}
+
+// Enums for CBT System
+enum ExamSubject {
+  ENGLISH
+  MATHEMATICS
+  PHYSICS
+  CHEMISTRY
+  BIOLOGY
+  ACCOUNTING
+  ECONOMICS
+  LITERATURE
+  IGBO
+  YORUBA
+}
+
+enum QuestionDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum ExamStatus {
+  IN_PROGRESS
+  COMPLETED
+  SUBMITTED
+  GRADED
+  APPROVED
+}
