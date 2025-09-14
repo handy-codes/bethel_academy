@@ -92,18 +92,6 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     }, 1000);
   }, [params.id]);
 
-  // Timer countdown
-  useEffect(() => {
-    if (timeLeft > 0 && !isSubmitted) {
-      const timer = setTimeout(() => {
-        setTimeLeft(timeLeft - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (timeLeft === 0 && !isSubmitted) {
-      handleSubmit();
-    }
-  }, [timeLeft, isSubmitted, handleSubmit]);
-
   // Auto-save answers
   const saveAnswer = useCallback((questionId: string, answer: string) => {
     setAnswers(prev => ({
@@ -126,6 +114,18 @@ export default function ExamPage({ params }: { params: { id: string } }) {
       router.push(`/student/results/${params.id}`);
     }, 2000);
   }, [answers, router, params.id]);
+
+  // Timer countdown
+  useEffect(() => {
+    if (timeLeft > 0 && !isSubmitted) {
+      const timer = setTimeout(() => {
+        setTimeLeft(timeLeft - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (timeLeft === 0 && !isSubmitted) {
+      handleSubmit();
+    }
+  }, [timeLeft, isSubmitted, handleSubmit]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);

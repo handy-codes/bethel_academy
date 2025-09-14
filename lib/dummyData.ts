@@ -1,5 +1,7 @@
 import { ExamSubject, QuestionDifficulty } from "@prisma/client";
 
+export { ExamSubject, QuestionDifficulty };
+
 export interface DummyQuestion {
   id: string;
   questionText: string;

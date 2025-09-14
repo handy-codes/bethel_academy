@@ -61,7 +61,7 @@ export default function QuestionsPage() {
   };
 
   const getSubjectColor = (subject: ExamSubject) => {
-    const colors = {
+    const colors: Record<ExamSubject, string> = {
       ENGLISH: "bg-blue-100 text-blue-800",
       MATHEMATICS: "bg-purple-100 text-purple-800",
       PHYSICS: "bg-indigo-100 text-indigo-800",
