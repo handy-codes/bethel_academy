@@ -346,7 +346,7 @@ export default function ResultsPage() {
                       </div>
 
                       {result.feedback && (
-                        <p className="text-sm text-gray-600 mt-2 italic">"{result.feedback}"</p>
+                        <p className="text-sm text-gray-600 mt-2 italic">&ldquo;{result.feedback}&rdquo;</p>
                       )}
                     </div>
 
