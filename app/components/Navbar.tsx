@@ -34,7 +34,16 @@ const Navbar = () => {
   // Get user role from metadata (you'll need to set this in Clerk)
   const getUserRole = () => {
     if (!user) return null;
-    return user.publicMetadata?.role as string || 'student';
+    // Only access publicMetadata, as privateMetadata is not available on UserResource
+    const role = user.publicMetadata?.role as string || null;
+    console.log('Navbar - User role detection:', {
+      userId: user.id,
+      email: user.emailAddresses[0]?.emailAddress,
+      publicMetadata: user.publicMetadata,
+      privateMetadata: user.privateMetadata,
+      detectedRole: role
+    });
+    return role;
   };
 
   const userRole = getUserRole();
@@ -134,6 +143,16 @@ const Navbar = () => {
                   Lecturer Dashboard
                 </Link>
               )}
+              <Link
+                href="/debug-user"
+                className={`text-xs font-medium transition-colors ${
+                  isScrolled
+                    ? "text-indigo-900 hover:text-indigo-600"
+                    : "text-white hover:text-gray-200"
+                }`}
+              >
+                Debug
+              </Link>
               <UserButton 
                 afterSignOutUrl="/"
                 appearance={{
@@ -224,6 +243,13 @@ const Navbar = () => {
                     Lecturer Dashboard
                   </Link>
                 )}
+                <Link
+                  href="/debug-user"
+                  className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Debug User
+                </Link>
                 <UserButton 
                   afterSignOutUrl="/"
                   appearance={{

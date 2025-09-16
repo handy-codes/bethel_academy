@@ -8,7 +8,8 @@ import {
   CheckCircle, 
   Clock,
   User,
-  Settings
+  Settings,
+  X
 } from "lucide-react";
 
 const navigation = [
@@ -20,12 +21,30 @@ const navigation = [
   { name: "Settings", href: "/student/settings", icon: Settings },
 ];
 
-export default function StudentSidebar() {
+interface StudentSidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function StudentSidebar({ isOpen, onClose }: StudentSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg pt-20">
+    <div className={`
+      fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white shadow-lg pt-20 lg:pt-20
+      transform transition-transform duration-300 ease-in-out
+      ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+    `}>
       <nav className="mt-5 px-2">
+        <div className="flex items-center justify-between mb-4 px-2 lg:hidden">
+          <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
         <div className="space-y-1">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
@@ -33,6 +52,7 @@ export default function StudentSidebar() {
               <Link
                 key={item.name}
                 href={item.href}
+                onClick={() => onClose()} // Close sidebar on mobile after navigation
                 className={`${
                   isActive
                     ? "bg-indigo-100 text-indigo-900"

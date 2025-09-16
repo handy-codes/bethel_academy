@@ -15,8 +15,24 @@ export default function AdminLayout({
   const router = useRouter();
 
   useEffect(() => {
-    if (isLoaded && !user) {
-      router.push("/sign-in");
+    if (isLoaded) {
+      if (!user) {
+        router.push("/sign-in");
+        return;
+      }
+      
+      // Check if user has admin role
+      const userRole = user.publicMetadata?.role || user.privateMetadata?.role;
+      if (userRole !== 'admin') {
+        console.log('User is not admin, redirecting to appropriate dashboard. Role:', userRole);
+        if (userRole === 'student') {
+          router.push("/student");
+        } else if (userRole === 'lecturer') {
+          router.push("/lecturer");
+        } else {
+          router.push("/");
+        }
+      }
     }
   }, [isLoaded, user, router]);
 
@@ -29,7 +45,27 @@ export default function AdminLayout({
   }
 
   if (!user) {
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Redirecting...</h1>
+          <p className="text-gray-600">Please wait while we redirect you to sign in.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if user has admin role
+  const userRole = user.publicMetadata?.role || user.privateMetadata?.role;
+  if (userRole !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <p className="text-gray-600">You don't have permission to access the admin dashboard.</p>
+        </div>
+      </div>
+    );
   }
 
   return (

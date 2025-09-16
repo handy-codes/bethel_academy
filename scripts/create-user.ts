@@ -43,10 +43,14 @@ async function createUser({ email, firstName, lastName, role }: CreateUserOption
         emailAddress: [email],
         firstName,
         lastName,
+        username: email.split('@')[0], // Use email prefix as username
+        password: 'TempPassword123!', // Temporary password
         publicMetadata: { role },
         privateMetadata: { role }
       });
       console.log(`✅ User created in Clerk: ${email}`);
+      console.log(`⚠️  Temporary password set: TempPassword123!`);
+      console.log(`   User should change password on first login`);
     }
 
     // Create user in database
@@ -114,6 +118,498 @@ if (require.main === module) {
 }
 
 export default createUser;
+
+
+
+
+
+
+
+
+
+      }
+
+    });
+
+
+
+    console.log(`✅ User created/updated in database: ${email}`);
+
+
+
+    console.log(`\n🎉 ${role} user created successfully!`);
+
+    console.log(`\n📋 User Details:`);
+
+    console.log(`   Email: ${email}`);
+
+    console.log(`   Name: ${firstName} ${lastName}`);
+
+    console.log(`   Role: ${role}`);
+
+    console.log(`   Clerk ID: ${clerkUser.id}`);
+
+    console.log(`   Database ID: ${dbUser.id}`);
+
+
+
+    return { clerkUser, dbUser };
+
+
+
+  } catch (error) {
+
+    console.error(`❌ Error creating user ${email}:`, error);
+
+    throw error;
+
+  } finally {
+
+    await prisma.$disconnect();
+
+  }
+
+}
+
+
+
+// CLI interface
+
+if (require.main === module) {
+
+  const args = process.argv.slice(2);
+
+  
+
+  if (args.length < 4) {
+
+    console.log('Usage: npm run create-user <email> <firstName> <lastName> <role>');
+
+    console.log('Roles: admin, student, lecturer');
+
+    console.log('Example: npm run create-user john.doe@example.com John Doe student');
+
+    process.exit(1);
+
+  }
+
+
+
+  const [email, firstName, lastName, role] = args;
+
+
+
+  if (!['admin', 'student', 'lecturer'].includes(role)) {
+
+    console.error('❌ Invalid role. Must be: admin, student, or lecturer');
+
+    process.exit(1);
+
+  }
+
+
+
+  createUser({ email, firstName, lastName, role: role as any })
+
+    .then(() => {
+
+      console.log('\n✅ User creation completed successfully!');
+
+      process.exit(0);
+
+    })
+
+    .catch((error) => {
+
+      console.error('\n❌ User creation failed:', error);
+
+      process.exit(1);
+
+    });
+
+}
+
+
+
+export default createUser;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      }
+
+    });
+
+
+
+    console.log(`✅ User created/updated in database: ${email}`);
+
+
+
+    console.log(`\n🎉 ${role} user created successfully!`);
+
+    console.log(`\n📋 User Details:`);
+
+    console.log(`   Email: ${email}`);
+
+    console.log(`   Name: ${firstName} ${lastName}`);
+
+    console.log(`   Role: ${role}`);
+
+    console.log(`   Clerk ID: ${clerkUser.id}`);
+
+    console.log(`   Database ID: ${dbUser.id}`);
+
+
+
+    return { clerkUser, dbUser };
+
+
+
+  } catch (error) {
+
+    console.error(`❌ Error creating user ${email}:`, error);
+
+    throw error;
+
+  } finally {
+
+    await prisma.$disconnect();
+
+  }
+
+}
+
+
+
+// CLI interface
+
+if (require.main === module) {
+
+  const args = process.argv.slice(2);
+
+  
+
+  if (args.length < 4) {
+
+    console.log('Usage: npm run create-user <email> <firstName> <lastName> <role>');
+
+    console.log('Roles: admin, student, lecturer');
+
+    console.log('Example: npm run create-user john.doe@example.com John Doe student');
+
+    process.exit(1);
+
+  }
+
+
+
+  const [email, firstName, lastName, role] = args;
+
+
+
+  if (!['admin', 'student', 'lecturer'].includes(role)) {
+
+    console.error('❌ Invalid role. Must be: admin, student, or lecturer');
+
+    process.exit(1);
+
+  }
+
+
+
+  createUser({ email, firstName, lastName, role: role as any })
+
+    .then(() => {
+
+      console.log('\n✅ User creation completed successfully!');
+
+      process.exit(0);
+
+    })
+
+    .catch((error) => {
+
+      console.error('\n❌ User creation failed:', error);
+
+      process.exit(1);
+
+    });
+
+}
+
+
+
+export default createUser;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      }
+
+    });
+
+
+
+    console.log(`✅ User created/updated in database: ${email}`);
+
+
+
+    console.log(`\n🎉 ${role} user created successfully!`);
+
+    console.log(`\n📋 User Details:`);
+
+    console.log(`   Email: ${email}`);
+
+    console.log(`   Name: ${firstName} ${lastName}`);
+
+    console.log(`   Role: ${role}`);
+
+    console.log(`   Clerk ID: ${clerkUser.id}`);
+
+    console.log(`   Database ID: ${dbUser.id}`);
+
+
+
+    return { clerkUser, dbUser };
+
+
+
+  } catch (error) {
+
+    console.error(`❌ Error creating user ${email}:`, error);
+
+    throw error;
+
+  } finally {
+
+    await prisma.$disconnect();
+
+  }
+
+}
+
+
+
+// CLI interface
+
+if (require.main === module) {
+
+  const args = process.argv.slice(2);
+
+  
+
+  if (args.length < 4) {
+
+    console.log('Usage: npm run create-user <email> <firstName> <lastName> <role>');
+
+    console.log('Roles: admin, student, lecturer');
+
+    console.log('Example: npm run create-user john.doe@example.com John Doe student');
+
+    process.exit(1);
+
+  }
+
+
+
+  const [email, firstName, lastName, role] = args;
+
+
+
+  if (!['admin', 'student', 'lecturer'].includes(role)) {
+
+    console.error('❌ Invalid role. Must be: admin, student, or lecturer');
+
+    process.exit(1);
+
+  }
+
+
+
+  createUser({ email, firstName, lastName, role: role as any })
+
+    .then(() => {
+
+      console.log('\n✅ User creation completed successfully!');
+
+      process.exit(0);
+
+    })
+
+    .catch((error) => {
+
+      console.error('\n❌ User creation failed:', error);
+
+      process.exit(1);
+
+    });
+
+}
+
+
+
+export default createUser;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      }
+
+    });
+
+
+
+    console.log(`✅ User created/updated in database: ${email}`);
+
+
+
+    console.log(`\n🎉 ${role} user created successfully!`);
+
+    console.log(`\n📋 User Details:`);
+
+    console.log(`   Email: ${email}`);
+
+    console.log(`   Name: ${firstName} ${lastName}`);
+
+    console.log(`   Role: ${role}`);
+
+    console.log(`   Clerk ID: ${clerkUser.id}`);
+
+    console.log(`   Database ID: ${dbUser.id}`);
+
+
+
+    return { clerkUser, dbUser };
+
+
+
+  } catch (error) {
+
+    console.error(`❌ Error creating user ${email}:`, error);
+
+    throw error;
+
+  } finally {
+
+    await prisma.$disconnect();
+
+  }
+
+}
+
+
+
+// CLI interface
+
+if (require.main === module) {
+
+  const args = process.argv.slice(2);
+
+  
+
+  if (args.length < 4) {
+
+    console.log('Usage: npm run create-user <email> <firstName> <lastName> <role>');
+
+    console.log('Roles: admin, student, lecturer');
+
+    console.log('Example: npm run create-user john.doe@example.com John Doe student');
+
+    process.exit(1);
+
+  }
+
+
+
+  const [email, firstName, lastName, role] = args;
+
+
+
+  if (!['admin', 'student', 'lecturer'].includes(role)) {
+
+    console.error('❌ Invalid role. Must be: admin, student, or lecturer');
+
+    process.exit(1);
+
+  }
+
+
+
+  createUser({ email, firstName, lastName, role: role as any })
+
+    .then(() => {
+
+      console.log('\n✅ User creation completed successfully!');
+
+      process.exit(0);
+
+    })
+
+    .catch((error) => {
+
+      console.error('\n❌ User creation failed:', error);
+
+      process.exit(1);
+
+    });
+
+}
+
+
+
+export default createUser;
+
+
+
+
+
+
+
+
+
 
 
 

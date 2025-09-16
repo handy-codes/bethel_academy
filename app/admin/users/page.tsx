@@ -31,14 +31,22 @@ export default function UsersPage() {
       setUsers([
         {
           id: "1",
-          email: "admin@bethelacademy.local",
-          name: "Admin User",
+          email: "paxymek@gmail.com",
+          name: "Paxymek Admin",
           role: "admin",
           createdAt: "2024-01-01",
           isActive: true,
         },
         {
           id: "2",
+          email: "walsam4christ@gmail.com",
+          name: "Walsam Admin",
+          role: "admin",
+          createdAt: "2024-01-01",
+          isActive: true,
+        },
+        {
+          id: "3",
           email: "john.doe@student.com",
           name: "John Doe",
           role: "student",
@@ -46,7 +54,7 @@ export default function UsersPage() {
           isActive: true,
         },
         {
-          id: "3",
+          id: "4",
           email: "jane.smith@lecturer.com",
           name: "Jane Smith",
           role: "lecturer",
@@ -54,7 +62,7 @@ export default function UsersPage() {
           isActive: true,
         },
         {
-          id: "4",
+          id: "5",
           email: "mike.johnson@student.com",
           name: "Mike Johnson",
           role: "student",
@@ -77,22 +85,32 @@ export default function UsersPage() {
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Here you would call your API to create the user
-    console.log("Creating user:", newUser);
-    
-    // Mock creation
-    const createdUser: User = {
-      id: Date.now().toString(),
-      email: newUser.email,
-      name: `${newUser.firstName} ${newUser.lastName}`,
-      role: newUser.role,
-      createdAt: new Date().toISOString().split('T')[0],
-      isActive: true,
-    };
-    
-    setUsers([...users, createdUser]);
+    try {
+      const response = await fetch('/api/admin/create-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newUser),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Add the new user to the list
+        setUsers([...users, result.user]);
     setShowCreateModal(false);
     setNewUser({ email: "", firstName: "", lastName: "", role: "student" });
+        
+        // Show success message
+        alert(`User created successfully!\n\n${result.message}`);
+      } else {
+        alert(`Error: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error creating user:', error);
+      alert('Failed to create user. Please try again.');
+    }
   };
 
   const getRoleIcon = (role: string) => {

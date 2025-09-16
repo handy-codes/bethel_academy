@@ -18,8 +18,12 @@
     "seed:categories": "ts-node -T scripts/seed.ts",
     "fix-entities": "node scripts/fix-unescaped-entities.js",
     "setup-admin": "ts-node -T scripts/setup-admin.ts",
+    "setup-walsam": "ts-node -T scripts/setup-walsam-admin.ts",
+    "setup-walsam-google": "ts-node -T scripts/setup-walsam-google-admin.ts",
     "make-admin": "ts-node -T scripts/make-user-admin.ts",
-    "create-user": "ts-node -T scripts/create-user.ts"
+    "create-user": "ts-node -T scripts/create-user.ts",
+    "create-admin": "node scripts/create-admin-user.js",
+    "demo-admin": "node scripts/demo-admin-workflow.js"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.20.4",
