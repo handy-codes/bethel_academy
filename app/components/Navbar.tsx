@@ -40,7 +40,6 @@ const Navbar = () => {
       userId: user.id,
       email: user.emailAddresses[0]?.emailAddress,
       publicMetadata: user.publicMetadata,
-      privateMetadata: user.privateMetadata,
       detectedRole: role
     });
     return role;
