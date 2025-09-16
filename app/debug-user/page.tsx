@@ -58,8 +58,7 @@ export default function DebugUser() {
             
             <div>
               <strong>Detected Role:</strong> {
-                user.publicMetadata?.role || 
-                'No role detected'
+                String(user.publicMetadata?.role || 'No role detected')
               }
             </div>
             
