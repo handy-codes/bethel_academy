@@ -52,22 +52,20 @@ export default function DebugUser() {
             <div>
               <strong>Private Metadata:</strong>
               <pre className="bg-gray-100 p-2 rounded text-sm">
-                {JSON.stringify(user.privateMetadata, null, 2)}
+                Not available on client side
               </pre>
             </div>
             
             <div>
               <strong>Detected Role:</strong> {
                 user.publicMetadata?.role || 
-                user.privateMetadata?.role || 
                 'No role detected'
               }
             </div>
             
             <div>
               <strong>Is Admin:</strong> {
-                (user.publicMetadata?.role === 'admin' || user.privateMetadata?.role === 'admin') 
-                  ? 'Yes' : 'No'
+                user.publicMetadata?.role === 'admin' ? 'Yes' : 'No'
               }
             </div>
           </>

@@ -38,12 +38,9 @@ export async function POST(request: NextRequest) {
     // Create user in database
     const dbUser = await prisma.user.create({
       data: {
-        clerkId: clerkUser.id,
         email: email,
-        firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1),
-        lastName: lastName.charAt(0).toUpperCase() + lastName.slice(1),
+        name: `${firstName.charAt(0).toUpperCase() + firstName.slice(1)} ${lastName.charAt(0).toUpperCase() + lastName.slice(1)}`,
         role: role.toUpperCase(),
-        isActive: true,
       }
     });
 
@@ -53,9 +50,8 @@ export async function POST(request: NextRequest) {
         id: dbUser.id,
         clerkId: clerkUser.id,
         email: dbUser.email,
-        name: `${dbUser.firstName} ${dbUser.lastName}`,
+        name: dbUser.name,
         role: dbUser.role.toLowerCase(),
-        isActive: dbUser.isActive,
         createdAt: dbUser.createdAt.toISOString().split('T')[0],
       },
       message: `User created successfully. They can sign in with Google OAuth or use the temporary password: TempSecurePass2024!@#`

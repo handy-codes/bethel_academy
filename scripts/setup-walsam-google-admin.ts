@@ -1,5 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import { clerkClient } from '@clerk/nextjs/server';
+const { PrismaClient } = require('@prisma/client');
+const { clerkClient } = require('@clerk/nextjs/server');
 
 const prisma = new PrismaClient();
 
@@ -169,4 +169,4 @@ if (require.main === module) {
     });
 }
 
-export default setupWalsamGoogleAdmin;
+module.exports = setupWalsamGoogleAdmin;

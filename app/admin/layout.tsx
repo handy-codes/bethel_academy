@@ -22,7 +22,7 @@ export default function AdminLayout({
       }
       
       // Check if user has admin role
-      const userRole = user.publicMetadata?.role || user.privateMetadata?.role;
+      const userRole = user.publicMetadata?.role as string;
       if (userRole !== 'admin') {
         console.log('User is not admin, redirecting to appropriate dashboard. Role:', userRole);
         if (userRole === 'student') {
@@ -56,7 +56,7 @@ export default function AdminLayout({
   }
 
   // Check if user has admin role
-  const userRole = user.publicMetadata?.role || user.privateMetadata?.role;
+  const userRole = user.publicMetadata?.role as string;
   if (userRole !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center">

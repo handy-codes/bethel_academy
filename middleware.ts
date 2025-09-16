@@ -19,9 +19,9 @@ export default clerkMiddleware((auth, req) => {
   if (auth().userId) {
     // Try different ways to get the role
     const sessionClaims = auth().sessionClaims;
-    const userRole = sessionClaims?.publicMetadata?.role || 
-                    sessionClaims?.privateMetadata?.role || 
-                    sessionClaims?.metadata?.role;
+    const userRole = (sessionClaims?.publicMetadata as any)?.role || 
+                    (sessionClaims?.privateMetadata as any)?.role || 
+                    (sessionClaims?.metadata as any)?.role;
     
     console.log('=== MIDDLEWARE DEBUG ===');
     console.log('Path:', pathname);

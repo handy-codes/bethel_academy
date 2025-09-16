@@ -13,7 +13,7 @@ export default function DebugRolePage() {
         userId: user.id,
         email: user.emailAddresses[0]?.emailAddress,
         publicMetadata: user.publicMetadata,
-        privateMetadata: user.privateMetadata,
+        // privateMetadata: user.privateMetadata, // Not available on client side
         unsafeMetadata: user.unsafeMetadata,
         fullName: user.fullName,
         firstName: user.firstName,
@@ -75,7 +75,7 @@ export default function DebugRolePage() {
             <div>
               <label className="block text-sm font-medium text-gray-700">Private Metadata</label>
               <pre className="mt-1 text-sm text-gray-900 bg-gray-100 p-3 rounded overflow-auto">
-                {JSON.stringify(roleInfo?.privateMetadata, null, 2)}
+                Not available on client side
               </pre>
             </div>
             
@@ -94,7 +94,6 @@ export default function DebugRolePage() {
             <span className="font-medium">Role: </span>
             <span className="text-indigo-600 font-bold">
               {roleInfo?.publicMetadata?.role || 
-               roleInfo?.privateMetadata?.role || 
                roleInfo?.unsafeMetadata?.role || 
                'No role detected'}
             </span>
