@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -14,6 +14,8 @@ const Navbar = () => {
   const pathname = usePathname();
   const { user, isLoaded } = useUser();
   const router = useRouter();
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,6 +24,28 @@ const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Handle click outside to close mobile menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        mobileMenuRef.current && 
+        !mobileMenuRef.current.contains(event.target as Node) &&
+        menuButtonRef.current &&
+        !menuButtonRef.current.contains(event.target as Node)
+      ) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    if (mobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [mobileMenuOpen]);
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -142,16 +166,6 @@ const Navbar = () => {
                   Lecturer Dashboard
                 </Link>
               )}
-              <Link
-                href="/debug-user"
-                className={`text-xs font-medium transition-colors ${
-                  isScrolled
-                    ? "text-indigo-900 hover:text-indigo-600"
-                    : "text-white hover:text-gray-200"
-                }`}
-              >
-                Debug
-              </Link>
               <UserButton 
                 afterSignOutUrl="/"
                 appearance={{
@@ -170,33 +184,57 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Mobile menu button - Updated icon color */}
-        <button
-          className={`md:hidden ${
-            isScrolled ? "text-indigo-900" : "text-[#ffcc29]"
-          }`}
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-10 ml w-10"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+        {/* Mobile user profile and menu button */}
+        <div className="md:hidden flex items-center space-x-3">
+          {user ? (
+            <div className="relative mobile-user-button">
+              <UserButton 
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    avatarBox: "w-8 h-8"
+                  }
+                }}
+              />
+            </div>
+          ) : (
+            <Link href="/sign-in">
+              <button className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium py-1 px-3 rounded-full text-sm transition-all">
+                Login
+              </button>
+            </Link>
+          )}
+          <button
+            ref={menuButtonRef}
+            className={`${
+              isScrolled ? "text-indigo-900" : "text-[#ffcc29]"
+            }`}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-10 w-10"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white py-4 px-4 absolute top-full left-0 right-0 shadow-lg">
+        <div 
+          ref={mobileMenuRef}
+          className="md:hidden bg-white py-4 px-4 absolute top-full left-0 right-0 shadow-lg"
+        >
           <div className="flex flex-col items-center space-y-4">
             {navLinks.map((link) => (
               <Link
@@ -212,57 +250,32 @@ const Navbar = () => {
                 {link.name}
               </Link>
             ))}
-            {user ? (
-              <div className="flex flex-col items-center space-y-2">
-                {/* Role-based dashboard link for mobile */}
-                {userRole === 'admin' && (
-                  <Link
-                    href="/admin"
-                    className="text-indigo-600 hover:text-indigo-700 font-medium"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Admin Dashboard
-                  </Link>
-                )}
-                {userRole === 'student' && (
-                  <Link
-                    href="/student"
-                    className="text-indigo-600 hover:text-indigo-700 font-medium"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Dashboard
-                  </Link>
-                )}
-                {userRole === 'lecturer' && (
-                  <Link
-                    href="/lecturer"
-                    className="text-indigo-600 hover:text-indigo-700 font-medium"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Lecturer Dashboard
-                  </Link>
-                )}
-                <Link
-                  href="/debug-user"
-                  className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Debug User
-                </Link>
-                <UserButton 
-                  afterSignOutUrl="/"
-                  appearance={{
-                    elements: {
-                      avatarBox: "w-8 h-8"
-                    }
-                  }}
-                />
-              </div>
-            ) : (
-              <Link href="/sign-in">
-            <button className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-full transition-all">
-              Login
-            </button>
+{/* Role-based dashboard links for mobile */}
+            {user && userRole === 'admin' && (
+              <Link
+                href="/admin"
+                className="text-indigo-600 hover:text-indigo-700 font-medium"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Admin Dashboard
+              </Link>
+            )}
+            {user && userRole === 'student' && (
+              <Link
+                href="/student"
+                className="text-indigo-600 hover:text-indigo-700 font-medium"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Dashboard
+              </Link>
+            )}
+            {user && userRole === 'lecturer' && (
+              <Link
+                href="/lecturer"
+                className="text-indigo-600 hover:text-indigo-700 font-medium"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Lecturer Dashboard
               </Link>
             )}
           </div>

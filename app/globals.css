@@ -10,6 +10,24 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
+/* Mobile user button dropdown right alignment */
+.mobile-user-button .cl-userButtonPopoverCard,
+.mobile-user-button [data-localization-key="userButton.popoverCard"] {
+  right: 0 !important;
+  left: auto !important;
+  transform: translateX(0) !important;
+}
+
+/* Target all Clerk user button popover elements on mobile */
+@media (max-width: 768px) {
+  [class*="cl-userButtonPopover"],
+  [class*="cl-popover"] {
+    right: 0 !important;
+    left: auto !important;
+    transform: translateX(0) !important;
+  }
+}
+
 @layer utilities {
   .animate-fadeIn {
     animation: fadeIn 0.6s ease-in forwards;
