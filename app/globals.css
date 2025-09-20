@@ -38,15 +38,15 @@
 
 /* Active link styling - default yellow */
 .nav-link-active {
-  border: 3px solid #FBBF24 !important;
+  border: 2px solid #FBBF24 !important;
   border-radius: 6px;
   padding: 4px 12px;
   /* Remove any hover effects for active links */
 }
 
-/* Active link styling when scrolled - blue */
+/* Active link styling when scrolled - green */
 .nav-link-active-scrolled {
-  border: 3px solid #2B3DB8 !important;
+  border: 2px solid #10B981 !important;
   border-radius: 6px;
   padding: 4px 12px;
 }
@@ -62,63 +62,16 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
-/* Force mobile user button dropdown to be visible */
+/* Mobile user button dropdown - simple approach */
 @media (max-width: 768px) {
-  /* Target all possible Clerk dropdown classes */
-  [class*="cl-userButton"] [class*="popover"],
-  [class*="cl-userButtonPopover"],
-  [class*="cl-popover"],
-  .cl-userButtonPopoverCard,
-  [data-localization-key="userButton.popoverCard"] {
-    position: fixed !important;
-    top: 70px !important;
-    right: 20px !important;
-    left: auto !important;
-    z-index: 99999 !important;
-    transform: none !important;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    background: white !important;
-    border: 1px solid #e5e7eb !important;
-    border-radius: 8px !important;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
-    padding: 16px !important;
-    min-width: 250px !important;
-    max-height: none !important;
-    overflow: visible !important;
-  }
-  
-  /* Make sure all content inside is visible */
-  [class*="cl-userButton"] [class*="popover"] *,
-  [class*="cl-userButtonPopover"] *,
-  .cl-userButtonPopoverCard *,
-  [class*="cl-userPreview"] *,
-  [class*="cl-userButtonPopoverActionButton"] *,
-  [class*="cl-userButtonPopoverFooter"] * {
-    color: #374151 !important;
-    z-index: 99999 !important;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    font-size: 14px !important;
-    line-height: 1.4 !important;
-  }
-  
-  /* Specifically target user info elements */
-  [class*="cl-userPreview"],
-  [class*="cl-userPreviewMainIdentifier"],
-  [class*="cl-userPreviewSecondaryIdentifier"] {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    color: #374151 !important;
-  }
-  
-  /* Ensure the mobile user button container has proper stacking */
   .mobile-user-button {
-    position: relative !important;
-    z-index: 99999 !important;
+    position: relative;
+    z-index: 60;
+  }
+  
+  /* Let Clerk handle the dropdown naturally but ensure it's visible */
+  .mobile-user-button [class*="cl-userButtonPopover"] {
+    z-index: 61 !important;
   }
 }
 

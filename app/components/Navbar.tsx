@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -60,7 +60,7 @@ const Navbar = ({ isAdminRoute = false }: NavbarProps) => {
   ];
 
   // Get user role from metadata with better detection
-  const getUserRole = () => {
+  const getUserRole = useCallback(() => {
     if (!user || !isLoaded) return null;
     
     // Try multiple ways to get the role
@@ -78,7 +78,7 @@ const Navbar = ({ isAdminRoute = false }: NavbarProps) => {
       isLoaded
     });
     return role;
-  };
+  }, [user, isLoaded]);
 
   const userRole = getUserRole();
   
@@ -88,7 +88,7 @@ const Navbar = ({ isAdminRoute = false }: NavbarProps) => {
       const role = getUserRole();
       console.log('User role updated:', role);
     }
-  }, [user, isLoaded]);
+  }, [user, isLoaded, getUserRole]);
 
   return (
     <header
@@ -212,15 +212,12 @@ const Navbar = ({ isAdminRoute = false }: NavbarProps) => {
         {/* Mobile user profile and menu button */}
         <div className="md:hidden flex items-center space-x-3">
           {user ? (
-            <div className="relative mobile-user-button z-[60]">
+            <div className="relative mobile-user-button">
               <UserButton 
                 afterSignOutUrl="/"
                 appearance={{
                   elements: {
-                    avatarBox: "w-8 h-8",
-                    userButtonPopoverCard: "z-[60] !important",
-                    userButtonPopoverActionButton: "z-[60] !important",
-                    userButtonPopoverFooter: "z-[60] !important"
+                    avatarBox: "w-8 h-8"
                   }
                 }}
               />
