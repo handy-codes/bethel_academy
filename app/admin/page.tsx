@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { 
   BookOpen, 
   Users, 
@@ -179,23 +180,32 @@ export default function AdminDashboard() {
         </div>
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors">
+            <Link
+              href="/admin/exams/create"
+              className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors text-center"
+            >
               <BookOpen className="h-8 w-8 text-gray-400 mx-auto mb-2" />
               <p className="text-sm font-medium text-gray-900">Create New Exam</p>
               <p className="text-xs text-gray-500">Set up a new CBT exam</p>
-            </button>
+            </Link>
             
-            <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors">
+            <Link
+              href="/admin/questions"
+              className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors text-center"
+            >
               <FileText className="h-8 w-8 text-gray-400 mx-auto mb-2" />
               <p className="text-sm font-medium text-gray-900">Add Questions</p>
               <p className="text-xs text-gray-500">Create new exam questions</p>
-            </button>
+            </Link>
             
-            <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors">
+            <Link
+              href="/admin/results"
+              className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors text-center"
+            >
               <CheckCircle className="h-8 w-8 text-gray-400 mx-auto mb-2" />
               <p className="text-sm font-medium text-gray-900">Review Results</p>
               <p className="text-xs text-gray-500">Approve pending results</p>
-            </button>
+            </Link>
           </div>
         </div>
       </div>

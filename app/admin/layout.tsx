@@ -2,9 +2,8 @@
 
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import AdminSidebar from "./components/AdminSidebar";
-import AdminHeader from "./components/AdminHeader";
 
 export default function AdminLayout({
   children,
@@ -13,6 +12,7 @@ export default function AdminLayout({
 }) {
   const { user, isLoaded } = useUser();
   const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (isLoaded) {
@@ -69,12 +69,33 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <AdminHeader />
-      <div className="flex">
-        <AdminSidebar />
-        <main className="flex-1 p-6 ml-64">
+    <div className="min-h-screen bg-gray-100" style={{ '--navbar-height': '64px' } as React.CSSProperties}>
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
+      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      <div className="lg:ml-64 min-h-screen">
+        {/* Mobile menu button */}
+        <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 p-4 mt-16">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+        <main className="p-4 sm:p-6 w-full mt-20 bg-gray-100 min-h-screen">
+          <div className="max-w-full">
           {children}
+          </div>
         </main>
       </div>
     </div>

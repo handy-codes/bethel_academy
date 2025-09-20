@@ -13,14 +13,30 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   
   // Routes that should not have navbar and footer
   const authRoutes = ['/sign-in', '/sign-up'];
-  const dashboardRoutes = ['/admin', '/student', '/lecturer'];
+  const studentRoutes = ['/student'];
+  const lecturerRoutes = ['/lecturer'];
+  const adminRoutes = ['/admin'];
   
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
-  const isDashboardRoute = dashboardRoutes.some(route => pathname.startsWith(route));
+  const isStudentRoute = studentRoutes.some(route => pathname.startsWith(route));
+  const isLecturerRoute = lecturerRoutes.some(route => pathname.startsWith(route));
+  const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
   
-  if (isAuthRoute || isDashboardRoute) {
-    // For auth routes and dashboard routes, just render children without navbar/footer
+  if (isAuthRoute || isStudentRoute || isLecturerRoute) {
+    // For auth routes and student/lecturer dashboard routes, just render children without navbar/footer
     return <>{children}</>;
+  }
+  
+  if (isAdminRoute) {
+    // For admin routes, render with navbar but no footer for better dashboard experience
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar isAdminRoute={true} />
+        <main className="flex-grow">
+          {children}
+        </main>
+      </div>
+    );
   }
   
   // For all other routes (home page, public pages), render with navbar and footer

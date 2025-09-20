@@ -8,7 +8,11 @@ import { useUser, SignOutButton, UserButton } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
 
-const Navbar = () => {
+interface NavbarProps {
+  isAdminRoute?: boolean;
+}
+
+const Navbar = ({ isAdminRoute = false }: NavbarProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -74,7 +78,11 @@ const Navbar = () => {
   return (
     <header
       className={`fixed w-full z-50 transition-all duration-300 ${
-        isScrolled ? "bg-white shadow-md py-2" : "bg-transparent py-4"
+        isAdminRoute 
+          ? "bg-white shadow-md py-2" 
+          : isScrolled 
+            ? "bg-white shadow-md py-2" 
+            : "bg-transparent py-4"
       }`}
     >
       <div className="container mx-auto px-4 flex justify-between items-center">
@@ -97,7 +105,11 @@ const Navbar = () => {
             {/* Updated logo text */}
             <span
               className={`text-2xl sm:text-3xl font-bold ${
-                isScrolled ? "text-indigo-900" : "text-white"
+                isAdminRoute 
+                  ? "text-indigo-900" 
+                  : isScrolled 
+                    ? "text-indigo-900" 
+                    : "text-white"
               }`}
             >
               The Bethel Academy
@@ -113,9 +125,11 @@ const Navbar = () => {
               href={link.path}
               className={`font-medium transition-colors ${
                 pathname === link.path
-                  ? isScrolled
+                  ? isAdminRoute || isScrolled
                     ? "text-indigo-600 font-bold"
                     : "text-white font-bold"
+                  : isAdminRoute
+                  ? "text-indigo-900 hover:text-indigo-600"
                   : isScrolled
                   ? "text-indigo-900 hover:text-indigo-600"
                   : "text-white hover:text-gray-200"
@@ -134,7 +148,7 @@ const Navbar = () => {
                 <Link
                   href="/admin"
                   className={`font-medium transition-colors ${
-                    isScrolled
+                    isAdminRoute || isScrolled
                       ? "text-indigo-900 hover:text-indigo-600"
                       : "text-white hover:text-gray-200"
                   }`}
@@ -146,19 +160,19 @@ const Navbar = () => {
                 <Link
                   href="/student"
                   className={`font-medium transition-colors ${
-                    isScrolled
+                    isAdminRoute || isScrolled
                       ? "text-indigo-900 hover:text-indigo-600"
                       : "text-white hover:text-gray-200"
                   }`}
                 >
-                  Dashboard
+                  Student Dashboard
                 </Link>
               )}
               {userRole === 'lecturer' && (
                 <Link
                   href="/lecturer"
                   className={`font-medium transition-colors ${
-                    isScrolled
+                    isAdminRoute || isScrolled
                       ? "text-indigo-900 hover:text-indigo-600"
                       : "text-white hover:text-gray-200"
                   }`}
@@ -187,12 +201,14 @@ const Navbar = () => {
         {/* Mobile user profile and menu button */}
         <div className="md:hidden flex items-center space-x-3">
           {user ? (
-            <div className="relative mobile-user-button">
+            <div className="relative mobile-user-button z-50">
               <UserButton 
                 afterSignOutUrl="/"
                 appearance={{
                   elements: {
-                    avatarBox: "w-8 h-8"
+                    avatarBox: "w-8 h-8",
+                    userButtonPopoverCard: "z-50",
+                    userButtonPopoverActionButton: "z-50"
                   }
                 }}
               />
@@ -207,7 +223,7 @@ const Navbar = () => {
           <button
             ref={menuButtonRef}
             className={`${
-              isScrolled ? "text-indigo-900" : "text-[#ffcc29]"
+              isAdminRoute || isScrolled ? "text-indigo-900" : "text-white"
             }`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
@@ -240,11 +256,17 @@ const Navbar = () => {
               <Link
                 key={link.name}
                 href={link.path}
-                className={`font-medium transition-colors ${
-                  pathname === link.path
+              className={`font-medium transition-colors ${
+                pathname === link.path
+                  ? isAdminRoute || isScrolled
                     ? "text-indigo-600 font-bold"
-                    : "text-indigo-900 hover:text-indigo-600"
-                }`}
+                    : "text-white font-bold"
+                  : isAdminRoute
+                  ? "text-indigo-900 hover:text-indigo-600"
+                  : isScrolled
+                  ? "text-indigo-900 hover:text-indigo-600"
+                  : "text-white hover:text-gray-200"
+              }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {link.name}
@@ -266,7 +288,7 @@ const Navbar = () => {
                 className="text-indigo-600 hover:text-indigo-700 font-medium"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Dashboard
+                Student Dashboard
               </Link>
             )}
             {user && userRole === 'lecturer' && (

@@ -10,7 +10,8 @@ import {
   BarChart3, 
   Settings,
   ClipboardList,
-  CheckCircle
+  CheckCircle,
+  X
 } from "lucide-react";
 
 const navigation = [
@@ -24,12 +25,37 @@ const navigation = [
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
-export default function AdminSidebar() {
+interface AdminSidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg pt-20">
+    <div 
+      className={`
+        fixed left-0 z-50 w-64 bg-white shadow-lg
+        lg:top-0 lg:h-screen
+        transform transition-transform duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}
+      style={{
+        top: 'var(--navbar-height, 64px)',
+        height: 'calc(100vh - var(--navbar-height, 64px))',
+      }}
+    >
       <nav className="mt-5 px-2">
+        <div className="flex items-center justify-between mb-4 px-2 lg:hidden">
+          <h2 className="text-lg font-semibold text-gray-900">Admin Menu</h2>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
         <div className="space-y-1">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
@@ -37,6 +63,7 @@ export default function AdminSidebar() {
               <Link
                 key={item.name}
                 href={item.href}
+                onClick={() => onClose()} // Close sidebar on mobile after navigation
                 className={`${
                   isActive
                     ? "bg-indigo-100 text-indigo-900"
