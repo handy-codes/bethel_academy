@@ -65,7 +65,6 @@ const Navbar = ({ isAdminRoute = false }: NavbarProps) => {
     
     // Try multiple ways to get the role
     const role = user.publicMetadata?.role as string || 
-                 user.privateMetadata?.role as string ||
                  (user as any).role ||
                  null;
     
@@ -73,7 +72,6 @@ const Navbar = ({ isAdminRoute = false }: NavbarProps) => {
       userId: user.id,
       email: user.emailAddresses[0]?.emailAddress,
       publicMetadata: user.publicMetadata,
-      privateMetadata: user.privateMetadata,
       detectedRole: role,
       isLoaded
     });
@@ -258,24 +256,22 @@ const Navbar = ({ isAdminRoute = false }: NavbarProps) => {
       {mobileMenuOpen && (
         <div 
           ref={mobileMenuRef}
-          className="md:hidden bg-white py-4 px-4 absolute top-full left-0 right-0 shadow-lg"
+          className="md:hidden py-4 px-4 absolute top-full left-0 right-0 shadow-lg"
+          style={{ backgroundColor: '#2C3E50' }}
         >
           <div className="flex flex-col items-center space-y-4">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.path}
-              className={`font-medium transition-colors ${
+              className={`font-medium transition-colors px-4 py-2 rounded-lg ${
                 pathname === link.path
-                  ? isAdminRoute || isScrolled
-                    ? "text-indigo-600 font-bold"
-                    : "text-white font-bold"
-                  : isAdminRoute
-                  ? "text-indigo-900 hover:text-indigo-600"
-                  : isScrolled
-                  ? "text-indigo-900 hover:text-indigo-600"
-                  : "text-white hover:text-gray-200"
+                  ? "text-white font-bold"
+                  : "text-gray-200 hover:text-white"
               }`}
+              style={{
+                backgroundColor: pathname === link.path ? '#1B9BFF' : 'transparent'
+              }}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {link.name}
@@ -285,7 +281,14 @@ const Navbar = ({ isAdminRoute = false }: NavbarProps) => {
             {user && userRole === 'admin' && (
               <Link
                 href="/admin"
-                className="text-indigo-600 hover:text-indigo-700 font-medium"
+                className={`font-medium transition-colors px-4 py-2 rounded-lg ${
+                  pathname.startsWith('/admin')
+                    ? "text-white font-bold"
+                    : "text-gray-200 hover:text-white"
+                }`}
+                style={{
+                  backgroundColor: pathname.startsWith('/admin') ? '#1B9BFF' : 'transparent'
+                }}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Admin Dashboard
@@ -294,7 +297,14 @@ const Navbar = ({ isAdminRoute = false }: NavbarProps) => {
             {user && userRole === 'student' && (
               <Link
                 href="/student"
-                className="text-indigo-600 hover:text-indigo-700 font-medium"
+                className={`font-medium transition-colors px-4 py-2 rounded-lg ${
+                  pathname.startsWith('/student')
+                    ? "text-white font-bold"
+                    : "text-gray-200 hover:text-white"
+                }`}
+                style={{
+                  backgroundColor: pathname.startsWith('/student') ? '#1B9BFF' : 'transparent'
+                }}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Student Dashboard
@@ -303,7 +313,14 @@ const Navbar = ({ isAdminRoute = false }: NavbarProps) => {
             {user && userRole === 'lecturer' && (
               <Link
                 href="/lecturer"
-                className="text-indigo-600 hover:text-indigo-700 font-medium"
+                className={`font-medium transition-colors px-4 py-2 rounded-lg ${
+                  pathname.startsWith('/lecturer')
+                    ? "text-white font-bold"
+                    : "text-gray-200 hover:text-white"
+                }`}
+                style={{
+                  backgroundColor: pathname.startsWith('/lecturer') ? '#1B9BFF' : 'transparent'
+                }}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Lecturer Dashboard
