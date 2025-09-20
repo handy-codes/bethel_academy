@@ -22,6 +22,7 @@
     "setup-walsam-google": "ts-node -T scripts/setup-walsam-google-admin.ts",
     "make-admin": "ts-node -T scripts/make-user-admin.ts",
     "create-user": "ts-node -T scripts/create-user.ts",
+    "fix-user-roles": "ts-node -T scripts/fix-user-roles.ts",
     "create-admin": "node scripts/create-admin-user.js",
     "demo-admin": "node scripts/demo-admin-workflow.js"
   },

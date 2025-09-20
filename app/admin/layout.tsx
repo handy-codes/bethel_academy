@@ -81,18 +81,26 @@ export default function AdminLayout({
       <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <div className="lg:ml-64 min-h-screen">
-        {/* Mobile menu button */}
-        <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 p-4 mt-16">
+        {/* Animated Mobile menu button */}
+        <span className={`lg:hidden fixed top-20 z-50 transition-all duration-300 ${
+          sidebarOpen ? 'left-60' : 'left-4'
+        }`}>
           <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-3 bg-white rounded-full shadow-lg text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 hover:scale-105"
           >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            {sidebarOpen ? (
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
           </button>
-        </div>
-        <main className="p-4 sm:p-6 w-full mt-20 bg-gray-100 min-h-screen">
+        </span>
+        <main className="p-4 sm:p-6 w-full pt-20 lg:pt-4 bg-gray-100 min-h-screen">
           <div className="max-w-full">
           {children}
           </div>

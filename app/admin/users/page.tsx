@@ -18,6 +18,9 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [newUser, setNewUser] = useState({
     email: "",
     firstName: "",
@@ -99,17 +102,28 @@ export default function UsersPage() {
       if (response.ok) {
         // Add the new user to the list
         setUsers([...users, result.user]);
-    setShowCreateModal(false);
-    setNewUser({ email: "", firstName: "", lastName: "", role: "student" });
+        setNewUser({ email: "", firstName: "", lastName: "", role: "student" });
         
-        // Show success message
-        alert(`User created successfully!\n\n${result.message}`);
+        // Show success toast
+        setSuccessMessage("User created successfully!");
+        setShowSuccessToast(true);
+        setErrorMessage("");
+        
+        // Auto-close modal after showing success
+        setTimeout(() => {
+          setShowSuccessToast(false);
+          setShowCreateModal(false);
+        }, 2000);
       } else {
-        alert(`Error: ${result.error}`);
+        setErrorMessage(result.error);
+        setSuccessMessage("");
+        setShowSuccessToast(false);
       }
     } catch (error) {
       console.error('Error creating user:', error);
-      alert('Failed to create user. Please try again.');
+      setErrorMessage('Failed to create user. Please try again.');
+      setSuccessMessage("");
+      setShowSuccessToast(false);
     }
   };
 
@@ -398,10 +412,34 @@ export default function UsersPage() {
                 </select>
               </div>
               
+              {/* Error Message */}
+              {errorMessage && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">{errorMessage}</p>
+                </div>
+              )}
+
+              {/* Success Toast */}
+              {showSuccessToast && (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-center space-x-3">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-sm font-medium text-green-800">{successMessage}</p>
+                </div>
+              )}
+              
               <div className="flex space-x-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setErrorMessage("");
+                    setSuccessMessage("");
+                    setShowSuccessToast(false);
+                  }}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
                   Cancel

@@ -11,7 +11,7 @@ export default function CollegePage() {
       <PageHero 
         title="About Bethel Academy" 
         subtitle="Excellence in Education Since 1992"
-        description="Nigeria's premier institution for academic excellence and character development"
+        description="Championing Education in a Digital World!"
       />
       <CollegeHistory />
       <Leadership />

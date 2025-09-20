@@ -7,17 +7,24 @@ const isPublicRoute = createRouteMatcher([
   '/tech',
   '/externals',
   '/sign-in(.*)',
-  '/sign-up(.*)',
-  '/debug-role',
-  '/debug-user'
+  '/sign-up(.*)'
 ]);
+
+// Define protected routes for each role
+const isAdminRoute = createRouteMatcher(['/admin(.*)']);
+const isStudentRoute = createRouteMatcher(['/student(.*)']);
+const isLecturerRoute = createRouteMatcher(['/lecturer(.*)']);
 
 export default clerkMiddleware((auth, req) => {
   const pathname = req.nextUrl.pathname;
   
-  // If user is signed in
+  // Protect routes that are not public
+  if (!isPublicRoute(req)) {
+    auth().protect();
+  }
+  
+  // If user is signed in, handle role-based access
   if (auth().userId) {
-    // Try different ways to get the role
     const sessionClaims = auth().sessionClaims;
     const userRole = (sessionClaims?.publicMetadata as any)?.role || 
                     (sessionClaims?.privateMetadata as any)?.role || 
@@ -26,37 +33,46 @@ export default clerkMiddleware((auth, req) => {
     console.log('=== MIDDLEWARE DEBUG ===');
     console.log('Path:', pathname);
     console.log('User ID:', auth().userId);
-    console.log('Session Claims:', JSON.stringify(sessionClaims, null, 2));
     console.log('Detected Role:', userRole);
     console.log('========================');
     
-    // If we can't detect the role, don't redirect - let the user stay where they are
+    // Handle role-based access control
+    if (isAdminRoute(req)) {
     if (!userRole) {
-      console.log('No role detected, allowing access to:', pathname);
-      return;
+        console.log('No role detected for admin access');
+        // Always allow access if no role is detected - let the component handle it
+        console.log('Allowing access - component will handle role check');
+      } else if (userRole !== 'admin') {
+        console.log(`User with role ${userRole} denied admin access`);
+        return Response.redirect(new URL(userRole === 'student' ? '/student' : '/lecturer', req.url));
+      }
     }
     
-    // Only redirect if user is trying to access a different role's dashboard
-    // Don't redirect if they're already on the correct dashboard
+    if (isStudentRoute(req)) {
+      if (!userRole) {
+        console.log('No role detected, denying student access');
+        return Response.redirect(new URL('/sign-in?error=no-role', req.url));
+      }
+      if (userRole !== 'student') {
+        console.log(`User with role ${userRole} denied student access`);
+        return Response.redirect(new URL(userRole === 'admin' ? '/admin' : '/lecturer', req.url));
+      }
+    }
     
-    // Temporarily disable redirects to debug the issue
-    // if (userRole === 'admin' && pathname.startsWith('/student')) {
-    //   console.log('Redirecting admin user from student to admin');
-    //   return Response.redirect(new URL('/admin', req.url));
-    // }
+    if (isLecturerRoute(req)) {
+      if (!userRole) {
+        console.log('No role detected, denying lecturer access');
+        return Response.redirect(new URL('/sign-in?error=no-role', req.url));
+      }
+      if (userRole !== 'lecturer') {
+        console.log(`User with role ${userRole} denied lecturer access`);
+        return Response.redirect(new URL(userRole === 'admin' ? '/admin' : '/student', req.url));
+      }
+    }
     
-    // if (userRole === 'student' && pathname.startsWith('/admin')) {
-    //   console.log('Redirecting student user from admin to student');
-    //   return Response.redirect(new URL('/student', req.url));
-    // }
-    
-    // if (userRole === 'lecturer' && (pathname.startsWith('/admin') || pathname.startsWith('/student'))) {
-    //   console.log('Redirecting lecturer user to lecturer dashboard');
-    //   return Response.redirect(new URL('/lecturer', req.url));
-    // }
-    
-    // If user is on root and signed in, redirect based on role
+    // Redirect from root based on role
     if (pathname === '/') {
+      if (userRole) {
       console.log('Redirecting from root based on role:', userRole);
       if (userRole === 'admin') {
         return Response.redirect(new URL('/admin', req.url));
@@ -65,13 +81,10 @@ export default clerkMiddleware((auth, req) => {
       } else if (userRole === 'student') {
         return Response.redirect(new URL('/student', req.url));
       }
-      // If role is unknown, don't redirect - let them stay on home page
+      } else {
+        console.log('No role detected on root, staying on homepage');
     }
   }
-  
-  // Protect routes that are not public
-  if (!isPublicRoute(req)) {
-    auth().protect();
   }
 });
 

@@ -1,112 +1,146 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function DebugRolePage() {
-  const { user, isLoaded } = useUser();
-  const [roleInfo, setRoleInfo] = useState<any>(null);
+  const { user } = useUser();
+  const [updating, setUpdating] = useState(false);
+  const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    if (user && isLoaded) {
-      setRoleInfo({
-        userId: user.id,
-        email: user.emailAddresses[0]?.emailAddress,
-        publicMetadata: user.publicMetadata,
-        // privateMetadata: user.privateMetadata, // Not available on client side
-        unsafeMetadata: user.unsafeMetadata,
-        fullName: user.fullName,
-        firstName: user.firstName,
-        lastName: user.lastName,
+  const updateRole = async (role: string) => {
+    setUpdating(true);
+    setMessage("");
+    
+    try {
+      const response = await fetch('/api/admin/update-role', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          userId: user?.id,
+          email: user?.emailAddresses[0]?.emailAddress,
+          role 
+        }),
       });
-    }
-  }, [user, isLoaded]);
 
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-      </div>
-    );
-  }
+      const result = await response.json();
+      
+      if (response.ok) {
+        setMessage(`✅ Role updated to ${role}! Please refresh the page.`);
+        // Force page refresh after 2 seconds
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        setMessage(`❌ Error: ${result.error}`);
+      }
+    } catch (error) {
+      setMessage(`❌ Failed to update role: ${error}`);
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Not signed in</h1>
-          <p className="text-gray-600">Please sign in to see role information.</p>
+          <h1 className="text-2xl font-bold mb-4">Please sign in first</h1>
+          <a href="/sign-in" className="text-indigo-600 hover:text-indigo-700">
+            Go to Sign In
+          </a>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Role Debug Information</h1>
-        
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">User Information</h2>
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="max-w-2xl mx-auto px-4">
+        <div className="bg-white rounded-lg shadow p-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-6">Debug: User Role Management</h1>
           
-          <div className="space-y-4">
+          <div className="space-y-4 mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-700">User ID</label>
-              <p className="mt-1 text-sm text-gray-900 font-mono">{roleInfo?.userId}</p>
+              <p className="text-sm text-gray-900 font-mono bg-gray-100 p-2 rounded">{user.id}</p>
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700">Email</label>
-              <p className="mt-1 text-sm text-gray-900">{roleInfo?.email}</p>
+              <p className="text-sm text-gray-900">{user.emailAddresses[0]?.emailAddress}</p>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700">Full Name</label>
-              <p className="mt-1 text-sm text-gray-900">{roleInfo?.fullName}</p>
+              <label className="block text-sm font-medium text-gray-700">Current Role</label>
+              <p className="text-sm text-gray-900">
+                {user.publicMetadata?.role as string || 'undefined'}
+              </p>
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700">Public Metadata</label>
-              <pre className="mt-1 text-sm text-gray-900 bg-gray-100 p-3 rounded overflow-auto">
-                {JSON.stringify(roleInfo?.publicMetadata, null, 2)}
-              </pre>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Private Metadata</label>
-              <pre className="mt-1 text-sm text-gray-900 bg-gray-100 p-3 rounded overflow-auto">
-                Not available on client side
-              </pre>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Unsafe Metadata</label>
-              <pre className="mt-1 text-sm text-gray-900 bg-gray-100 p-3 rounded overflow-auto">
-                {JSON.stringify(roleInfo?.unsafeMetadata, null, 2)}
+              <pre className="text-xs text-gray-900 bg-gray-100 p-2 rounded overflow-auto">
+                {JSON.stringify(user.publicMetadata, null, 2)}
               </pre>
             </div>
           </div>
+
+          {message && (
+            <div className={`p-4 rounded-lg mb-6 ${
+              message.includes('✅') ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+            }`}>
+              {message}
         </div>
-        
-        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Detected Role</h2>
-          <div className="text-lg">
-            <span className="font-medium">Role: </span>
-            <span className="text-indigo-600 font-bold">
-              {roleInfo?.publicMetadata?.role || 
-               roleInfo?.unsafeMetadata?.role || 
-               'No role detected'}
-            </span>
+          )}
+
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-gray-900">Set Role</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <button
+                onClick={() => updateRole('admin')}
+                disabled={updating}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:bg-gray-400 transition-colors"
+              >
+                {updating ? 'Updating...' : 'Set as Admin'}
+              </button>
+              
+              <button
+                onClick={() => updateRole('student')}
+                disabled={updating}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+              >
+                {updating ? 'Updating...' : 'Set as Student'}
+              </button>
+              
+              <button
+                onClick={() => updateRole('lecturer')}
+                disabled={updating}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors"
+              >
+                {updating ? 'Updating...' : 'Set as Lecturer'}
+              </button>
           </div>
         </div>
         
-        <div className="mt-8 bg-blue-50 rounded-lg border border-blue-200 p-6">
-          <h2 className="text-xl font-semibold text-blue-900 mb-4">Instructions</h2>
-          <div className="text-blue-800 space-y-2">
-            <p>1. Check the metadata above to see if the role is set correctly</p>
-            <p>2. If no role is detected, run: <code className="bg-blue-100 px-2 py-1 rounded">node scripts/set-user-role.js {roleInfo?.email} admin</code></p>
-            <p>3. After setting the role, sign out and sign back in</p>
-            <p>4. The middleware should redirect you to the correct dashboard</p>
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Navigation</h2>
+            <div className="space-y-2">
+              <a href="/admin" className="block text-indigo-600 hover:text-indigo-700">
+                → Admin Dashboard
+              </a>
+              <a href="/student" className="block text-indigo-600 hover:text-indigo-700">
+                → Student Dashboard  
+              </a>
+              <a href="/lecturer" className="block text-indigo-600 hover:text-indigo-700">
+                → Lecturer Dashboard
+              </a>
+              <a href="/" className="block text-indigo-600 hover:text-indigo-700">
+                → Homepage
+              </a>
+            </div>
           </div>
         </div>
       </div>

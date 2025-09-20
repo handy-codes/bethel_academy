@@ -59,21 +59,36 @@ const Navbar = ({ isAdminRoute = false }: NavbarProps) => {
     { name: "Externals", path: "/externals" },
   ];
 
-  // Get user role from metadata (you'll need to set this in Clerk)
+  // Get user role from metadata with better detection
   const getUserRole = () => {
-    if (!user) return null;
-    // Only access publicMetadata, as privateMetadata is not available on UserResource
-    const role = user.publicMetadata?.role as string || null;
+    if (!user || !isLoaded) return null;
+    
+    // Try multiple ways to get the role
+    const role = user.publicMetadata?.role as string || 
+                 user.privateMetadata?.role as string ||
+                 (user as any).role ||
+                 null;
+    
     console.log('Navbar - User role detection:', {
       userId: user.id,
       email: user.emailAddresses[0]?.emailAddress,
       publicMetadata: user.publicMetadata,
-      detectedRole: role
+      privateMetadata: user.privateMetadata,
+      detectedRole: role,
+      isLoaded
     });
     return role;
   };
 
   const userRole = getUserRole();
+  
+  // Force re-render when user data changes
+  useEffect(() => {
+    if (isLoaded && user) {
+      const role = getUserRole();
+      console.log('User role updated:', role);
+    }
+  }, [user, isLoaded]);
 
   return (
     <header
@@ -105,11 +120,9 @@ const Navbar = ({ isAdminRoute = false }: NavbarProps) => {
             {/* Updated logo text */}
             <span
               className={`text-2xl sm:text-3xl font-bold ${
-                isAdminRoute 
+                isAdminRoute || isScrolled
                   ? "text-indigo-900" 
-                  : isScrolled 
-                    ? "text-indigo-900" 
-                    : "text-white"
+                  : "text-white"
               }`}
             >
               The Bethel Academy
@@ -123,14 +136,12 @@ const Navbar = ({ isAdminRoute = false }: NavbarProps) => {
             <Link
               key={link.name}
               href={link.path}
-              className={`font-medium transition-colors ${
+              className={`font-semibold transition-colors nav-link ${
                 pathname === link.path
                   ? isAdminRoute || isScrolled
-                    ? "text-indigo-600 font-bold"
-                    : "text-white font-bold"
-                  : isAdminRoute
-                  ? "text-indigo-900 hover:text-indigo-600"
-                  : isScrolled
+                    ? "text-indigo-600 font-bold nav-link-active-scrolled"
+                    : "text-white font-bold nav-link-active"
+                  : isAdminRoute || isScrolled
                   ? "text-indigo-900 hover:text-indigo-600"
                   : "text-white hover:text-gray-200"
               }`}
@@ -201,14 +212,15 @@ const Navbar = ({ isAdminRoute = false }: NavbarProps) => {
         {/* Mobile user profile and menu button */}
         <div className="md:hidden flex items-center space-x-3">
           {user ? (
-            <div className="relative mobile-user-button z-50">
+            <div className="relative mobile-user-button z-[60]">
               <UserButton 
                 afterSignOutUrl="/"
                 appearance={{
                   elements: {
                     avatarBox: "w-8 h-8",
-                    userButtonPopoverCard: "z-50",
-                    userButtonPopoverActionButton: "z-50"
+                    userButtonPopoverCard: "z-[60] !important",
+                    userButtonPopoverActionButton: "z-[60] !important",
+                    userButtonPopoverFooter: "z-[60] !important"
                   }
                 }}
               />
