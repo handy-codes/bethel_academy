@@ -609,7 +609,7 @@ export default function QuestionsPage() {
                 </p>
                 <div className="mt-2 p-3 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-600">
-                    "{selectedQuestion.questionText.substring(0, 100)}..."
+                    &ldquo;{selectedQuestion.questionText.substring(0, 100)}...&rdquo;
                   </p>
                 </div>
               </div>

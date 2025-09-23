@@ -761,7 +761,7 @@ export default function UsersPage() {
               
               <div className="mb-6">
                 <p className="text-sm text-gray-700">
-                  Are you sure you want to delete <strong>"{selectedUser.name}"</strong>? 
+                  Are you sure you want to delete <strong>&ldquo;{selectedUser.name}&rdquo;</strong>? 
                   This will permanently remove the user and all their data.
                 </p>
               </div>

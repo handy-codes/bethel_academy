@@ -416,7 +416,7 @@ export default function ExamsPage() {
               
               <div className="mb-6">
                 <p className="text-sm text-gray-700">
-                  Are you sure you want to delete <strong>"{selectedExam.title}"</strong>? 
+                  Are you sure you want to delete <strong>&ldquo;{selectedExam.title}&rdquo;</strong>? 
                   This will permanently remove the exam and all its data.
                 </p>
               </div>
