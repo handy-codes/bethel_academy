@@ -31,7 +31,7 @@ export default function ExamsPage() {
 
   const subjects = [
     "ENGLISH", "MATHEMATICS", "PHYSICS", "CHEMISTRY", "BIOLOGY",
-    "ACCOUNTING", "ECONOMICS", "LITERATURE", "IGBO", "YORUBA"
+    "ACCOUNTANCY", "ECONOMICS", "LITERATURE", "IGBO", "YORUBA"
   ];
 
   useEffect(() => {
