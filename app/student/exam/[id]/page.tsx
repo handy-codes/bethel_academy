@@ -85,7 +85,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     loadExam();
   }, [params.id, router]);
 
-  const calculateScore = () => {
+  const calculateScore = useCallback(() => {
     if (!exam) return { score: 0, total: 0, percentage: 0, grade: 'F' };
     
     let correctAnswers = 0;
@@ -108,7 +108,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
       percentage,
       grade
     };
-  };
+  }, [exam, answers]);
 
   // Timer effect
   useEffect(() => {
@@ -221,7 +221,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     
     setIsSubmitted(true);
     setShowConfirmSubmit(false);
-  }, [exam, timeLeft, answers, calculateScore]);
+  }, [exam, timeLeft, calculateScore]);
 
   const startExam = () => {
     setExamStarted(true);
