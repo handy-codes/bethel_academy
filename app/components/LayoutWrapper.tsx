@@ -22,9 +22,21 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const isLecturerRoute = lecturerRoutes.some(route => pathname.startsWith(route));
   const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
   
-  if (isAuthRoute || isStudentRoute || isLecturerRoute) {
-    // For auth routes and student/lecturer dashboard routes, just render children without navbar/footer
+  if (isAuthRoute || isLecturerRoute) {
+    // For auth routes and lecturer dashboard routes, just render children without navbar/footer
     return <>{children}</>;
+  }
+  
+  if (isStudentRoute) {
+    // For student routes, render with navbar but no footer for better dashboard experience
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar isStudentRoute={true} />
+        <main className="flex-grow">
+          {children}
+        </main>
+      </div>
+    );
   }
   
   if (isAdminRoute) {

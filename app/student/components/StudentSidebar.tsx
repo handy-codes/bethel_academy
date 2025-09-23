@@ -30,11 +30,18 @@ export default function StudentSidebar({ isOpen, onClose }: StudentSidebarProps)
   const pathname = usePathname();
 
   return (
-    <div className={`
-      fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white shadow-lg pt-20 lg:pt-20
-      transform transition-transform duration-300 ease-in-out
-      ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-    `}>
+    <div 
+      className={`
+        fixed left-0 z-50 w-64 bg-white shadow-lg
+        lg:top-0 lg:h-screen
+        transform transition-transform duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}
+      style={{
+        top: 'var(--navbar-height, 64px)',
+        height: 'calc(100vh - var(--navbar-height, 64px))',
+      }}
+    >
       <nav className="mt-5 px-2">
         <div className="flex items-center justify-between mb-4 px-2 lg:hidden">
           <h2 className="text-lg font-semibold text-gray-900">Menu</h2>

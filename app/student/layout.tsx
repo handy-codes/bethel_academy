@@ -4,7 +4,6 @@ import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import StudentSidebar from "./components/StudentSidebar";
-import StudentHeader from "./components/StudentHeader";
 
 export default function StudentLayout({
   children,
@@ -44,20 +43,41 @@ export default function StudentLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <StudentHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-      <div className="flex relative">
-        {/* Mobile overlay */}
-        {sidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-        
-        <StudentSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <main className="flex-1 p-4 sm:p-6 lg:ml-64">
-          {children}
+    <div className="min-h-screen bg-gray-100" style={{ '--navbar-height': '64px' } as React.CSSProperties}>
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
+      <StudentSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      <div className="lg:ml-64 min-h-screen">
+        {/* Animated Mobile menu button */}
+        <span className={`lg:hidden fixed top-20 z-50 transition-all duration-300 ${
+          sidebarOpen ? 'left-60' : 'left-4'
+        }`}>
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-3 bg-white rounded-full shadow-lg text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 hover:scale-105"
+          >
+            {sidebarOpen ? (
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
+        </span>
+        <main className="p-4 sm:p-6 w-full pt-20 lg:pt-20 bg-gray-100 min-h-screen">
+          <div className="max-w-full">
+            {children}
+          </div>
         </main>
       </div>
     </div>

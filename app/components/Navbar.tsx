@@ -10,9 +10,10 @@ import { useRouter } from "next/navigation";
 
 interface NavbarProps {
   isAdminRoute?: boolean;
+  isStudentRoute?: boolean;
 }
 
-const Navbar = ({ isAdminRoute = false }: NavbarProps) => {
+const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
