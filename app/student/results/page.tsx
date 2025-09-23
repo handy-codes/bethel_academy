@@ -38,85 +38,19 @@ export default function ResultsPage() {
   const [sortBy, setSortBy] = useState("date"); // date, score, subject
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    setTimeout(() => {
-      setResults([
-        {
-          id: "1",
-          examTitle: "JAMB Mathematics Practice Test",
-          subject: "MATHEMATICS",
-          score: 42,
-          totalQuestions: 50,
-          correctAnswers: 42,
-          percentage: 84,
-          grade: "A",
-          submittedAt: "2024-01-15T10:30:00Z",
-          timeSpent: 95,
-          isApproved: true,
-          approvedAt: "2024-01-15T11:00:00Z",
-          feedback: "Excellent performance! You demonstrated strong understanding of mathematical concepts."
-        },
-        {
-          id: "2",
-          examTitle: "WAEC English Language Mock",
-          subject: "ENGLISH",
-          score: 75,
-          totalQuestions: 100,
-          correctAnswers: 75,
-          percentage: 75,
-          grade: "B",
-          submittedAt: "2024-01-14T14:20:00Z",
-          timeSpent: 120,
-          isApproved: true,
-          approvedAt: "2024-01-14T15:00:00Z",
-          feedback: "Good work! Focus on improving your grammar and vocabulary."
-        },
-        {
-          id: "3",
-          examTitle: "Physics Fundamentals Test",
-          subject: "PHYSICS",
-          score: 28,
-          totalQuestions: 40,
-          correctAnswers: 28,
-          percentage: 70,
-          grade: "B",
-          submittedAt: "2024-01-13T09:15:00Z",
-          timeSpent: 85,
-          isApproved: false,
-        },
-        {
-          id: "4",
-          examTitle: "Chemistry Basic Concepts",
-          subject: "CHEMISTRY",
-          score: 35,
-          totalQuestions: 50,
-          correctAnswers: 35,
-          percentage: 70,
-          grade: "B",
-          submittedAt: "2024-01-12T16:45:00Z",
-          timeSpent: 110,
-          isApproved: true,
-          approvedAt: "2024-01-12T17:30:00Z",
-          feedback: "Solid understanding of basic chemistry concepts. Keep practicing!"
-        },
-        {
-          id: "5",
-          examTitle: "Biology Life Sciences",
-          subject: "BIOLOGY",
-          score: 18,
-          totalQuestions: 30,
-          correctAnswers: 18,
-          percentage: 60,
-          grade: "C",
-          submittedAt: "2024-01-11T11:30:00Z",
-          timeSpent: 75,
-          isApproved: true,
-          approvedAt: "2024-01-11T12:00:00Z",
-          feedback: "You're making progress! Review the topics you missed and try again."
-        },
-      ]);
+    // Load real data from localStorage
+    const loadResults = () => {
+      const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+      setResults(examResults);
       setLoading(false);
-    }, 1000);
+    };
+    
+    loadResults();
+    
+    // Set up real-time updates by checking localStorage periodically
+    const interval = setInterval(loadResults, 2000); // Check every 2 seconds
+    
+    return () => clearInterval(interval);
   }, []);
 
   const getGradeColor = (grade: string) => {

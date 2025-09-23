@@ -32,56 +32,19 @@ export default function ReportsPage() {
   const [generating, setGenerating] = useState<string | null>(null);
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    setTimeout(() => {
-      setReports([
-        {
-          id: "1",
-          title: "Student Performance Report - January 2024",
-          type: "student_performance",
-          description: "Comprehensive analysis of student performance across all subjects",
-          generatedDate: "2024-01-31T10:30:00Z",
-          generatedBy: "Admin User",
-          fileSize: "2.3 MB",
-          downloadCount: 15,
-          status: "ready",
-        },
-        {
-          id: "2",
-          title: "Mathematics Exam Summary",
-          type: "exam_summary",
-          description: "Detailed breakdown of mathematics exam results and statistics",
-          generatedDate: "2024-01-25T14:20:00Z",
-          generatedBy: "Admin User",
-          fileSize: "1.8 MB",
-          downloadCount: 8,
-          status: "ready",
-        },
-        {
-          id: "3",
-          title: "Weekly Attendance Report",
-          type: "attendance",
-          description: "Student attendance tracking and participation rates",
-          generatedDate: "2024-01-20T09:15:00Z",
-          generatedBy: "System",
-          fileSize: "0.9 MB",
-          downloadCount: 12,
-          status: "ready",
-        },
-        {
-          id: "4",
-          title: "Custom Analytics Report",
-          type: "custom",
-          description: "Custom report with specific metrics and filters",
-          generatedDate: "2024-01-18T16:45:00Z",
-          generatedBy: "Admin User",
-          fileSize: "3.1 MB",
-          downloadCount: 5,
-          status: "ready",
-        },
-      ]);
+    // Load real data from localStorage
+    const loadReports = () => {
+      const savedReports = JSON.parse(localStorage.getItem('adminReports') || '[]');
+      setReports(savedReports);
       setLoading(false);
-    }, 1000);
+    };
+    
+    loadReports();
+    
+    // Set up real-time updates by checking localStorage periodically
+    const interval = setInterval(loadReports, 3000); // Check every 3 seconds
+    
+    return () => clearInterval(interval);
   }, []);
 
   const reportTypes = [
@@ -113,7 +76,12 @@ export default function ReportsPage() {
         status: "ready",
       };
       
-      setReports([newReport, ...reports]);
+      const updatedReports = [newReport, ...reports];
+      setReports(updatedReports);
+      
+      // Save to localStorage
+      localStorage.setItem('adminReports', JSON.stringify(updatedReports));
+      
       setGenerating(null);
     }, 3000);
   };

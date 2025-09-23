@@ -41,39 +41,87 @@ export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState("30");
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    setTimeout(() => {
+    // Load real data from localStorage
+    const loadAnalytics = () => {
+      const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
+      const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+      
+      // Calculate real analytics
+      const totalStudents = new Set(examResults.map((r: any) => r.studentId)).size;
+      const totalExams = availableExams.length;
+      const totalAttempts = examResults.length;
+      const averageScore = examResults.length > 0 
+        ? Math.round(examResults.reduce((acc: number, r: any) => acc + r.percentage, 0) / examResults.length)
+        : 0;
+      const completionRate = examResults.length > 0 
+        ? Math.round((examResults.filter((r: any) => r.isApproved).length / examResults.length) * 100)
+        : 0;
+      
+      // Top performers (top 5 by score)
+      const topPerformers = examResults
+        .sort((a: any, b: any) => b.percentage - a.percentage)
+        .slice(0, 5)
+        .map((result: any) => ({
+          name: result.studentName,
+          score: result.percentage,
+          subject: result.subject
+        }));
+      
+      // Subject performance
+      const subjectStats = examResults.reduce((acc: any, result: any) => {
+        if (!acc[result.subject]) {
+          acc[result.subject] = { total: 0, count: 0, attempts: 0 };
+        }
+        acc[result.subject].total += result.percentage;
+        acc[result.subject].count += 1;
+        acc[result.subject].attempts += 1;
+        return acc;
+      }, {});
+      
+      const subjectPerformance = Object.keys(subjectStats).map(subject => ({
+        subject,
+        averageScore: Math.round(subjectStats[subject].total / subjectStats[subject].count),
+        attempts: subjectStats[subject].attempts
+      }));
+      
+      // Monthly trends (simplified - using last 6 months)
+      const monthlyTrends = [];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+      for (let i = 0; i < 6; i++) {
+        const monthResults = examResults.filter((r: any) => {
+          const date = new Date(r.submittedAt);
+          const month = date.getMonth();
+          return month === i;
+        });
+        
+        monthlyTrends.push({
+          month: months[i],
+          attempts: monthResults.length,
+          averageScore: monthResults.length > 0 
+            ? Math.round(monthResults.reduce((acc: number, r: any) => acc + r.percentage, 0) / monthResults.length)
+            : 0
+        });
+      }
+      
       setAnalytics({
-        totalStudents: 156,
-        totalExams: 12,
-        totalAttempts: 342,
-        averageScore: 78.5,
-        completionRate: 85.2,
-        topPerformers: [
-          { name: "Alice Johnson", score: 95, subject: "Mathematics" },
-          { name: "Bob Smith", score: 92, subject: "Physics" },
-          { name: "Carol Davis", score: 90, subject: "Chemistry" },
-          { name: "David Wilson", score: 88, subject: "English" },
-          { name: "Eve Brown", score: 87, subject: "Biology" },
-        ],
-        subjectPerformance: [
-          { subject: "Mathematics", averageScore: 82, attempts: 89 },
-          { subject: "Physics", averageScore: 79, attempts: 67 },
-          { subject: "Chemistry", averageScore: 76, attempts: 54 },
-          { subject: "English", averageScore: 81, attempts: 78 },
-          { subject: "Biology", averageScore: 75, attempts: 54 },
-        ],
-        monthlyTrends: [
-          { month: "Jan", attempts: 45, averageScore: 75 },
-          { month: "Feb", attempts: 52, averageScore: 77 },
-          { month: "Mar", attempts: 48, averageScore: 79 },
-          { month: "Apr", attempts: 61, averageScore: 78 },
-          { month: "May", attempts: 58, averageScore: 80 },
-          { month: "Jun", attempts: 65, averageScore: 82 },
-        ],
+        totalStudents,
+        totalExams,
+        totalAttempts,
+        averageScore,
+        completionRate,
+        topPerformers,
+        subjectPerformance,
+        monthlyTrends,
       });
       setLoading(false);
-    }, 1000);
+    };
+    
+    loadAnalytics();
+    
+    // Set up real-time updates by checking localStorage periodically
+    const interval = setInterval(loadAnalytics, 5000); // Check every 5 seconds
+    
+    return () => clearInterval(interval);
   }, [timeRange]);
 
   if (loading) {

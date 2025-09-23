@@ -43,32 +43,71 @@ export default function ProfilePage() {
   const [editForm, setEditForm] = useState<Partial<StudentProfile>>({});
 
   useEffect(() => {
-    // Mock data - replace with actual API call
-    setTimeout(() => {
+    // Load real data from localStorage and user info
+    const loadProfile = () => {
+      const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+      const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
+      
+      // Calculate real statistics from exam results
+      const totalExamsTaken = examResults.length;
+      const averageScore = examResults.length > 0 
+        ? Math.round(examResults.reduce((acc: number, r: any) => acc + r.percentage, 0) / examResults.length)
+        : 0;
+      
+      // Find best subject
+      const subjectScores = examResults.reduce((acc: any, result: any) => {
+        if (!acc[result.subject]) {
+          acc[result.subject] = { total: 0, count: 0 };
+        }
+        acc[result.subject].total += result.percentage;
+        acc[result.subject].count += 1;
+        return acc;
+      }, {});
+      
+      const bestSubject = Object.keys(subjectScores).length > 0 
+        ? Object.keys(subjectScores).reduce((a, b) => 
+            subjectScores[a].total / subjectScores[a].count > subjectScores[b].total / subjectScores[b].count ? a : b
+          )
+        : undefined;
+      
+      // Generate achievements based on performance
+      const achievements = [];
+      if (averageScore >= 90) achievements.push("Academic Excellence Award");
+      if (averageScore >= 80) achievements.push("Dean's List");
+      if (totalExamsTaken >= 10) achievements.push("Dedicated Learner");
+      if (bestSubject && subjectScores[bestSubject].total / subjectScores[bestSubject].count >= 85) {
+        achievements.push(`Best Student in ${bestSubject}`);
+      }
+      
+      // Load profile from localStorage or create default
+      const savedProfile = JSON.parse(localStorage.getItem('studentProfile') || '{}');
+      
       setProfile({
         id: user?.id || "student-1",
-        fullName: user?.fullName || "John Doe",
-        email: user?.emailAddresses[0]?.emailAddress || "john.doe@example.com",
-        phone: "+234 801 234 5678",
-        dateOfBirth: "1995-03-15",
-        address: "123 University Road, Lagos, Nigeria",
-        studentId: "BA2024001",
-        enrollmentDate: "2024-01-01",
-        program: "Computer Science",
-        level: "200 Level",
-        gpa: 3.75,
-        totalExamsTaken: 15,
-        averageScore: 78.5,
-        bestSubject: "MATHEMATICS",
-        achievements: [
-          "Dean's List - Fall 2023",
-          "Best Student in Mathematics",
-          "Perfect Attendance Award",
-          "Academic Excellence Award"
-        ]
+        fullName: savedProfile.fullName || user?.fullName || "Student User",
+        email: user?.emailAddresses[0]?.emailAddress || "student@example.com",
+        phone: savedProfile.phone || "",
+        dateOfBirth: savedProfile.dateOfBirth || "",
+        address: savedProfile.address || "",
+        studentId: savedProfile.studentId || "BA2024001",
+        enrollmentDate: savedProfile.enrollmentDate || new Date().toISOString().split('T')[0],
+        program: savedProfile.program || "Computer Science",
+        level: savedProfile.level || "200 Level",
+        gpa: savedProfile.gpa || (averageScore >= 90 ? 4.0 : averageScore >= 80 ? 3.5 : averageScore >= 70 ? 3.0 : 2.5),
+        totalExamsTaken,
+        averageScore,
+        bestSubject,
+        achievements
       });
       setLoading(false);
-    }, 1000);
+    };
+    
+    loadProfile();
+    
+    // Set up real-time updates by checking localStorage periodically
+    const interval = setInterval(loadProfile, 5000); // Check every 5 seconds
+    
+    return () => clearInterval(interval);
   }, [user]);
 
   const handleEdit = () => {
@@ -85,14 +124,27 @@ export default function ProfilePage() {
 
   const handleSave = () => {
     if (profile) {
-      setProfile({
+      const updatedProfile = {
         ...profile,
         ...editForm
-      });
+      };
+      setProfile(updatedProfile);
+      
+      // Save to localStorage for persistence
+      const profileToSave = {
+        fullName: updatedProfile.fullName,
+        phone: updatedProfile.phone,
+        dateOfBirth: updatedProfile.dateOfBirth,
+        address: updatedProfile.address,
+        studentId: updatedProfile.studentId,
+        enrollmentDate: updatedProfile.enrollmentDate,
+        program: updatedProfile.program,
+        level: updatedProfile.level,
+        gpa: updatedProfile.gpa
+      };
+      localStorage.setItem('studentProfile', JSON.stringify(profileToSave));
     }
     setEditing(false);
-    // Here you would make an API call to update the profile
-    console.log("Updating profile:", editForm);
   };
 
   const handleCancel = () => {

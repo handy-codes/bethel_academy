@@ -42,48 +42,43 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    setTimeout(() => {
+    // Load real data from localStorage
+    const loadData = () => {
+      const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
+      const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+      
       setStats({
-        totalExams: 8,
-        completedExams: 5,
-        averageScore: 78.5,
-        pendingResults: 2,
-        totalTimeSpent: 420, // minutes
-        currentStreak: 3,
+        totalExams: availableExams.length,
+        completedExams: examResults.length,
+        averageScore: examResults.length > 0 ? examResults.reduce((acc: number, r: any) => acc + r.percentage, 0) / examResults.length : 0,
+        pendingResults: examResults.filter((r: any) => !r.isApproved).length,
+        totalTimeSpent: examResults.reduce((acc: number, r: any) => acc + (r.timeSpent || 0), 0),
+        currentStreak: 0,
       });
       
-      setRecentExams([
-        {
-          id: "1",
-          title: "JAMB Mathematics Practice Test",
-          subject: "MATHEMATICS",
-          score: 85,
-          status: "completed",
-          submittedAt: "2024-01-15T10:30:00Z",
-        },
-        {
-          id: "2",
-          title: "WAEC English Language Mock",
-          subject: "ENGLISH",
-          status: "completed",
-          submittedAt: "2024-01-14T14:20:00Z",
-        },
-        {
-          id: "3",
-          title: "Physics Fundamentals Test",
-          subject: "PHYSICS",
-          status: "available",
-        },
-        {
-          id: "4",
-          title: "Chemistry Basic Concepts",
-          subject: "CHEMISTRY",
-          status: "available",
-        },
-      ]);
+      // Show recent exams from available exams and completed results
+      const recentExamsData = availableExams.slice(0, 4).map((exam: any) => {
+        const result = examResults.find((r: any) => r.examId === exam.id);
+        return {
+          id: exam.id,
+          title: exam.title,
+          subject: exam.subject,
+          score: result?.percentage,
+          status: result ? "completed" : "available",
+          submittedAt: result?.submittedAt,
+        };
+      });
+      
+      setRecentExams(recentExamsData);
       setLoading(false);
-    }, 1000);
+    };
+    
+    loadData();
+    
+    // Set up real-time updates by checking localStorage periodically
+    const interval = setInterval(loadData, 3000); // Check every 3 seconds
+    
+    return () => clearInterval(interval);
   }, []);
 
   const statCards = [

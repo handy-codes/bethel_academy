@@ -40,18 +40,33 @@ export default function QuestionsPage() {
   const difficulties = ["EASY", "MEDIUM", "HARD"];
 
   useEffect(() => {
-    // Load questions from dummy data
-    const allQuestions: Question[] = [];
-    dummyExams.forEach(exam => {
-      exam.questions.forEach(question => {
-        allQuestions.push({
-          ...question,
-          subject: exam.subject,
-        });
+    // Load questions from localStorage only (no dummy data)
+    const loadQuestions = () => {
+      const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
+      
+      // Extract all questions from exams
+      const allQuestions: Question[] = [];
+      availableExams.forEach((exam: any) => {
+        if (exam.questions) {
+          exam.questions.forEach((question: any) => {
+            allQuestions.push({
+              ...question,
+              subject: exam.subject,
+            });
+          });
+        }
       });
-    });
-    setQuestions(allQuestions);
-    setLoading(false);
+      
+      setQuestions(allQuestions);
+      setLoading(false);
+    };
+    
+    loadQuestions();
+    
+    // Set up real-time updates by checking localStorage periodically
+    const interval = setInterval(loadQuestions, 3000); // Check every 3 seconds
+    
+    return () => clearInterval(interval);
   }, []);
 
   const filteredQuestions = questions.filter(question => {

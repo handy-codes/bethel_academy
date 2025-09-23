@@ -52,354 +52,55 @@ export default function ExamPage({ params }: { params: { id: string } }) {
   const [examStarted, setExamStarted] = useState(false);
   const [showStartConfirm, setShowStartConfirm] = useState(false);
 
-  // Load exam data from the same source as admin
+  // Load exam data from localStorage only
   useEffect(() => {
     const loadExam = () => {
-      // Default mock exams
-      const defaultExams = [
-        {
-          id: "1",
-          title: "JAMB Mathematics Practice Test",
-          description: "Comprehensive mathematics test covering algebra, geometry, and calculus",
-          subject: "MATHEMATICS",
-          duration: 120,
-          totalQuestions: 15,
-          instructions: "Read each question carefully and select the best answer. You can navigate between questions and change your answers before submitting.",
-          questions: [
-            {
-              id: "1",
-              questionText: "What is the value of x in the equation 2x + 5 = 13?",
-              optionA: "3",
-              optionB: "4",
-              optionC: "5",
-              optionD: "6",
-              optionE: "7",
-              correctAnswer: "B",
-              difficulty: "EASY",
-              points: 1,
-            },
-            {
-              id: "2",
-              questionText: "If a triangle has sides of length 3, 4, and 5, what type of triangle is it?",
-              optionA: "Equilateral",
-              optionB: "Isosceles",
-              optionC: "Right-angled",
-              optionD: "Obtuse",
-              optionE: "Acute",
-              correctAnswer: "C",
-              difficulty: "MEDIUM",
-              points: 1,
-            },
-            {
-              id: "3",
-              questionText: "What is the derivative of x² + 3x + 2?",
-              optionA: "2x + 3",
-              optionB: "x + 3",
-              optionC: "2x + 2",
-              optionD: "x² + 3",
-              optionE: "2x² + 3x",
-              correctAnswer: "A",
-              difficulty: "MEDIUM",
-            points: 1,
-          },
-          {
-            id: "4",
-            questionText: "If log₂(x) = 4, what is the value of x?",
-            optionA: "8",
-            optionB: "16",
-            optionC: "32",
-            optionD: "64",
-            optionE: "128",
-            correctAnswer: "B",
-            difficulty: "MEDIUM",
-            points: 1,
-          },
-          {
-            id: "5",
-            questionText: "What is the area of a circle with radius 7 cm? (Use π = 22/7)",
-            optionA: "154 cm²",
-            optionB: "44 cm²",
-            optionC: "88 cm²",
-            optionD: "308 cm²",
-            optionE: "616 cm²",
-            correctAnswer: "A",
-            difficulty: "EASY",
-            points: 1,
-          },
-          {
-            id: "6",
-            questionText: "Solve the quadratic equation x² - 5x + 6 = 0",
-            optionA: "x = 2, x = 3",
-            optionB: "x = 1, x = 6",
-            optionC: "x = -2, x = -3",
-            optionD: "x = 0, x = 5",
-            optionE: "x = 1, x = 5",
-            correctAnswer: "A",
-            difficulty: "MEDIUM",
-            points: 1,
-          },
-          {
-            id: "7",
-            questionText: "What is the value of sin(30°)?",
-            optionA: "1/2",
-            optionB: "√2/2",
-            optionC: "√3/2",
-            optionD: "1",
-            optionE: "0",
-            correctAnswer: "A",
-            difficulty: "EASY",
-            points: 1,
-          },
-          {
-            id: "8",
-            questionText: "If f(x) = 3x + 2 and g(x) = x - 1, what is f(g(4))?",
-            optionA: "11",
-            optionB: "13",
-            optionC: "15",
-            optionD: "17",
-            optionE: "19",
-            correctAnswer: "A",
-            difficulty: "MEDIUM",
-            points: 1,
-          },
-          {
-            id: "9",
-            questionText: "What is the probability of rolling a 6 on a fair die?",
-            optionA: "1/6",
-            optionB: "1/3",
-            optionC: "1/2",
-            optionD: "2/3",
-            optionE: "5/6",
-            correctAnswer: "A",
-            difficulty: "EASY",
-            points: 1,
-          },
-          {
-            id: "10",
-            questionText: "Find the limit as x approaches 0 of (sin x)/x",
-            optionA: "0",
-            optionB: "1",
-            optionC: "∞",
-            optionD: "-1",
-            optionE: "undefined",
-            correctAnswer: "B",
-            difficulty: "HARD",
-            points: 2,
-          },
-          {
-            id: "11",
-            questionText: "What is the sum of the first 10 natural numbers?",
-            optionA: "45",
-            optionB: "50",
-            optionC: "55",
-            optionD: "60",
-            optionE: "65",
-            correctAnswer: "C",
-            difficulty: "EASY",
-            points: 1,
-          },
-          {
-            id: "12",
-            questionText: "If a = 2 and b = 3, what is the value of a^b + b^a?",
-            optionA: "17",
-            optionB: "19",
-            optionC: "21",
-            optionD: "23",
-            optionE: "25",
-            correctAnswer: "A",
-            difficulty: "MEDIUM",
-            points: 1,
-          },
-          {
-            id: "13",
-            questionText: "What is the volume of a sphere with radius 3 cm? (Use π = 22/7)",
-            optionA: "108π cm³",
-            optionB: "36π cm³",
-            optionC: "72π cm³",
-            optionD: "144π cm³",
-            optionE: "216π cm³",
-            correctAnswer: "B",
-            difficulty: "MEDIUM",
-            points: 1,
-          },
-          {
-            id: "14",
-            questionText: "Solve for x: 2^(x+1) = 16",
-            optionA: "2",
-            optionB: "3",
-            optionC: "4",
-            optionD: "5",
-            optionE: "6",
-            correctAnswer: "B",
-            difficulty: "MEDIUM",
-            points: 1,
-          },
-          {
-            id: "15",
-            questionText: "What is the coefficient of x² in the expansion of (x + 2)³?",
-            optionA: "6",
-            optionB: "8",
-            optionC: "12",
-            optionD: "16",
-            optionE: "24",
-            correctAnswer: "C",
-            difficulty: "MEDIUM",
-            points: 1,
-          },
-        ],
-      },
-      {
-        id: "2",
-        title: "WAEC English Language Mock",
-        description: "English language test covering comprehension, grammar, and literature analysis",
-        subject: "ENGLISH",
-        duration: 180,
-        totalQuestions: 10,
-        instructions: "Read each question carefully and select the best answer.",
-        questions: [
-          {
-            id: "1",
-            questionText: "Identify the noun in 'The quick brown fox jumps over the lazy dog'.",
-            optionA: "quick",
-            optionB: "brown",
-            optionC: "fox",
-            optionD: "jumps",
-            optionE: "lazy",
-            correctAnswer: "C",
-            difficulty: "EASY",
-            points: 1,
-          },
-        ],
-      },
-    ];
-
-    // Load custom exams from localStorage (created by admin)
-    const customExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
-    
-    // Combine default and custom exams
-    const allExams = [...defaultExams, ...customExams];
-    
-    // Find the exam with the matching ID
-    const foundExam = allExams.find(exam => exam.id === params.id);
-    
-    if (foundExam) {
-      setExam(foundExam);
-      setTimeLeft(foundExam.duration * 60); // Convert to seconds
+      // Load custom exams from localStorage only
+      const customExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
       
-      // Check if exam has already been completed
-      const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
-      const existingResult = examResults.find((result: any) => 
-        result.examId === params.id && result.studentId === 'current-student' // In real app, use actual student ID
-      );
+      // Find the exam with the matching ID
+      const foundExam = customExams.find((exam: any) => exam.id === params.id);
       
-      if (existingResult) {
-        setIsSubmitted(true);
+      if (foundExam) {
+        setExam(foundExam);
+        setTimeLeft(foundExam.duration * 60); // Convert to seconds
+        
+        // Check if exam has already been completed
+        const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+        const existingResult = examResults.find((result: any) => 
+          result.examId === params.id && result.studentId === 'current-student' // In real app, use actual student ID
+        );
+        
+        if (existingResult) {
+          setIsSubmitted(true);
+        }
       } else {
-        setShowStartConfirm(true);
+        // Exam not found, redirect to exams page
+        router.push('/student/exams');
       }
-    } else {
-      // Exam not found, redirect to exams page
-      router.push('/student/exams');
-      return;
-    }
-    
-    setLoading(false);
+      
+      setLoading(false);
     };
-    
+
     loadExam();
   }, [params.id, router]);
 
-  // Auto-save answers
-  const saveAnswer = useCallback((questionId: string, answer: string) => {
-    setAnswers(prev => ({
-      ...prev,
-      [questionId]: answer
-    }));
-  }, []);
-
-  const handleAnswerChange = (questionId: string, answer: string) => {
-    saveAnswer(questionId, answer);
-  };
-
-  const handleSubmit = useCallback(async () => {
-    if (!exam) return;
-    
-    setIsSubmitted(true);
-    
-    // Calculate results
-    let correctAnswers = 0;
-    const questionResults = exam.questions.map(question => {
-      const userAnswer = answers[question.id] || '';
-      const isCorrect = userAnswer === question.correctAnswer;
-      if (isCorrect) correctAnswers++;
-      
-      return {
-        id: question.id,
-        questionText: question.questionText,
-        optionA: question.optionA,
-        optionB: question.optionB,
-        optionC: question.optionC,
-        optionD: question.optionD,
-        optionE: question.optionE,
-        correctAnswer: question.correctAnswer,
-        userAnswer: userAnswer,
-        explanation: question.explanation,
-        difficulty: question.difficulty,
-        points: question.points,
-      };
-    });
-    
-    const percentage = Math.round((correctAnswers / exam.totalQuestions) * 100);
-    const grade = percentage >= 90 ? 'A' : percentage >= 80 ? 'B' : percentage >= 70 ? 'C' : percentage >= 60 ? 'D' : 'F';
-    
-    // Calculate time spent
-    const timeSpent = Math.round((exam.duration * 60 - timeLeft) / 60); // Convert to minutes
-    
-    // Create result object
-    const result = {
-      id: `${params.id}-${Date.now()}`, // Unique result ID
-      examId: params.id,
-      examTitle: exam.title,
-      subject: exam.subject,
-      score: correctAnswers,
-      totalQuestions: exam.totalQuestions,
-      correctAnswers: correctAnswers,
-      percentage: percentage,
-      grade: grade,
-      submittedAt: new Date().toISOString(),
-      timeSpent: timeSpent,
-      questions: questionResults,
-      feedback: percentage >= 80 ? "Excellent performance! You demonstrated strong understanding of the concepts." : 
-                percentage >= 60 ? "Good work! Consider reviewing the topics you missed." : 
-                "Keep studying! You can improve with more practice.",
-      isApproved: false, // Will be approved by admin
-      studentId: 'current-student', // In real app, use actual student ID
-    };
-    
-    // Save result to localStorage
-    const existingResults = JSON.parse(localStorage.getItem('examResults') || '[]');
-    existingResults.push(result);
-    localStorage.setItem('examResults', JSON.stringify(existingResults));
-    
-    console.log("Exam submitted with result:", result);
-    
-    // Redirect to results page
-    setTimeout(() => {
-      router.push(`/student/results/${result.id}`);
-    }, 2000);
-  }, [answers, router, params.id, exam, timeLeft]);
-
-  // Timer countdown
+  // Timer effect
   useEffect(() => {
-    if (timeLeft > 0 && !isSubmitted && examStarted) {
-      const timer = setTimeout(() => {
-        setTimeLeft(timeLeft - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (timeLeft === 0 && !isSubmitted && examStarted) {
-      handleSubmit();
-    }
-  }, [timeLeft, isSubmitted, examStarted, handleSubmit]);
+    if (!examStarted || isSubmitted || timeLeft <= 0) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          handleSubmitExam();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [examStarted, isSubmitted, timeLeft]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -412,17 +113,91 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     return `${minutes}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getTimeColor = () => {
-    if (timeLeft < 300) return "text-red-600"; // Less than 5 minutes
-    if (timeLeft < 900) return "text-orange-600"; // Less than 15 minutes
-    return "text-green-600";
+  const handleAnswerChange = (questionId: string, answer: string) => {
+    setAnswers(prev => ({
+      ...prev,
+      [questionId]: answer
+    }));
   };
 
-  const getQuestionStatus = (index: number) => {
-    const question = exam?.questions[index];
-    if (!question) return "unanswered";
-    if (answers[question.id]) return "answered";
-    return "unanswered";
+  const handleNextQuestion = () => {
+    if (exam && currentQuestionIndex < exam.questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    }
+  };
+
+  const handlePreviousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prev => prev - 1);
+    }
+  };
+
+  const handleGoToQuestion = (index: number) => {
+    setCurrentQuestionIndex(index);
+    setSidebarOpen(false);
+  };
+
+  const calculateScore = () => {
+    if (!exam) return { score: 0, total: 0, percentage: 0, grade: 'F' };
+    
+    let correctAnswers = 0;
+    exam.questions.forEach(question => {
+      if (answers[question.id] === question.correctAnswer) {
+        correctAnswers++;
+      }
+    });
+    
+    const percentage = Math.round((correctAnswers / exam.questions.length) * 100);
+    let grade = 'F';
+    if (percentage >= 90) grade = 'A';
+    else if (percentage >= 80) grade = 'B';
+    else if (percentage >= 70) grade = 'C';
+    else if (percentage >= 60) grade = 'D';
+    
+    return {
+      score: correctAnswers,
+      total: exam.questions.length,
+      percentage,
+      grade
+    };
+  };
+
+  const handleSubmitExam = useCallback(() => {
+    if (!exam) return;
+    
+    const result = calculateScore();
+    const timeSpent = Math.floor((exam.duration * 60 - timeLeft) / 60); // Convert to minutes
+    
+    const examResult = {
+      id: Date.now().toString(),
+      examId: exam.id,
+      examTitle: exam.title,
+      subject: exam.subject,
+      studentId: 'current-student', // In real app, use actual student ID
+      studentName: 'Current Student', // In real app, use actual student name
+      studentEmail: 'student@example.com', // In real app, use actual student email
+      score: result.score,
+      totalQuestions: result.total,
+      correctAnswers: result.score,
+      percentage: result.percentage,
+      grade: result.grade,
+      submittedAt: new Date().toISOString(),
+      timeSpent: timeSpent,
+      isApproved: false,
+    };
+    
+    // Save result to localStorage
+    const existingResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+    existingResults.push(examResult);
+    localStorage.setItem('examResults', JSON.stringify(existingResults));
+    
+    setIsSubmitted(true);
+    setShowConfirmSubmit(false);
+  }, [exam, timeLeft, answers]);
+
+  const startExam = () => {
+    setExamStarted(true);
+    setShowStartConfirm(false);
   };
 
   if (loading) {
@@ -433,149 +208,222 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     );
   }
 
-  // Show pre-exam information screen if exam hasn't started
-  if (!examStarted && !isSubmitted) {
+  if (!exam) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Exam Not Found</h2>
+          <p className="text-gray-600 mb-4">The exam you're looking for doesn't exist.</p>
+          <button
+            onClick={() => router.push('/student/exams')}
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+          >
+            Back to Exams
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isSubmitted) {
+    const result = calculateScore();
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">{exam?.title}</h1>
-              <p className="text-lg text-gray-600 mb-6">{exam?.description}</p>
+              <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Exam Submitted Successfully!</h1>
+              <p className="text-gray-600">Your exam has been submitted and is pending review.</p>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Exam Details</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Subject:</span>
-                    <span className="font-medium">{exam?.subject}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Questions:</span>
-                    <span className="font-medium">{exam?.totalQuestions}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Duration:</span>
-                    <span className="font-medium">{exam?.duration} minutes</span>
-                  </div>
-                </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="text-center p-6 bg-blue-50 rounded-lg">
+                <div className="text-3xl font-bold text-blue-600">{result.percentage}%</div>
+                <div className="text-sm text-gray-600">Overall Score</div>
               </div>
-
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Instructions</h3>
-                <div className="text-sm text-gray-700 space-y-2">
-                  <p>• Read each question carefully before answering</p>
-                  <p>• You can navigate between questions using the sidebar</p>
-                  <p>• Your answers are auto-saved as you progress</p>
-                  <p>• You can change your answers before submitting</p>
-                  <p>• The exam will auto-submit when time runs out</p>
-                </div>
+              <div className="text-center p-6 bg-green-50 rounded-lg">
+                <div className="text-3xl font-bold text-green-600">{result.score}/{result.total}</div>
+                <div className="text-sm text-gray-600">Correct Answers</div>
+              </div>
+              <div className="text-center p-6 bg-purple-50 rounded-lg">
+                <div className="text-3xl font-bold text-purple-600">{result.grade}</div>
+                <div className="text-sm text-gray-600">Grade</div>
               </div>
             </div>
-
+            
             <div className="text-center">
               <button
-                onClick={() => {
-                  setExamStarted(true);
-                  setShowStartConfirm(false);
-                }}
-                className="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition-colors text-lg font-medium"
+                onClick={() => router.push('/student/results')}
+                className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 mr-4"
+              >
+                View All Results
+              </button>
+              <button
+                onClick={() => router.push('/student/exams')}
+                className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700"
+              >
+                Take Another Exam
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!examStarted) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">{exam.title}</h1>
+              <p className="text-gray-600 text-lg">{exam.description}</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="p-6 bg-blue-50 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2">Exam Details</h3>
+                <div className="space-y-2 text-sm text-gray-600">
+                  <div>Subject: <span className="font-medium">{exam.subject}</span></div>
+                  <div>Duration: <span className="font-medium">{exam.duration} minutes</span></div>
+                  <div>Questions: <span className="font-medium">{exam.totalQuestions}</span></div>
+                </div>
+              </div>
+              
+              <div className="p-6 bg-green-50 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2">Instructions</h3>
+                <div className="text-sm text-gray-600">
+                  <p>{exam.instructions}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <button
+                onClick={() => setShowStartConfirm(true)}
+                className="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 text-lg font-medium"
               >
                 Start Exam
               </button>
             </div>
           </div>
         </div>
-      </div>
-    );
-  }
-
-  if (!exam) {
-    return (
-      <div className="text-center py-12">
-        <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Exam not found</h3>
-        <p className="text-gray-500">The exam you are looking for does not exist.</p>
+        
+        {/* Start Confirmation Modal */}
+        {showStartConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+              <div className="p-6">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                      <AlertTriangle className="h-5 w-5 text-indigo-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900">Ready to Start?</h3>
+                    <p className="text-sm text-gray-500">Once you start, the timer will begin.</p>
+                  </div>
+                </div>
+                
+                <div className="mb-6">
+                  <p className="text-sm text-gray-700">
+                    You have <strong>{exam.duration} minutes</strong> to complete this exam. 
+                    Make sure you're ready before starting.
+                  </p>
+                </div>
+                
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={() => setShowStartConfirm(false)}
+                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={startExam}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    Start Now
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
   const currentQuestion = exam.questions[currentQuestionIndex];
+  const answeredQuestions = Object.keys(answers).length;
+  const isLastQuestion = currentQuestionIndex === exam.questions.length - 1;
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-20">
-        <div className="px-4 sm:px-6 py-4">
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              {/* Mobile menu button */}
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                className="p-2 rounded-lg hover:bg-gray-100 lg:hidden"
               >
-                {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                <Menu className="h-5 w-5" />
               </button>
               <div>
-                <h1 className="text-lg sm:text-xl font-bold text-gray-900">{exam.title}</h1>
-                <p className="text-xs sm:text-sm text-gray-600">{exam.subject} • {exam.totalQuestions} Questions</p>
+                <h1 className="text-lg font-semibold text-gray-900">{exam.title}</h1>
+                <p className="text-sm text-gray-600">Question {currentQuestionIndex + 1} of {exam.questions.length}</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <div className="hidden sm:flex items-center space-x-2">
-                <Save className="h-4 w-4 text-green-600" />
-                <span className="text-sm text-green-600">Auto-saved</span>
+            
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <Save className="h-4 w-4" />
+                <span>Auto-saved</span>
               </div>
-              <div className={`flex items-center space-x-2 ${getTimeColor()}`}>
-                <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="text-sm sm:text-lg font-bold">{formatTime(timeLeft)}</span>
+              
+              <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${
+                timeLeft < 300 ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+              }`}>
+                <Clock className="h-4 w-4" />
+                <span className="font-mono">{formatTime(timeLeft)}</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex relative">
-        {/* Mobile overlay */}
-        {sidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-
-        {/* Question Navigation Sidebar */}
-        <div className={`
-          fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white shadow-sm border-r border-gray-200 min-h-screen
-          transform transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        `}>
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-gray-900">Question Navigation</h3>
+      <div className="flex">
+        {/* Sidebar */}
+        <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-gray-900">Question Navigator</h2>
               <button
                 onClick={() => setSidebarOpen(false)}
-                className="lg:hidden p-1 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                className="p-1 rounded-lg hover:bg-gray-100 lg:hidden"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </button>
             </div>
+            
             <div className="grid grid-cols-5 gap-2">
               {exam.questions.map((_, index) => (
                 <button
                   key={index}
-                  onClick={() => {
-                    setCurrentQuestionIndex(index);
-                    setSidebarOpen(false); // Close sidebar on mobile after selection
-                  }}
-                  className={`w-8 h-8 rounded text-xs font-medium transition-colors ${
+                  onClick={() => handleGoToQuestion(index)}
+                  className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
                     index === currentQuestionIndex
-                      ? "bg-indigo-600 text-white"
-                      : getQuestionStatus(index) === "answered"
-                      ? "bg-green-100 text-green-800 hover:bg-green-200"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      ? 'bg-indigo-600 text-white'
+                      : answers[exam.questions[index].id]
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {index + 1}
@@ -583,51 +431,57 @@ export default function ExamPage({ params }: { params: { id: string } }) {
               ))}
             </div>
             
-            <div className="mt-4 space-y-2">
+            <div className="mt-6 space-y-2 text-sm">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-indigo-600 rounded"></div>
+                <span>Current Question</span>
+              </div>
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-green-100 rounded"></div>
-                <span className="text-xs text-gray-600">Answered</span>
+                <span>Answered ({answeredQuestions})</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-gray-100 rounded"></div>
-                <span className="text-xs text-gray-600">Unanswered</span>
+                <span>Not Answered ({exam.questions.length - answeredQuestions})</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 p-4 sm:p-6">
-          {!isSubmitted ? (
+        <div className="flex-1 lg:ml-0">
+          <div className="p-6">
             <div className="max-w-4xl mx-auto">
               {/* Question */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
-                  <span className="text-sm text-gray-500">
-                    Question {currentQuestionIndex + 1} of {exam.totalQuestions}
-                  </span>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    currentQuestion.difficulty === "EASY" ? "bg-green-100 text-green-800" :
-                    currentQuestion.difficulty === "MEDIUM" ? "bg-yellow-100 text-yellow-800" :
-                    "bg-red-100 text-red-800"
-                  }`}>
-                    {currentQuestion.difficulty}
-                  </span>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-6">
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-sm font-medium text-gray-500">
+                      Question {currentQuestionIndex + 1} of {exam.questions.length}
+                    </span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      currentQuestion.difficulty === 'EASY' ? 'bg-green-100 text-green-800' :
+                      currentQuestion.difficulty === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {currentQuestion.difficulty}
+                    </span>
+                  </div>
+                  
+                  <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                    {currentQuestion.questionText}
+                  </h2>
                 </div>
-                
-                <h2 className="text-base sm:text-lg font-medium text-gray-900 mb-6">
-                  {currentQuestion.questionText}
-                </h2>
 
-                {/* Answer Options */}
-                <div className="space-y-3">
+                {/* Options */}
+                <div className="space-y-4">
                   {['A', 'B', 'C', 'D', 'E'].map((option) => (
                     <label
                       key={option}
-                      className={`flex items-start p-3 sm:p-4 border rounded-lg cursor-pointer transition-colors ${
+                      className={`flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
                         answers[currentQuestion.id] === option
-                          ? "border-indigo-500 bg-indigo-50"
-                          : "border-gray-200 hover:border-gray-300"
+                          ? 'border-indigo-500 bg-indigo-50'
+                          : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
                       <input
@@ -636,41 +490,30 @@ export default function ExamPage({ params }: { params: { id: string } }) {
                         value={option}
                         checked={answers[currentQuestion.id] === option}
                         onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-                        className="sr-only"
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
                       />
-                      <div className={`w-4 h-4 rounded-full border-2 mr-3 mt-0.5 flex items-center justify-center flex-shrink-0 ${
-                        answers[currentQuestion.id] === option
-                          ? "border-indigo-500 bg-indigo-500"
-                          : "border-gray-300"
-                      }`}>
-                        {answers[currentQuestion.id] === option && (
-                          <div className="w-2 h-2 bg-white rounded-full"></div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <span className="font-medium text-gray-700 mr-2">{option}.</span>
-                        <span className="text-gray-900 text-sm sm:text-base">{currentQuestion[`option${option}` as keyof Question]}</span>
-                      </div>
+                      <span className="font-medium text-gray-900">{option}.</span>
+                      <span className="text-gray-700">{currentQuestion[`option${option}` as keyof Question]}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
-              {/* Navigation Buttons */}
-              <div className="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
+              {/* Navigation */}
+              <div className="flex items-center justify-between">
                 <button
-                  onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
+                  onClick={handlePreviousQuestion}
                   disabled={currentQuestionIndex === 0}
-                  className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   <span>Previous</span>
                 </button>
 
-                <div className="flex space-x-2 w-full sm:w-auto">
+                <div className="flex items-center space-x-4">
                   <button
                     onClick={() => setShowConfirmSubmit(true)}
-                    className="flex-1 sm:flex-none flex items-center justify-center space-x-2 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="flex items-center space-x-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                   >
                     <CheckCircle className="h-4 w-4" />
                     <span>Submit Exam</span>
@@ -678,49 +521,57 @@ export default function ExamPage({ params }: { params: { id: string } }) {
                 </div>
 
                 <button
-                  onClick={() => setCurrentQuestionIndex(Math.min(exam.questions.length - 1, currentQuestionIndex + 1))}
-                  disabled={currentQuestionIndex === exam.questions.length - 1}
-                  className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleNextQuestion}
+                  disabled={isLastQuestion}
+                  className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span>Next</span>
                   <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
             </div>
-          ) : (
-            <div className="max-w-2xl mx-auto text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Submitting your exam...</h2>
-              <p className="text-gray-600">Please wait while we process your answers.</p>
-            </div>
-          )}
+          </div>
         </div>
       </div>
 
       {/* Submit Confirmation Modal */}
       {showConfirmSubmit && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Submit Exam?</h3>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to submit your exam? You will not be able to make changes after submission.
-            </p>
-            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-              <button
-                onClick={() => setShowConfirmSubmit(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setShowConfirmSubmit(false);
-                  handleSubmit();
-                }}
-                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-              >
-                Submit
-              </button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">Submit Exam?</h3>
+                  <p className="text-sm text-gray-500">This action cannot be undone.</p>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <p className="text-sm text-gray-700">
+                  You have answered <strong>{answeredQuestions} out of {exam.questions.length}</strong> questions.
+                  Are you sure you want to submit your exam?
+                </p>
+              </div>
+              
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowConfirmSubmit(false)}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSubmitExam}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Submit Exam
+                </button>
+              </div>
             </div>
           </div>
         </div>

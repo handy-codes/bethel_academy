@@ -35,50 +35,19 @@ export default function ExamsPage() {
   ];
 
   useEffect(() => {
-    // Load exams from localStorage (for demo) and combine with default mock data
-    const defaultExams = [
-      {
-        id: "1",
-        title: "JAMB Mathematics Practice Test",
-        subject: "MATHEMATICS",
-        totalQuestions: 50,
-        duration: 120,
-        isActive: true,
-        createdAt: "2024-01-15",
-        attempts: 45,
-      },
-      {
-        id: "2",
-        title: "WAEC English Language Mock",
-        subject: "ENGLISH",
-        totalQuestions: 100,
-        duration: 180,
-        isActive: true,
-        createdAt: "2024-01-14",
-        attempts: 32,
-      },
-      {
-        id: "3",
-        title: "Physics Fundamentals Test",
-        subject: "PHYSICS",
-        totalQuestions: 40,
-        duration: 90,
-        isActive: false,
-        createdAt: "2024-01-13",
-        attempts: 18,
-      },
-    ];
-
-    // Load custom exams from localStorage
-    const customExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
-    
-    // Combine default and custom exams
-    const allExams = [...defaultExams, ...customExams];
-    
-    setTimeout(() => {
-      setExams(allExams);
+    // Load exams from localStorage only (no default mock data)
+    const loadExams = () => {
+      const customExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
+      setExams(customExams);
       setLoading(false);
-    }, 1000);
+    };
+    
+    loadExams();
+    
+    // Set up real-time updates by checking localStorage periodically
+    const interval = setInterval(loadExams, 3000); // Check every 3 seconds
+    
+    return () => clearInterval(interval);
   }, []);
 
   const filteredExams = exams.filter(exam => {

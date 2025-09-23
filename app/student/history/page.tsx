@@ -38,96 +38,36 @@ export default function ExamHistoryPage() {
   const [sortBy, setSortBy] = useState("date"); // date, score, subject
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    setTimeout(() => {
-      setHistory([
-        {
-          id: "1",
-          examTitle: "JAMB Mathematics Practice Test",
-          subject: "MATHEMATICS",
-          score: 42,
-          totalQuestions: 50,
-          correctAnswers: 42,
-          percentage: 84,
-          grade: "A",
-          submittedAt: "2024-01-15T10:30:00Z",
-          timeSpent: 95,
-          attempt: 2,
-          status: "completed"
-        },
-        {
-          id: "2",
-          examTitle: "WAEC English Language Mock",
-          subject: "ENGLISH",
-          score: 75,
-          totalQuestions: 100,
-          correctAnswers: 75,
-          percentage: 75,
-          grade: "B",
-          submittedAt: "2024-01-14T14:20:00Z",
-          timeSpent: 120,
-          attempt: 1,
-          status: "completed"
-        },
-        {
-          id: "3",
-          examTitle: "Physics Fundamentals Test",
-          subject: "PHYSICS",
-          score: 28,
-          totalQuestions: 40,
-          correctAnswers: 28,
-          percentage: 70,
-          grade: "B",
-          submittedAt: "2024-01-13T09:15:00Z",
-          timeSpent: 85,
-          attempt: 3,
-          status: "completed"
-        },
-        {
-          id: "4",
-          examTitle: "Chemistry Basic Concepts",
-          subject: "CHEMISTRY",
-          score: 35,
-          totalQuestions: 50,
-          correctAnswers: 35,
-          percentage: 70,
-          grade: "B",
-          submittedAt: "2024-01-12T16:45:00Z",
-          timeSpent: 110,
-          attempt: 1,
-          status: "completed"
-        },
-        {
-          id: "5",
-          examTitle: "Biology Life Sciences",
-          subject: "BIOLOGY",
-          score: 18,
-          totalQuestions: 30,
-          correctAnswers: 18,
-          percentage: 60,
-          grade: "C",
-          submittedAt: "2024-01-11T11:30:00Z",
-          timeSpent: 75,
-          attempt: 1,
-          status: "completed"
-        },
-        {
-          id: "6",
-          examTitle: "Advanced Mathematics",
-          subject: "MATHEMATICS",
-          score: 0,
-          totalQuestions: 40,
-          correctAnswers: 0,
-          percentage: 0,
-          grade: "N/A",
-          submittedAt: "2024-01-10T15:20:00Z",
-          timeSpent: 25,
-          attempt: 1,
-          status: "abandoned"
-        }
-      ]);
+    // Load real data from localStorage
+    const loadHistory = () => {
+      const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+      
+      // Convert exam results to history format
+      const historyData = examResults.map((result: any, index: number) => ({
+        id: result.id,
+        examTitle: result.examTitle,
+        subject: result.subject,
+        score: result.score,
+        totalQuestions: result.totalQuestions,
+        correctAnswers: result.correctAnswers,
+        percentage: result.percentage,
+        grade: result.grade,
+        submittedAt: result.submittedAt,
+        timeSpent: result.timeSpent || 0,
+        attempt: index + 1, // Simple attempt numbering
+        status: result.isApproved ? "completed" : "completed" // All submitted results are completed
+      }));
+      
+      setHistory(historyData);
       setLoading(false);
-    }, 1000);
+    };
+    
+    loadHistory();
+    
+    // Set up real-time updates by checking localStorage periodically
+    const interval = setInterval(loadHistory, 3000); // Check every 3 seconds
+    
+    return () => clearInterval(interval);
   }, []);
 
   const getGradeColor = (grade: string) => {

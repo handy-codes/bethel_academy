@@ -27,56 +27,19 @@ export default function ResultsPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    setTimeout(() => {
-      setResults([
-        {
-          id: "1",
-          studentName: "John Doe",
-          studentEmail: "john.doe@email.com",
-          examTitle: "JAMB Mathematics Practice Test",
-          subject: "MATHEMATICS",
-          score: 42,
-          totalQuestions: 50,
-          correctAnswers: 42,
-          percentage: 84,
-          grade: "A",
-          submittedAt: "2024-01-15T10:30:00Z",
-          isApproved: true,
-          approvedBy: "Admin User",
-          approvedAt: "2024-01-15T11:00:00Z",
-        },
-        {
-          id: "2",
-          studentName: "Jane Smith",
-          studentEmail: "jane.smith@email.com",
-          examTitle: "WAEC English Language Mock",
-          subject: "ENGLISH",
-          score: 75,
-          totalQuestions: 100,
-          correctAnswers: 75,
-          percentage: 75,
-          grade: "B",
-          submittedAt: "2024-01-15T09:15:00Z",
-          isApproved: false,
-        },
-        {
-          id: "3",
-          studentName: "Michael Johnson",
-          studentEmail: "michael.j@email.com",
-          examTitle: "Physics Fundamentals Test",
-          subject: "PHYSICS",
-          score: 28,
-          totalQuestions: 40,
-          correctAnswers: 28,
-          percentage: 70,
-          grade: "B",
-          submittedAt: "2024-01-14T14:45:00Z",
-          isApproved: false,
-        },
-      ]);
+    // Load real data from localStorage
+    const loadResults = () => {
+      const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+      setResults(examResults);
       setLoading(false);
-    }, 1000);
+    };
+    
+    loadResults();
+    
+    // Set up real-time updates by checking localStorage periodically
+    const interval = setInterval(loadResults, 2000); // Check every 2 seconds
+    
+    return () => clearInterval(interval);
   }, []);
 
   const filteredResults = results.filter(result => {
@@ -93,7 +56,7 @@ export default function ResultsPage() {
   });
 
   const approveResult = (resultId: string) => {
-    setResults(results.map(result => 
+    const updatedResults = results.map(result => 
       result.id === resultId 
         ? { 
             ...result, 
@@ -102,15 +65,25 @@ export default function ResultsPage() {
             approvedAt: new Date().toISOString()
           }
         : result
-    ));
+    );
+    
+    setResults(updatedResults);
+    
+    // Update localStorage for real-time sync
+    localStorage.setItem('examResults', JSON.stringify(updatedResults));
   };
 
   const rejectResult = (resultId: string) => {
-    setResults(results.map(result => 
+    const updatedResults = results.map(result => 
       result.id === resultId 
         ? { ...result, isApproved: false }
         : result
-    ));
+    );
+    
+    setResults(updatedResults);
+    
+    // Update localStorage for real-time sync
+    localStorage.setItem('examResults', JSON.stringify(updatedResults));
   };
 
   const getGradeColor = (grade: string) => {

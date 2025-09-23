@@ -33,18 +33,42 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    setTimeout(() => {
+    // Load real data from localStorage
+    const loadStats = () => {
+      const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
+      const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+      
+      // Calculate real statistics
+      const totalExams = availableExams.length;
+      const totalAttempts = examResults.length;
+      const pendingApprovals = examResults.filter((r: any) => !r.isApproved).length;
+      const averageScore = examResults.length > 0 
+        ? Math.round(examResults.reduce((acc: number, r: any) => acc + r.percentage, 0) / examResults.length)
+        : 0;
+      const completionRate = examResults.length > 0 
+        ? Math.round((examResults.filter((r: any) => r.isApproved).length / examResults.length) * 100)
+        : 0;
+      
+      // Estimate unique students (in real app, this would come from user database)
+      const uniqueStudents = new Set(examResults.map((r: any) => r.studentId)).size;
+      
       setStats({
-        totalExams: 12,
-        totalStudents: 156,
-        totalAttempts: 89,
-        pendingApprovals: 23,
-        averageScore: 78.5,
-        completionRate: 85.2,
+        totalExams,
+        totalStudents: uniqueStudents || 0,
+        totalAttempts,
+        pendingApprovals,
+        averageScore,
+        completionRate,
       });
       setLoading(false);
-    }, 1000);
+    };
+    
+    loadStats();
+    
+    // Set up real-time updates by checking localStorage periodically
+    const interval = setInterval(loadStats, 3000); // Check every 3 seconds
+    
+    return () => clearInterval(interval);
   }, []);
 
   const statCards = [
@@ -137,38 +161,44 @@ export default function AdminDashboard() {
         </div>
         <div className="p-6">
           <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-900">
-                  <span className="font-medium">John Doe</span> completed Mathematics Exam
-                </p>
-                <p className="text-xs text-gray-500">2 minutes ago</p>
-              </div>
-              <span className="text-sm font-medium text-green-600">Score: 85%</span>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-900">
-                  <span className="font-medium">Jane Smith</span> submitted Physics Exam
-                </p>
-                <p className="text-xs text-gray-500">5 minutes ago</p>
-              </div>
-              <span className="text-sm font-medium text-orange-600">Pending Review</span>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-900">
-                  New Chemistry Exam created
-                </p>
-                <p className="text-xs text-gray-500">1 hour ago</p>
-              </div>
-              <span className="text-sm font-medium text-blue-600">50 Questions</span>
-            </div>
+            {(() => {
+              const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+              const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
+              
+              // Get recent exam results (last 3)
+              const recentResults = examResults
+                .sort((a: any, b: any) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())
+                .slice(0, 3);
+              
+              if (recentResults.length === 0) {
+                return (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No recent activity</p>
+                  </div>
+                );
+              }
+              
+              return recentResults.map((result: any, index: number) => (
+                <div key={result.id} className="flex items-center space-x-3">
+                  <div className={`w-2 h-2 rounded-full ${
+                    result.isApproved ? 'bg-green-500' : 'bg-orange-500'
+                  }`}></div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-900">
+                      <span className="font-medium">{result.studentName}</span> {result.isApproved ? 'completed' : 'submitted'} {result.examTitle}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(result.submittedAt).toLocaleString()}
+                    </p>
+                  </div>
+                  <span className={`text-sm font-medium ${
+                    result.isApproved ? 'text-green-600' : 'text-orange-600'
+                  }`}>
+                    {result.isApproved ? `Score: ${result.percentage}%` : 'Pending Review'}
+                  </span>
+                </div>
+              ));
+            })()}
           </div>
         </div>
       </div>

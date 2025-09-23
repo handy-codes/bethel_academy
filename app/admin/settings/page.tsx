@@ -57,9 +57,12 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("general");
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    setTimeout(() => {
-      setSettings({
+    // Load real data from localStorage
+    const loadSettings = () => {
+      const savedSettings = JSON.parse(localStorage.getItem('adminSettings') || '{}');
+      
+      // Default settings if none exist
+      const defaultSettings = {
         general: {
           siteName: "Bethel Academy CBT System",
           siteDescription: "Computer-Based Testing Platform for Educational Excellence",
@@ -93,13 +96,27 @@ export default function SettingsPage() {
           dataRetentionDays: 365,
           backupFrequency: "daily",
         },
-      });
+      };
+      
+      setSettings({ ...defaultSettings, ...savedSettings });
       setLoading(false);
-    }, 1000);
+    };
+    
+    loadSettings();
+    
+    // Set up real-time updates by checking localStorage periodically
+    const interval = setInterval(loadSettings, 5000); // Check every 5 seconds
+    
+    return () => clearInterval(interval);
   }, []);
 
   const handleSave = async () => {
     setSaving(true);
+    
+    // Save to localStorage
+    if (settings) {
+      localStorage.setItem('adminSettings', JSON.stringify(settings));
+    }
     
     // Simulate API call
     setTimeout(() => {
