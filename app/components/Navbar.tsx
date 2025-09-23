@@ -92,7 +92,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
   return (
     <header
       className={`fixed w-full z-50 transition-all duration-300 ${
-        isAdminRoute 
+        isAdminRoute || isStudentRoute
           ? "bg-white shadow-md py-2" 
           : isScrolled 
             ? "bg-white shadow-md py-2" 
@@ -119,7 +119,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
             {/* Updated logo text */}
             <span
               className={`text-2xl sm:text-3xl font-bold ${
-                isAdminRoute || isScrolled
+                isAdminRoute || isStudentRoute || isScrolled
                   ? "text-indigo-900" 
                   : "text-white"
               }`}
@@ -137,10 +137,10 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
               href={link.path}
               className={`font-semibold transition-colors nav-link ${
                 pathname === link.path
-                  ? isAdminRoute || isScrolled
+                  ? isAdminRoute || isStudentRoute || isScrolled
                     ? "text-indigo-600 font-bold nav-link-active-scrolled"
                     : "text-white font-bold nav-link-active"
-                  : isAdminRoute || isScrolled
+                  : isAdminRoute || isStudentRoute || isScrolled
                   ? "text-indigo-900 hover:text-indigo-600"
                   : "text-white hover:text-gray-200"
               }`}
@@ -158,7 +158,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
                 <Link
                   href="/admin"
                   className={`font-medium transition-colors ${
-                    isAdminRoute || isScrolled
+                    isAdminRoute || isStudentRoute || isScrolled
                       ? "text-indigo-900 hover:text-indigo-600"
                       : "text-white hover:text-gray-200"
                   }`}
@@ -170,7 +170,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
                 <Link
                   href="/student"
                   className={`font-medium transition-colors ${
-                    isAdminRoute || isScrolled
+                    isAdminRoute || isStudentRoute || isScrolled
                       ? "text-indigo-900 hover:text-indigo-600"
                       : "text-white hover:text-gray-200"
                   }`}
@@ -182,7 +182,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
                 <Link
                   href="/lecturer"
                   className={`font-medium transition-colors ${
-                    isAdminRoute || isScrolled
+                    isAdminRoute || isStudentRoute || isScrolled
                       ? "text-indigo-900 hover:text-indigo-600"
                       : "text-white hover:text-gray-200"
                   }`}
@@ -231,7 +231,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
           <button
             ref={menuButtonRef}
             className={`${
-              isAdminRoute || isScrolled ? "text-indigo-900" : "text-white"
+              isAdminRoute || isStudentRoute || isScrolled ? "text-indigo-900" : "text-white"
             }`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >

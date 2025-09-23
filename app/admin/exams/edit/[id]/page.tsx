@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Plus, Trash2, CheckCircle, X, Search, Filter } from "lucide-react";
+import { useRouter, useParams } from "next/navigation";
+import { ArrowLeft, Plus, Trash2, CheckCircle, X } from "lucide-react";
 import Link from "next/link";
-import { dummyExams, getAllSubjects, ExamSubject } from "@/lib/dummyData";
 
 interface Question {
   id: string;
@@ -17,12 +16,29 @@ interface Question {
   correctAnswer: "A" | "B" | "C" | "D" | "E";
   difficulty: "EASY" | "MEDIUM" | "HARD";
   points: number;
-  subject: ExamSubject;
 }
 
-export default function CreateExamPage() {
+interface Exam {
+  id: string;
+  title: string;
+  subject: string;
+  totalQuestions: number;
+  duration: number;
+  isActive: boolean;
+  createdAt: string;
+  attempts: number;
+  description?: string;
+  instructions?: string;
+  questions?: Question[];
+}
+
+export default function EditExamPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const params = useParams();
+  const examId = params.id as string;
+  
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [examData, setExamData] = useState({
     title: "",
     description: "",
@@ -36,36 +52,146 @@ export default function CreateExamPage() {
     type: 'success' | 'error';
     message: string;
   }>({ show: false, type: 'success', message: '' });
-  const [showQuestionBank, setShowQuestionBank] = useState(false);
-  const [availableQuestions, setAvailableQuestions] = useState<Question[]>([]);
-  const [questionBankSearch, setQuestionBankSearch] = useState("");
-  const [questionBankFilter, setQuestionBankFilter] = useState<ExamSubject | "all">("all");
-  const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
 
   const subjects = [
     "ENGLISH", "MATHEMATICS", "PHYSICS", "CHEMISTRY", "BIOLOGY",
     "ACCOUNTING", "ECONOMICS", "LITERATURE", "IGBO", "YORUBA"
   ];
 
-  // Load questions from question bank when modal opens
   useEffect(() => {
-    if (showQuestionBank) {
-      // Load questions from dummy data (in real app, this would be an API call)
-      const allQuestions: Question[] = [];
-      dummyExams.forEach(exam => {
-        if (exam.questions) {
-          // Cast the questions to our Question interface
-          const typedQuestions = exam.questions.map(q => ({
-            ...q,
-            correctAnswer: q.correctAnswer as "A" | "B" | "C" | "D" | "E",
-            subject: exam.subject as ExamSubject
-          }));
-          allQuestions.push(...typedQuestions);
+    // Load exam data
+    const loadExam = () => {
+      // First try to find in localStorage (custom exams)
+      const customExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
+      const customExam = customExams.find((exam: Exam) => exam.id === examId);
+      
+      if (customExam) {
+        setExamData({
+          title: customExam.title,
+          description: customExam.description || "",
+          subject: customExam.subject,
+          duration: customExam.duration,
+          instructions: customExam.instructions || "",
+        });
+        setQuestions(customExam.questions || []);
+        setLoading(false);
+        return;
+      }
+
+      // If not found in custom exams, check default exams
+      const defaultExams = [
+        {
+          id: "1",
+          title: "JAMB Mathematics Practice Test",
+          subject: "MATHEMATICS",
+          totalQuestions: 50,
+          duration: 120,
+          isActive: true,
+          createdAt: "2024-01-15",
+          attempts: 45,
+          description: "Comprehensive mathematics practice test for JAMB preparation",
+          instructions: "Answer all questions. You have 120 minutes to complete the exam.",
+          questions: [
+            {
+              id: "1",
+              questionText: "What is 2 + 2?",
+              optionA: "3",
+              optionB: "4",
+              optionC: "5",
+              optionD: "6",
+              optionE: "7",
+              correctAnswer: "B",
+              difficulty: "EASY",
+              points: 1,
+            },
+            {
+              id: "2",
+              questionText: "What is the derivative of x²?",
+              optionA: "x",
+              optionB: "2x",
+              optionC: "x²",
+              optionD: "2x²",
+              optionE: "x³",
+              correctAnswer: "B",
+              difficulty: "MEDIUM",
+              points: 2,
+            }
+          ]
+        },
+        {
+          id: "2",
+          title: "WAEC English Language Mock",
+          subject: "ENGLISH",
+          totalQuestions: 100,
+          duration: 180,
+          isActive: true,
+          createdAt: "2024-01-14",
+          attempts: 32,
+          description: "English language mock exam for WAEC preparation",
+          instructions: "Read all questions carefully. Choose the best answer for each question.",
+          questions: [
+            {
+              id: "1",
+              questionText: "What is the plural of 'child'?",
+              optionA: "childs",
+              optionB: "children",
+              optionC: "childes",
+              optionD: "child",
+              optionE: "child's",
+              correctAnswer: "B",
+              difficulty: "EASY",
+              points: 1,
+            }
+          ]
+        },
+        {
+          id: "3",
+          title: "Physics Fundamentals Test",
+          subject: "PHYSICS",
+          totalQuestions: 40,
+          duration: 90,
+          isActive: false,
+          createdAt: "2024-01-13",
+          attempts: 18,
+          description: "Basic physics concepts test",
+          instructions: "Solve all physics problems. Show your work where necessary.",
+          questions: [
+            {
+              id: "1",
+              questionText: "What is the unit of force?",
+              optionA: "Joule",
+              optionB: "Newton",
+              optionC: "Watt",
+              optionD: "Pascal",
+              optionE: "Ampere",
+              correctAnswer: "B",
+              difficulty: "EASY",
+              points: 1,
+            }
+          ]
         }
-      });
-      setAvailableQuestions(allQuestions);
-    }
-  }, [showQuestionBank]);
+      ];
+
+      const defaultExam = defaultExams.find(exam => exam.id === examId);
+      if (defaultExam) {
+        setExamData({
+          title: defaultExam.title,
+          description: defaultExam.description || "",
+          subject: defaultExam.subject,
+          duration: defaultExam.duration,
+          instructions: defaultExam.instructions || "",
+        });
+        setQuestions(defaultExam.questions || []);
+      } else {
+        setToast({ show: true, type: 'error', message: '❌ Exam not found!' });
+        setTimeout(() => router.push('/admin/exams'), 2000);
+      }
+      
+      setLoading(false);
+    };
+
+    loadExam();
+  }, [examId, router]);
 
   const addQuestion = () => {
     const newQuestion: Question = {
@@ -79,7 +205,6 @@ export default function CreateExamPage() {
       correctAnswer: "A",
       difficulty: "MEDIUM",
       points: 1,
-      subject: examData.subject as ExamSubject,
     };
     setQuestions([...questions, newQuestion]);
   };
@@ -99,29 +224,6 @@ export default function CreateExamPage() {
     setTimeout(() => {
       setToast({ show: false, type: 'success', message: '' });
     }, 4000);
-  };
-
-  // Filter questions for the question bank modal
-  const filteredAvailableQuestions = availableQuestions.filter(question => {
-    const matchesSearch = question.questionText.toLowerCase().includes(questionBankSearch.toLowerCase());
-    const matchesSubject = questionBankFilter === "all" || question.subject === questionBankFilter;
-    return matchesSearch && matchesSubject;
-  });
-
-  const handleSelectQuestions = () => {
-    const questionsToAdd = availableQuestions.filter(q => selectedQuestions.includes(q.id));
-    setQuestions([...questions, ...questionsToAdd]);
-    setSelectedQuestions([]);
-    setShowQuestionBank(false);
-    showToast('success', `✅ Added ${questionsToAdd.length} questions to exam!`);
-  };
-
-  const toggleQuestionSelection = (questionId: string) => {
-    setSelectedQuestions(prev => 
-      prev.includes(questionId) 
-        ? prev.filter(id => id !== questionId)
-        : [...prev, questionId]
-    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -146,12 +248,12 @@ export default function CreateExamPage() {
       return;
     }
 
-    setLoading(true);
+    setSaving(true);
     
     try {
-      // Create the exam object
-      const newExam = {
-        id: Date.now().toString(),
+      // Create the updated exam object
+      const updatedExam = {
+        id: examId,
         title: examData.title,
         subject: examData.subject,
         totalQuestions: questions.length,
@@ -164,18 +266,21 @@ export default function CreateExamPage() {
         questions: questions
       };
 
-      // Here you would typically send the data to your API
-      console.log("Creating exam:", newExam);
+      // Update localStorage
+      const customExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
+      const examIndex = customExams.findIndex((exam: Exam) => exam.id === examId);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (examIndex !== -1) {
+        // Update existing custom exam
+        customExams[examIndex] = updatedExam;
+        localStorage.setItem('mockExams', JSON.stringify(customExams));
+      } else {
+        // Add as new custom exam (for default exams being edited)
+        customExams.push(updatedExam);
+        localStorage.setItem('mockExams', JSON.stringify(customExams));
+      }
       
-      // Save to localStorage for demo purposes (in real app, this would be an API call)
-      const existingExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
-      existingExams.push(newExam);
-      localStorage.setItem('mockExams', JSON.stringify(existingExams));
-      
-      showToast('success', `✅ Exam "${examData.title}" created successfully!`);
+      showToast('success', `✅ Exam "${examData.title}" updated successfully!`);
       
       // Redirect after a short delay to show the toast
       setTimeout(() => {
@@ -183,12 +288,20 @@ export default function CreateExamPage() {
       }, 1500);
       
     } catch (error) {
-      console.error("Error creating exam:", error);
-      showToast('error', '❌ Failed to create exam. Please try again.');
+      console.error("Error updating exam:", error);
+      showToast('error', '❌ Failed to update exam. Please try again.');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -213,6 +326,7 @@ export default function CreateExamPage() {
           </button>
         </div>
       )}
+
       <div className="flex items-center space-x-4">
         <Link
           href="/admin/exams"
@@ -221,8 +335,8 @@ export default function CreateExamPage() {
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Create New Exam</h1>
-          <p className="text-gray-600 mt-2">Set up a new CBT examination</p>
+          <h1 className="text-3xl font-bold text-gray-900">Edit Exam</h1>
+          <p className="text-gray-600 mt-2">Modify exam details and questions</p>
         </div>
       </div>
 
@@ -321,24 +435,14 @@ export default function CreateExamPage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Questions</h2>
-            <div className="flex space-x-3">
-              <button
-                type="button"
-                onClick={() => setShowQuestionBank(true)}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
-              >
-                <Search className="h-4 w-4" />
-                <span>Select from Bank</span>
-              </button>
-              <button
-                type="button"
-                onClick={addQuestion}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Add Question</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={addQuestion}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Question</span>
+            </button>
           </div>
 
           {questions.length === 0 ? (
@@ -452,149 +556,13 @@ export default function CreateExamPage() {
           </Link>
           <button
             type="submit"
-            disabled={loading || questions.length === 0}
+            disabled={saving || questions.length === 0}
             className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? "Creating..." : "Create Exam"}
+            {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </form>
-
-      {/* Question Bank Selection Modal */}
-      {showQuestionBank && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Select Questions from Bank</h2>
-                <button
-                  onClick={() => {
-                    setShowQuestionBank(false);
-                    setSelectedQuestions([]);
-                    setQuestionBankSearch("");
-                    setQuestionBankFilter("all");
-                  }}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
-
-              {/* Search and Filter */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Search Questions
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Search by question text..."
-                    value={questionBankSearch}
-                    onChange={(e) => setQuestionBankSearch(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Filter by Subject
-                  </label>
-                  <select
-                    value={questionBankFilter}
-                    onChange={(e) => setQuestionBankFilter(e.target.value as ExamSubject | "all")}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  >
-                    <option value="all">All Subjects</option>
-                    {getAllSubjects().map(subject => (
-                      <option key={subject} value={subject}>
-                        {subject.charAt(0) + subject.slice(1).toLowerCase()}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Selected Questions Count */}
-              {selectedQuestions.length > 0 && (
-                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    {selectedQuestions.length} question{selectedQuestions.length !== 1 ? 's' : ''} selected
-                  </p>
-                </div>
-              )}
-
-              {/* Questions List */}
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {filteredAvailableQuestions.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">No questions found matching your criteria.</p>
-                  </div>
-                ) : (
-                  filteredAvailableQuestions.map((question) => (
-                    <div
-                      key={question.id}
-                      className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                        selectedQuestions.includes(question.id)
-                          ? 'border-indigo-500 bg-indigo-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => toggleQuestionSelection(question.id)}
-                    >
-                      <div className="flex items-start space-x-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedQuestions.includes(question.id)}
-                          onChange={() => toggleQuestionSelection(question.id)}
-                          className="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                        />
-                        <div className="flex-1">
-                          <p className="text-sm text-gray-900 mb-2">{question.questionText}</p>
-                          <div className="flex items-center space-x-4 text-xs text-gray-500">
-                            <span className="bg-gray-100 px-2 py-1 rounded">
-                              {question.subject}
-                            </span>
-                            <span className={`px-2 py-1 rounded ${
-                              question.difficulty === 'EASY' ? 'bg-green-100 text-green-800' :
-                              question.difficulty === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-red-100 text-red-800'
-                            }`}>
-                              {question.difficulty}
-                            </span>
-                            <span className="bg-gray-100 px-2 py-1 rounded">
-                              {question.points} point{question.points !== 1 ? 's' : ''}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex justify-end space-x-3 mt-6 pt-4 border-t">
-                <button
-                  onClick={() => {
-                    setShowQuestionBank(false);
-                    setSelectedQuestions([]);
-                    setQuestionBankSearch("");
-                    setQuestionBankFilter("all");
-                  }}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSelectQuestions}
-                  disabled={selectedQuestions.length === 0}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                >
-                  Add {selectedQuestions.length} Question{selectedQuestions.length !== 1 ? 's' : ''}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
