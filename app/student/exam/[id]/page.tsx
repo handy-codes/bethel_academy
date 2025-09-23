@@ -153,7 +153,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [examStarted, isSubmitted, timeLeft, exam, answers]);
+  }, [examStarted, isSubmitted, timeLeft, exam, answers, calculateScore]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -221,7 +221,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     
     setIsSubmitted(true);
     setShowConfirmSubmit(false);
-  }, [exam, timeLeft, answers]);
+  }, [exam, timeLeft, answers, calculateScore]);
 
   const startExam = () => {
     setExamStarted(true);
