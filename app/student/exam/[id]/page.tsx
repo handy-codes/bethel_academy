@@ -85,6 +85,31 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     loadExam();
   }, [params.id, router]);
 
+  const calculateScore = () => {
+    if (!exam) return { score: 0, total: 0, percentage: 0, grade: 'F' };
+    
+    let correctAnswers = 0;
+    exam.questions.forEach(question => {
+      if (answers[question.id] === question.correctAnswer) {
+        correctAnswers++;
+      }
+    });
+    
+    const percentage = Math.round((correctAnswers / exam.questions.length) * 100);
+    let grade = 'F';
+    if (percentage >= 90) grade = 'A';
+    else if (percentage >= 80) grade = 'B';
+    else if (percentage >= 70) grade = 'C';
+    else if (percentage >= 60) grade = 'D';
+    
+    return {
+      score: correctAnswers,
+      total: exam.questions.length,
+      percentage,
+      grade
+    };
+  };
+
   // Timer effect
   useEffect(() => {
     if (!examStarted || isSubmitted || timeLeft <= 0) return;
@@ -92,7 +117,35 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
-          handleSubmitExam();
+          // Auto-submit when time runs out
+          if (exam) {
+            const result = calculateScore();
+            const timeSpent = Math.floor((exam.duration * 60 - timeLeft) / 60);
+            
+            const examResult = {
+              id: Date.now().toString(),
+              examId: exam.id,
+              examTitle: exam.title,
+              subject: exam.subject,
+              studentId: 'current-student',
+              studentName: 'Current Student',
+              studentEmail: 'student@example.com',
+              score: result.score,
+              totalQuestions: result.total,
+              correctAnswers: result.score,
+              percentage: result.percentage,
+              grade: result.grade,
+              submittedAt: new Date().toISOString(),
+              timeSpent: timeSpent,
+              isApproved: false,
+            };
+            
+            const existingResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+            existingResults.push(examResult);
+            localStorage.setItem('examResults', JSON.stringify(existingResults));
+            
+            setIsSubmitted(true);
+          }
           return 0;
         }
         return prev - 1;
@@ -100,7 +153,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [examStarted, isSubmitted, timeLeft]);
+  }, [examStarted, isSubmitted, timeLeft, exam, answers]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -135,31 +188,6 @@ export default function ExamPage({ params }: { params: { id: string } }) {
   const handleGoToQuestion = (index: number) => {
     setCurrentQuestionIndex(index);
     setSidebarOpen(false);
-  };
-
-  const calculateScore = () => {
-    if (!exam) return { score: 0, total: 0, percentage: 0, grade: 'F' };
-    
-    let correctAnswers = 0;
-    exam.questions.forEach(question => {
-      if (answers[question.id] === question.correctAnswer) {
-        correctAnswers++;
-      }
-    });
-    
-    const percentage = Math.round((correctAnswers / exam.questions.length) * 100);
-    let grade = 'F';
-    if (percentage >= 90) grade = 'A';
-    else if (percentage >= 80) grade = 'B';
-    else if (percentage >= 70) grade = 'C';
-    else if (percentage >= 60) grade = 'D';
-    
-    return {
-      score: correctAnswers,
-      total: exam.questions.length,
-      percentage,
-      grade
-    };
   };
 
   const handleSubmitExam = useCallback(() => {
@@ -213,7 +241,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Exam Not Found</h2>
-          <p className="text-gray-600 mb-4">The exam you're looking for doesn't exist.</p>
+          <p className="text-gray-600 mb-4">The exam you&apos;re looking for doesn&apos;t exist.</p>
           <button
             onClick={() => router.push('/student/exams')}
             className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
@@ -331,7 +359,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
                 <div className="mb-6">
                   <p className="text-sm text-gray-700">
                     You have <strong>{exam.duration} minutes</strong> to complete this exam. 
-                    Make sure you're ready before starting.
+                    Make sure you&apos;re ready before starting.
                   </p>
                 </div>
                 
