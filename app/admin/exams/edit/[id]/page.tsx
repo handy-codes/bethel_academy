@@ -100,8 +100,8 @@ export default function EditExamPage() {
               optionC: "5",
               optionD: "6",
               optionE: "7",
-              correctAnswer: "B",
-              difficulty: "EASY",
+              correctAnswer: "B" as const,
+              difficulty: "EASY" as const,
               points: 1,
             },
             {
@@ -112,8 +112,8 @@ export default function EditExamPage() {
               optionC: "x²",
               optionD: "2x²",
               optionE: "x³",
-              correctAnswer: "B",
-              difficulty: "MEDIUM",
+              correctAnswer: "B" as const,
+              difficulty: "MEDIUM" as const,
               points: 2,
             }
           ]
@@ -138,8 +138,8 @@ export default function EditExamPage() {
               optionC: "childes",
               optionD: "child",
               optionE: "child's",
-              correctAnswer: "B",
-              difficulty: "EASY",
+              correctAnswer: "B" as const,
+              difficulty: "EASY" as const,
               points: 1,
             }
           ]
@@ -164,8 +164,8 @@ export default function EditExamPage() {
               optionC: "Watt",
               optionD: "Pascal",
               optionE: "Ampere",
-              correctAnswer: "B",
-              difficulty: "EASY",
+              correctAnswer: "B" as const,
+              difficulty: "EASY" as const,
               points: 1,
             }
           ]
@@ -202,8 +202,8 @@ export default function EditExamPage() {
       optionC: "",
       optionD: "",
       optionE: "",
-      correctAnswer: "A",
-      difficulty: "MEDIUM",
+              correctAnswer: "A" as const,
+      difficulty: "MEDIUM" as const,
       points: 1,
     };
     setQuestions([...questions, newQuestion]);
