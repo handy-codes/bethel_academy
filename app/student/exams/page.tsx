@@ -29,70 +29,42 @@ export default function AvailableExamsPage() {
   ];
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
+    // Load exams from the same source as admin (localStorage + default mock data)
+    const defaultExams = [
+      {
+        id: "1",
+        title: "JAMB Mathematics Practice Test",
+        description: "Comprehensive mathematics test covering algebra, geometry, and calculus topics commonly found in JAMB exams.",
+        subject: "MATHEMATICS",
+        totalQuestions: 50,
+        duration: 120,
+        difficulty: "MEDIUM",
+        isActive: true,
+        createdAt: "2024-01-15",
+        attempts: 45,
+      },
+      {
+        id: "2",
+        title: "WAEC English Language Mock",
+        description: "English language test covering comprehension, grammar, and literature analysis.",
+        subject: "ENGLISH",
+        totalQuestions: 100,
+        duration: 180,
+        difficulty: "HARD",
+        isActive: true,
+        createdAt: "2024-01-14",
+        attempts: 32,
+      },
+    ];
+
+    // Load custom exams from localStorage (created by admin)
+    const customExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
+    
+    // Combine default and custom exams
+    const allExams = [...defaultExams, ...customExams];
+    
     setTimeout(() => {
-      setExams([
-        {
-          id: "1",
-          title: "JAMB Mathematics Practice Test",
-          description: "Comprehensive mathematics test covering algebra, geometry, and calculus topics commonly found in JAMB exams.",
-          subject: "MATHEMATICS",
-          totalQuestions: 50,
-          duration: 120,
-          difficulty: "MEDIUM",
-          isActive: true,
-          createdAt: "2024-01-15",
-          attempts: 45,
-        },
-        {
-          id: "2",
-          title: "WAEC English Language Mock",
-          description: "English language test covering comprehension, grammar, and literature analysis.",
-          subject: "ENGLISH",
-          totalQuestions: 100,
-          duration: 180,
-          difficulty: "HARD",
-          isActive: true,
-          createdAt: "2024-01-14",
-          attempts: 32,
-        },
-        {
-          id: "3",
-          title: "Physics Fundamentals Test",
-          description: "Basic physics concepts including mechanics, thermodynamics, and electromagnetism.",
-          subject: "PHYSICS",
-          totalQuestions: 40,
-          duration: 90,
-          difficulty: "EASY",
-          isActive: true,
-          createdAt: "2024-01-13",
-          attempts: 18,
-        },
-        {
-          id: "4",
-          title: "Chemistry Basic Concepts",
-          description: "Introduction to chemistry covering atomic structure, chemical bonding, and reactions.",
-          subject: "CHEMISTRY",
-          totalQuestions: 35,
-          duration: 75,
-          difficulty: "MEDIUM",
-          isActive: true,
-          createdAt: "2024-01-12",
-          attempts: 25,
-        },
-        {
-          id: "5",
-          title: "Biology Cell Structure",
-          description: "Cell biology fundamentals including cell organelles, processes, and functions.",
-          subject: "BIOLOGY",
-          totalQuestions: 30,
-          duration: 60,
-          difficulty: "EASY",
-          isActive: true,
-          createdAt: "2024-01-11",
-          attempts: 20,
-        },
-      ]);
+      setExams(allExams);
       setLoading(false);
     }, 1000);
   }, []);

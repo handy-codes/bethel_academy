@@ -49,54 +49,57 @@ export default function ExamPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [examStarted, setExamStarted] = useState(false);
+  const [showStartConfirm, setShowStartConfirm] = useState(false);
 
-  // Load exam data
+  // Load exam data from the same source as admin
   useEffect(() => {
-    // Mock data - replace with actual API call
-    setTimeout(() => {
-      setExam({
-        id: params.id,
-        title: "JAMB Mathematics Practice Test",
-        description: "Comprehensive mathematics test covering algebra, geometry, and calculus",
-        subject: "MATHEMATICS",
-        duration: 120, // 2 hours
-        totalQuestions: 15,
-        instructions: "Read each question carefully and select the best answer. You can navigate between questions and change your answers before submitting.",
-        questions: [
-          {
-            id: "1",
-            questionText: "What is the value of x in the equation 2x + 5 = 13?",
-            optionA: "3",
-            optionB: "4",
-            optionC: "5",
-            optionD: "6",
-            optionE: "7",
-            correctAnswer: "B",
-            difficulty: "EASY",
-            points: 1,
-          },
-          {
-            id: "2",
-            questionText: "If a triangle has sides of length 3, 4, and 5, what type of triangle is it?",
-            optionA: "Equilateral",
-            optionB: "Isosceles",
-            optionC: "Right-angled",
-            optionD: "Obtuse",
-            optionE: "Acute",
-            correctAnswer: "C",
-            difficulty: "MEDIUM",
-            points: 1,
-          },
-          {
-            id: "3",
-            questionText: "What is the derivative of x² + 3x + 2?",
-            optionA: "2x + 3",
-            optionB: "x + 3",
-            optionC: "2x + 2",
-            optionD: "x² + 3",
-            optionE: "2x² + 3x",
-            correctAnswer: "A",
-            difficulty: "MEDIUM",
+    const loadExam = () => {
+      // Default mock exams
+      const defaultExams = [
+        {
+          id: "1",
+          title: "JAMB Mathematics Practice Test",
+          description: "Comprehensive mathematics test covering algebra, geometry, and calculus",
+          subject: "MATHEMATICS",
+          duration: 120,
+          totalQuestions: 15,
+          instructions: "Read each question carefully and select the best answer. You can navigate between questions and change your answers before submitting.",
+          questions: [
+            {
+              id: "1",
+              questionText: "What is the value of x in the equation 2x + 5 = 13?",
+              optionA: "3",
+              optionB: "4",
+              optionC: "5",
+              optionD: "6",
+              optionE: "7",
+              correctAnswer: "B",
+              difficulty: "EASY",
+              points: 1,
+            },
+            {
+              id: "2",
+              questionText: "If a triangle has sides of length 3, 4, and 5, what type of triangle is it?",
+              optionA: "Equilateral",
+              optionB: "Isosceles",
+              optionC: "Right-angled",
+              optionD: "Obtuse",
+              optionE: "Acute",
+              correctAnswer: "C",
+              difficulty: "MEDIUM",
+              points: 1,
+            },
+            {
+              id: "3",
+              questionText: "What is the derivative of x² + 3x + 2?",
+              optionA: "2x + 3",
+              optionB: "x + 3",
+              optionC: "2x + 2",
+              optionD: "x² + 3",
+              optionE: "2x² + 3x",
+              correctAnswer: "A",
+              difficulty: "MEDIUM",
             points: 1,
           },
           {
@@ -244,11 +247,67 @@ export default function ExamPage({ params }: { params: { id: string } }) {
             points: 1,
           },
         ],
-      });
-      setTimeLeft(120 * 60); // Convert to seconds
-      setLoading(false);
-    }, 1000);
-  }, [params.id]);
+      },
+      {
+        id: "2",
+        title: "WAEC English Language Mock",
+        description: "English language test covering comprehension, grammar, and literature analysis",
+        subject: "ENGLISH",
+        duration: 180,
+        totalQuestions: 10,
+        instructions: "Read each question carefully and select the best answer.",
+        questions: [
+          {
+            id: "1",
+            questionText: "Identify the noun in 'The quick brown fox jumps over the lazy dog'.",
+            optionA: "quick",
+            optionB: "brown",
+            optionC: "fox",
+            optionD: "jumps",
+            optionE: "lazy",
+            correctAnswer: "C",
+            difficulty: "EASY",
+            points: 1,
+          },
+        ],
+      },
+    ];
+
+    // Load custom exams from localStorage (created by admin)
+    const customExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
+    
+    // Combine default and custom exams
+    const allExams = [...defaultExams, ...customExams];
+    
+    // Find the exam with the matching ID
+    const foundExam = allExams.find(exam => exam.id === params.id);
+    
+    if (foundExam) {
+      setExam(foundExam);
+      setTimeLeft(foundExam.duration * 60); // Convert to seconds
+      
+      // Check if exam has already been completed
+      const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+      const existingResult = examResults.find((result: any) => 
+        result.examId === params.id && result.studentId === 'current-student' // In real app, use actual student ID
+      );
+      
+      if (existingResult) {
+        setIsSubmitted(true);
+      } else {
+        setShowStartConfirm(true);
+      }
+    } else {
+      // Exam not found, redirect to exams page
+      router.push('/student/exams');
+      return;
+    }
+    
+    setLoading(false);
+    };
+    
+    loadExam();
+  }, [params.id, router]);
 
   // Auto-save answers
   const saveAnswer = useCallback((questionId: string, answer: string) => {
@@ -263,27 +322,84 @@ export default function ExamPage({ params }: { params: { id: string } }) {
   };
 
   const handleSubmit = useCallback(async () => {
-    setIsSubmitted(true);
-    // Here you would submit the exam to the backend
-    console.log("Submitting exam with answers:", answers);
+    if (!exam) return;
     
-    // Mock submission - replace with actual API call
+    setIsSubmitted(true);
+    
+    // Calculate results
+    let correctAnswers = 0;
+    const questionResults = exam.questions.map(question => {
+      const userAnswer = answers[question.id] || '';
+      const isCorrect = userAnswer === question.correctAnswer;
+      if (isCorrect) correctAnswers++;
+      
+      return {
+        id: question.id,
+        questionText: question.questionText,
+        optionA: question.optionA,
+        optionB: question.optionB,
+        optionC: question.optionC,
+        optionD: question.optionD,
+        optionE: question.optionE,
+        correctAnswer: question.correctAnswer,
+        userAnswer: userAnswer,
+        explanation: question.explanation,
+        difficulty: question.difficulty,
+        points: question.points,
+      };
+    });
+    
+    const percentage = Math.round((correctAnswers / exam.totalQuestions) * 100);
+    const grade = percentage >= 90 ? 'A' : percentage >= 80 ? 'B' : percentage >= 70 ? 'C' : percentage >= 60 ? 'D' : 'F';
+    
+    // Calculate time spent
+    const timeSpent = Math.round((exam.duration * 60 - timeLeft) / 60); // Convert to minutes
+    
+    // Create result object
+    const result = {
+      id: `${params.id}-${Date.now()}`, // Unique result ID
+      examId: params.id,
+      examTitle: exam.title,
+      subject: exam.subject,
+      score: correctAnswers,
+      totalQuestions: exam.totalQuestions,
+      correctAnswers: correctAnswers,
+      percentage: percentage,
+      grade: grade,
+      submittedAt: new Date().toISOString(),
+      timeSpent: timeSpent,
+      questions: questionResults,
+      feedback: percentage >= 80 ? "Excellent performance! You demonstrated strong understanding of the concepts." : 
+                percentage >= 60 ? "Good work! Consider reviewing the topics you missed." : 
+                "Keep studying! You can improve with more practice.",
+      isApproved: false, // Will be approved by admin
+      studentId: 'current-student', // In real app, use actual student ID
+    };
+    
+    // Save result to localStorage
+    const existingResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+    existingResults.push(result);
+    localStorage.setItem('examResults', JSON.stringify(existingResults));
+    
+    console.log("Exam submitted with result:", result);
+    
+    // Redirect to results page
     setTimeout(() => {
-      router.push(`/student/results/${params.id}`);
+      router.push(`/student/results/${result.id}`);
     }, 2000);
-  }, [answers, router, params.id]);
+  }, [answers, router, params.id, exam, timeLeft]);
 
   // Timer countdown
   useEffect(() => {
-    if (timeLeft > 0 && !isSubmitted) {
+    if (timeLeft > 0 && !isSubmitted && examStarted) {
       const timer = setTimeout(() => {
         setTimeLeft(timeLeft - 1);
       }, 1000);
       return () => clearTimeout(timer);
-    } else if (timeLeft === 0 && !isSubmitted) {
+    } else if (timeLeft === 0 && !isSubmitted && examStarted) {
       handleSubmit();
     }
-  }, [timeLeft, isSubmitted, handleSubmit]);
+  }, [timeLeft, isSubmitted, examStarted, handleSubmit]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -313,6 +429,65 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  // Show pre-exam information screen if exam hasn't started
+  if (!examStarted && !isSubmitted) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">{exam?.title}</h1>
+              <p className="text-lg text-gray-600 mb-6">{exam?.description}</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Exam Details</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Subject:</span>
+                    <span className="font-medium">{exam?.subject}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Questions:</span>
+                    <span className="font-medium">{exam?.totalQuestions}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Duration:</span>
+                    <span className="font-medium">{exam?.duration} minutes</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Instructions</h3>
+                <div className="text-sm text-gray-700 space-y-2">
+                  <p>• Read each question carefully before answering</p>
+                  <p>• You can navigate between questions using the sidebar</p>
+                  <p>• Your answers are auto-saved as you progress</p>
+                  <p>• You can change your answers before submitting</p>
+                  <p>• The exam will auto-submit when time runs out</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <button
+                onClick={() => {
+                  setExamStarted(true);
+                  setShowStartConfirm(false);
+                }}
+                className="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition-colors text-lg font-medium"
+              >
+                Start Exam
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

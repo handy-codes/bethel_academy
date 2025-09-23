@@ -53,57 +53,26 @@ export default function ExamResultPage({ params }: { params: { id: string } }) {
   const [showDetailedView, setShowDetailedView] = useState(false);
 
   useEffect(() => {
-    // Mock data - replace with actual API call
-    setTimeout(() => {
-      setResult({
-        id: params.id,
-        examTitle: "JAMB Mathematics Practice Test",
-        subject: "MATHEMATICS",
-        score: 42,
-        totalQuestions: 50,
-        correctAnswers: 42,
-        percentage: 84,
-        grade: "A",
-        submittedAt: "2024-01-15T10:30:00Z",
-        timeSpent: 95, // 1 hour 35 minutes
-        isApproved: true,
-        approvedAt: "2024-01-15T11:00:00Z",
-        feedback: "Excellent performance! You demonstrated strong understanding of mathematical concepts. Keep up the great work!",
-        questions: [
-          {
-            id: "1",
-            questionText: "What is the value of x in the equation 2x + 5 = 13?",
-            optionA: "3",
-            optionB: "4",
-            optionC: "5",
-            optionD: "6",
-            optionE: "7",
-            correctAnswer: "B",
-            userAnswer: "B",
-            difficulty: "EASY",
-            points: 1,
-            explanation: "To solve 2x + 5 = 13, subtract 5 from both sides: 2x = 8, then divide by 2: x = 4"
-          },
-          {
-            id: "2",
-            questionText: "If a triangle has sides of length 3, 4, and 5, what type of triangle is it?",
-            optionA: "Equilateral",
-            optionB: "Isosceles",
-            optionC: "Right-angled",
-            optionD: "Obtuse",
-            optionE: "Acute",
-            correctAnswer: "C",
-            userAnswer: "A",
-            difficulty: "MEDIUM",
-            points: 1,
-            explanation: "A triangle with sides 3, 4, 5 satisfies the Pythagorean theorem (3² + 4² = 5²), making it a right-angled triangle."
-          },
-          // Add more mock questions as needed
-        ],
-      });
+    const loadResult = () => {
+      // Load exam results from localStorage
+      const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+      
+      // Find the result with the matching ID
+      const foundResult = examResults.find((result: any) => result.id === params.id);
+      
+      if (foundResult) {
+        setResult(foundResult);
+      } else {
+        // Result not found, redirect to exams page
+        router.push('/student/exams');
+        return;
+      }
+      
       setLoading(false);
-    }, 1000);
-  }, [params.id]);
+    };
+    
+    loadResult();
+  }, [params.id, router]);
 
   const getGradeColor = (grade: string) => {
     switch (grade) {
@@ -143,10 +112,18 @@ export default function ExamResultPage({ params }: { params: { id: string } }) {
 
   if (!result) {
     return (
-      <div className="text-center py-12">
-        <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Result not found</h3>
-        <p className="text-gray-500">The exam result you are looking for does not exist.</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center py-12">
+          <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Result not found</h3>
+          <p className="text-gray-500 mb-4">The exam result you are looking for does not exist.</p>
+          <button
+            onClick={() => router.push('/student/exams')}
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            Back to Exams
+          </button>
+        </div>
       </div>
     );
   }
