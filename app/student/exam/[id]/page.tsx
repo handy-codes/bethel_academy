@@ -175,7 +175,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [examStarted, isSubmitted, timeLeft, exam, answers, calculateScore]);
+  }, [examStarted, isSubmitted, timeLeft, exam, answers, calculateScore, studentId, user?.fullName, user?.primaryEmailAddress?.emailAddress]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);

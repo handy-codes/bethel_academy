@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  BookOpen, 
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  BookOpen,
   TrendingUp,
   ArrowLeft,
   Download,
@@ -40,7 +40,7 @@ interface ExamResult {
   grade: string;
   submittedAt: string;
   timeSpent: number; // in minutes
-  questions: QuestionResult[];
+  questions?: QuestionResult[];
   feedback?: string;
   isApproved: boolean;
   approvedAt?: string;
@@ -56,10 +56,10 @@ export default function ExamResultPage({ params }: { params: { id: string } }) {
     const loadResult = () => {
       // Load exam results from localStorage
       const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
-      
+
       // Find the result with the matching ID
       const foundResult = examResults.find((result: any) => result.id === params.id);
-      
+
       if (foundResult) {
         setResult(foundResult);
       } else {
@@ -67,10 +67,10 @@ export default function ExamResultPage({ params }: { params: { id: string } }) {
         router.push('/student/exams');
         return;
       }
-      
+
       setLoading(false);
     };
-    
+
     loadResult();
   }, [params.id, router]);
 
@@ -244,21 +244,20 @@ export default function ExamResultPage({ params }: { params: { id: string } }) {
               <h3 className="text-lg font-semibold text-gray-900">Question Review</h3>
               <p className="text-sm text-gray-600">Review each question and see the correct answers with explanations</p>
             </div>
-            
+
             <div className="p-6">
               <div className="space-y-6">
-                {result.questions.map((question, index) => (
+                {(result.questions || []).map((question, index) => (
                   <div key={question.id} className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-sm font-medium text-gray-600">
                         Question {index + 1}
                       </span>
                       <div className="flex items-center space-x-2">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          question.difficulty === "EASY" ? "bg-green-100 text-green-800" :
-                          question.difficulty === "MEDIUM" ? "bg-yellow-100 text-yellow-800" :
-                          "bg-red-100 text-red-800"
-                        }`}>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${question.difficulty === "EASY" ? "bg-green-100 text-green-800" :
+                            question.difficulty === "MEDIUM" ? "bg-yellow-100 text-yellow-800" :
+                              "bg-red-100 text-red-800"
+                          }`}>
                           {question.difficulty}
                         </span>
                         {question.userAnswer === question.correctAnswer ? (
@@ -278,17 +277,16 @@ export default function ExamResultPage({ params }: { params: { id: string } }) {
                         const isCorrect = option === question.correctAnswer;
                         const isUserAnswer = option === question.userAnswer;
                         const optionText = question[`option${option}` as keyof QuestionResult] as string;
-                        
+
                         return (
                           <div
                             key={option}
-                            className={`p-3 rounded-lg border-2 ${
-                              isCorrect
+                            className={`p-3 rounded-lg border-2 ${isCorrect
                                 ? "border-green-500 bg-green-50"
                                 : isUserAnswer && !isCorrect
-                                ? "border-red-500 bg-red-50"
-                                : "border-gray-200"
-                            }`}
+                                  ? "border-red-500 bg-red-50"
+                                  : "border-gray-200"
+                              }`}
                           >
                             <div className="flex items-center space-x-3">
                               <span className="font-medium text-gray-700">{option}.</span>
