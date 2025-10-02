@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Save, 
-  Shield, 
-  Bell, 
+import {
+  Save,
+  Shield,
+  Bell,
   Globe,
   Mail,
   Database,
@@ -60,7 +60,7 @@ export default function SettingsPage() {
     // Load real data from localStorage
     const loadSettings = () => {
       const savedSettings = JSON.parse(localStorage.getItem('adminSettings') || '{}');
-      
+
       // Default settings if none exist
       const defaultSettings = {
         general: {
@@ -97,27 +97,27 @@ export default function SettingsPage() {
           backupFrequency: "daily",
         },
       };
-      
+
       setSettings({ ...defaultSettings, ...savedSettings });
       setLoading(false);
     };
-    
+
     loadSettings();
-    
+
     // Set up real-time updates by checking localStorage periodically
     const interval = setInterval(loadSettings, 5000); // Check every 5 seconds
-    
+
     return () => clearInterval(interval);
   }, []);
 
   const handleSave = async () => {
     setSaving(true);
-    
+
     // Save to localStorage
     if (settings) {
       localStorage.setItem('adminSettings', JSON.stringify(settings));
     }
-    
+
     // Simulate API call
     setTimeout(() => {
       setSaving(false);
@@ -128,7 +128,7 @@ export default function SettingsPage() {
 
   const updateSettings = (section: keyof Settings, field: string, value: any) => {
     if (!settings) return;
-    
+
     setSettings({
       ...settings,
       [section]: {
@@ -180,11 +180,10 @@ export default function SettingsPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
-                  activeTab === tab.id
-                    ? "border-indigo-500 text-indigo-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
+                className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === tab.id
+                  ? "border-indigo-500 text-indigo-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
               >
                 <tab.icon className="h-4 w-4" />
                 <span>{tab.name}</span>
@@ -303,7 +302,7 @@ export default function SettingsPage() {
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -312,13 +311,11 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => updateSettings("exam", "autoSubmit", !settings.exam.autoSubmit)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                      settings.exam.autoSubmit ? "bg-indigo-600" : "bg-gray-200"
-                    }`}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${settings.exam.autoSubmit ? "bg-indigo-600" : "bg-gray-200"
+                      }`}
                   >
-                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      settings.exam.autoSubmit ? "translate-x-5" : "translate-x-0"
-                    }`} />
+                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.exam.autoSubmit ? "translate-x-5" : "translate-x-0"
+                      }`} />
                   </button>
                 </div>
 
@@ -329,13 +326,11 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => updateSettings("exam", "showResults", !settings.exam.showResults)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                      settings.exam.showResults ? "bg-indigo-600" : "bg-gray-200"
-                    }`}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${settings.exam.showResults ? "bg-indigo-600" : "bg-gray-200"
+                      }`}
                   >
-                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      settings.exam.showResults ? "translate-x-5" : "translate-x-0"
-                    }`} />
+                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.exam.showResults ? "translate-x-5" : "translate-x-0"
+                      }`} />
                   </button>
                 </div>
 
@@ -346,13 +341,11 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => updateSettings("exam", "allowReview", !settings.exam.allowReview)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                      settings.exam.allowReview ? "bg-indigo-600" : "bg-gray-200"
-                    }`}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${settings.exam.allowReview ? "bg-indigo-600" : "bg-gray-200"
+                      }`}
                   >
-                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      settings.exam.allowReview ? "translate-x-5" : "translate-x-0"
-                    }`} />
+                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.exam.allowReview ? "translate-x-5" : "translate-x-0"
+                      }`} />
                   </button>
                 </div>
               </div>
@@ -370,13 +363,11 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => updateSettings("notifications", "emailNotifications", !settings.notifications.emailNotifications)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                      settings.notifications.emailNotifications ? "bg-indigo-600" : "bg-gray-200"
-                    }`}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${settings.notifications.emailNotifications ? "bg-indigo-600" : "bg-gray-200"
+                      }`}
                   >
-                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      settings.notifications.emailNotifications ? "translate-x-5" : "translate-x-0"
-                    }`} />
+                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.notifications.emailNotifications ? "translate-x-5" : "translate-x-0"
+                      }`} />
                   </button>
                 </div>
 
@@ -387,13 +378,11 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => updateSettings("notifications", "examReminders", !settings.notifications.examReminders)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                      settings.notifications.examReminders ? "bg-indigo-600" : "bg-gray-200"
-                    }`}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${settings.notifications.examReminders ? "bg-indigo-600" : "bg-gray-200"
+                      }`}
                   >
-                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      settings.notifications.examReminders ? "translate-x-5" : "translate-x-0"
-                    }`} />
+                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.notifications.examReminders ? "translate-x-5" : "translate-x-0"
+                      }`} />
                   </button>
                 </div>
 
@@ -404,13 +393,11 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => updateSettings("notifications", "resultNotifications", !settings.notifications.resultNotifications)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                      settings.notifications.resultNotifications ? "bg-indigo-600" : "bg-gray-200"
-                    }`}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${settings.notifications.resultNotifications ? "bg-indigo-600" : "bg-gray-200"
+                      }`}
                   >
-                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      settings.notifications.resultNotifications ? "translate-x-5" : "translate-x-0"
-                    }`} />
+                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.notifications.resultNotifications ? "translate-x-5" : "translate-x-0"
+                      }`} />
                   </button>
                 </div>
 
@@ -421,13 +408,11 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => updateSettings("notifications", "systemAlerts", !settings.notifications.systemAlerts)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                      settings.notifications.systemAlerts ? "bg-indigo-600" : "bg-gray-200"
-                    }`}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${settings.notifications.systemAlerts ? "bg-indigo-600" : "bg-gray-200"
+                      }`}
                   >
-                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      settings.notifications.systemAlerts ? "translate-x-5" : "translate-x-0"
-                    }`} />
+                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.notifications.systemAlerts ? "translate-x-5" : "translate-x-0"
+                      }`} />
                   </button>
                 </div>
               </div>
@@ -472,13 +457,11 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => updateSettings("security", "requireTwoFactor", !settings.security.requireTwoFactor)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                      settings.security.requireTwoFactor ? "bg-indigo-600" : "bg-gray-200"
-                    }`}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${settings.security.requireTwoFactor ? "bg-indigo-600" : "bg-gray-200"
+                      }`}
                   >
-                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      settings.security.requireTwoFactor ? "translate-x-5" : "translate-x-0"
-                    }`} />
+                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.security.requireTwoFactor ? "translate-x-5" : "translate-x-0"
+                      }`} />
                   </button>
                 </div>
 
@@ -489,13 +472,11 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => updateSettings("security", "allowGoogleAuth", !settings.security.allowGoogleAuth)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                      settings.security.allowGoogleAuth ? "bg-indigo-600" : "bg-gray-200"
-                    }`}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${settings.security.allowGoogleAuth ? "bg-indigo-600" : "bg-gray-200"
+                      }`}
                   >
-                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      settings.security.allowGoogleAuth ? "translate-x-5" : "translate-x-0"
-                    }`} />
+                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.security.allowGoogleAuth ? "translate-x-5" : "translate-x-0"
+                      }`} />
                   </button>
                 </div>
               </div>
@@ -544,13 +525,11 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => updateSettings("system", "maintenanceMode", !settings.system.maintenanceMode)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 ${
-                      settings.system.maintenanceMode ? "bg-yellow-600" : "bg-gray-200"
-                    }`}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 ${settings.system.maintenanceMode ? "bg-yellow-600" : "bg-gray-200"
+                      }`}
                   >
-                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      settings.system.maintenanceMode ? "translate-x-5" : "translate-x-0"
-                    }`} />
+                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.system.maintenanceMode ? "translate-x-5" : "translate-x-0"
+                      }`} />
                   </button>
                 </div>
 
@@ -561,13 +540,11 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => updateSettings("system", "debugMode", !settings.system.debugMode)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                      settings.system.debugMode ? "bg-indigo-600" : "bg-gray-200"
-                    }`}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${settings.system.debugMode ? "bg-indigo-600" : "bg-gray-200"
+                      }`}
                   >
-                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      settings.system.debugMode ? "translate-x-5" : "translate-x-0"
-                    }`} />
+                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.system.debugMode ? "translate-x-5" : "translate-x-0"
+                      }`} />
                   </button>
                 </div>
               </div>

@@ -36,7 +36,7 @@ export default function EditExamPage() {
   const router = useRouter();
   const params = useParams();
   const examId = params.id as string;
-  
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [examData, setExamData] = useState({
@@ -47,6 +47,20 @@ export default function EditExamPage() {
     instructions: "",
   });
   const [questions, setQuestions] = useState<Question[]>([]);
+  // Track initial state to determine if there are unsaved changes
+  const [initialExamData, setInitialExamData] = useState({
+    title: "",
+    description: "",
+    subject: "MATHEMATICS",
+    duration: 120,
+    instructions: "",
+  });
+  const [initialQuestions, setInitialQuestions] = useState<Question[]>([]);
+  // Question bank picker state
+  const [showBankModal, setShowBankModal] = useState(false);
+  const [bankSearch, setBankSearch] = useState("");
+  const [bankQuestions, setBankQuestions] = useState<Question[]>([]);
+  const [selectedBankIds, setSelectedBankIds] = useState<Record<string, boolean>>({});
   const [toast, setToast] = useState<{
     show: boolean;
     type: 'success' | 'error';
@@ -64,7 +78,7 @@ export default function EditExamPage() {
       // First try to find in localStorage (custom exams)
       const customExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
       const customExam = customExams.find((exam: Exam) => exam.id === examId);
-      
+
       if (customExam) {
         setExamData({
           title: customExam.title,
@@ -74,6 +88,17 @@ export default function EditExamPage() {
           instructions: customExam.instructions || "",
         });
         setQuestions(customExam.questions || []);
+        // snapshot initial state
+        setInitialExamData({
+          title: customExam.title,
+          description: customExam.description || "",
+          subject: customExam.subject,
+          duration: customExam.duration,
+          instructions: customExam.instructions || "",
+        });
+        setInitialQuestions(customExam.questions || []);
+        // preload bank questions from localStorage
+        preloadBankQuestions(customExam.subject);
         setLoading(false);
         return;
       }
@@ -182,16 +207,59 @@ export default function EditExamPage() {
           instructions: defaultExam.instructions || "",
         });
         setQuestions(defaultExam.questions || []);
+        // snapshot initial state
+        setInitialExamData({
+          title: defaultExam.title,
+          description: defaultExam.description || "",
+          subject: defaultExam.subject,
+          duration: defaultExam.duration,
+          instructions: defaultExam.instructions || "",
+        });
+        setInitialQuestions(defaultExam.questions || []);
+        // preload bank questions from localStorage
+        preloadBankQuestions(defaultExam.subject);
       } else {
         setToast({ show: true, type: 'error', message: '❌ Exam not found!' });
         setTimeout(() => router.push('/admin/exams'), 2000);
       }
-      
+
       setLoading(false);
     };
 
     loadExam();
   }, [examId, router]);
+
+  // Load question bank (flattened from all exams in localStorage)
+  const preloadBankQuestions = (subject: string) => {
+    const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
+    const all: Question[] = [];
+    availableExams.forEach((ex: any) => {
+      if (ex.questions && ex.subject) {
+        ex.questions.forEach((q: any) => {
+          // coerce into Question shape
+          const qb: Question = {
+            id: q.id,
+            questionText: q.questionText || "",
+            optionA: q.optionA || "",
+            optionB: q.optionB || "",
+            optionC: q.optionC || "",
+            optionD: q.optionD || "",
+            optionE: q.optionE || "",
+            correctAnswer: (q.correctAnswer || 'A') as "A" | "B" | "C" | "D" | "E",
+            difficulty: (q.difficulty || 'MEDIUM') as "EASY" | "MEDIUM" | "HARD",
+            points: typeof q.points === 'number' ? q.points : 1,
+          };
+          // Tag with exam subject via closure filter later
+          (qb as any).__subject = ex.subject;
+          all.push(qb);
+        });
+      }
+    });
+    // Prefer same-subject questions first
+    const prioritized = all.filter(q => (q as any).__subject === subject);
+    const others = all.filter(q => (q as any).__subject !== subject);
+    setBankQuestions([...prioritized, ...others]);
+  };
 
   const addQuestion = () => {
     const newQuestion: Question = {
@@ -202,15 +270,17 @@ export default function EditExamPage() {
       optionC: "",
       optionD: "",
       optionE: "",
-              correctAnswer: "A" as const,
+      correctAnswer: "A" as const,
       difficulty: "MEDIUM" as const,
       points: 1,
     };
     setQuestions([...questions, newQuestion]);
+    // Inform the user that an empty question was created
+    showToast('success', 'Empty question created below.');
   };
 
   const updateQuestion = (id: string, field: keyof Question, value: any) => {
-    setQuestions(questions.map(q => 
+    setQuestions(questions.map(q =>
       q.id === id ? { ...q, [field]: value } : q
     ));
   };
@@ -228,18 +298,18 @@ export default function EditExamPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (questions.length === 0) {
       showToast('error', 'Please add at least one question to the exam.');
       return;
     }
 
     // Validate that all questions have required fields
-    const incompleteQuestions = questions.filter(q => 
-      !q.questionText.trim() || 
-      !q.optionA.trim() || 
-      !q.optionB.trim() || 
-      !q.optionC.trim() || 
+    const incompleteQuestions = questions.filter(q =>
+      !q.questionText.trim() ||
+      !q.optionA.trim() ||
+      !q.optionB.trim() ||
+      !q.optionC.trim() ||
       !q.optionD.trim()
     );
 
@@ -249,7 +319,7 @@ export default function EditExamPage() {
     }
 
     setSaving(true);
-    
+
     try {
       // Create the updated exam object
       const updatedExam = {
@@ -269,7 +339,7 @@ export default function EditExamPage() {
       // Update localStorage
       const customExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
       const examIndex = customExams.findIndex((exam: Exam) => exam.id === examId);
-      
+
       if (examIndex !== -1) {
         // Update existing custom exam
         customExams[examIndex] = updatedExam;
@@ -279,14 +349,23 @@ export default function EditExamPage() {
         customExams.push(updatedExam);
         localStorage.setItem('mockExams', JSON.stringify(customExams));
       }
-      
+
       showToast('success', `✅ Exam "${examData.title}" updated successfully!`);
-      
+      // Reset initial snapshots to current saved state
+      setInitialExamData({
+        title: updatedExam.title,
+        description: updatedExam.description || "",
+        subject: updatedExam.subject,
+        duration: updatedExam.duration,
+        instructions: updatedExam.instructions || "",
+      });
+      setInitialQuestions(updatedExam.questions || []);
+
       // Redirect after a short delay to show the toast
       setTimeout(() => {
         router.push("/admin/exams");
       }, 1500);
-      
+
     } catch (error) {
       console.error("Error updating exam:", error);
       showToast('error', '❌ Failed to update exam. Please try again.');
@@ -307,11 +386,10 @@ export default function EditExamPage() {
     <div className="space-y-6">
       {/* Toast Notification */}
       {toast.show && (
-        <div className={`fixed top-4 right-4 z-50 flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg ${
-          toast.type === 'success' 
-            ? 'bg-green-50 text-green-800 border border-green-200' 
-            : 'bg-red-50 text-red-800 border border-red-200'
-        }`}>
+        <div className={`fixed top-4 right-4 z-50 flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg ${toast.type === 'success'
+          ? 'bg-green-50 text-green-800 border border-green-200'
+          : 'bg-red-50 text-red-800 border border-red-200'
+          }`}>
           {toast.type === 'success' ? (
             <CheckCircle className="h-5 w-5 text-green-600" />
           ) : (
@@ -344,7 +422,7 @@ export default function EditExamPage() {
         {/* Basic Exam Information */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Exam Details</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -435,14 +513,24 @@ export default function EditExamPage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Questions</h2>
-            <button
-              type="button"
-              onClick={addQuestion}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add Question</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowBankModal(true)}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add from Question Bank</span>
+              </button>
+              <button
+                type="button"
+                onClick={addQuestion}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Question</span>
+              </button>
+            </div>
           </div>
 
           {questions.length === 0 ? (
@@ -556,13 +644,90 @@ export default function EditExamPage() {
           </Link>
           <button
             type="submit"
-            disabled={saving || questions.length === 0}
+            disabled={saving || (JSON.stringify(examData) === JSON.stringify(initialExamData) && JSON.stringify(questions) === JSON.stringify(initialQuestions))}
             className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
             {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </form>
+
+      {/* Question Bank Modal */}
+      {showBankModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">Add from Question Bank</h2>
+                <button
+                  onClick={() => setShowBankModal(false)}
+                  className="p-1 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <input
+                  type="text"
+                  value={bankSearch}
+                  onChange={(e) => setBankSearch(e.target.value)}
+                  placeholder="Search questions..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="space-y-3 max-h-[55vh] overflow-y-auto">
+                {bankQuestions
+                  .filter(q => q.questionText.toLowerCase().includes(bankSearch.toLowerCase()))
+                  .map(q => (
+                    <label key={q.id} className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={!!selectedBankIds[q.id]}
+                        onChange={(e) => setSelectedBankIds(prev => ({ ...prev, [q.id]: e.target.checked }))}
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-900">{q.questionText}</p>
+                        <p className="text-xs text-gray-500">Correct: {q.correctAnswer} • Difficulty: {q.difficulty} • Points: {q.points}</p>
+                      </div>
+                    </label>
+                  ))}
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  onClick={() => setShowBankModal(false)}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    const selected = bankQuestions.filter(q => selectedBankIds[q.id]);
+                    if (selected.length === 0) {
+                      showToast('error', 'Please select at least one question.');
+                      return;
+                    }
+                    // Avoid duplicate IDs by cloning with new ids
+                    const cloned: Question[] = selected.map(q => ({ ...q, id: `${q.id}-${Date.now()}` }));
+                    setQuestions(prev => [...prev, ...cloned]);
+                    setSelectedBankIds({});
+                    setShowBankModal(false);
+                    showToast('success', `${cloned.length} question(s) added from bank.`);
+                  }}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Add Selected
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+

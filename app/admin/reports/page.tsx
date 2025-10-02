@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Download, 
-  FileText, 
+import {
+  Download,
+  FileText,
   Calendar,
   Filter,
   Eye,
@@ -38,12 +38,12 @@ export default function ReportsPage() {
       setReports(savedReports);
       setLoading(false);
     };
-    
+
     loadReports();
-    
+
     // Set up real-time updates by checking localStorage periodically
     const interval = setInterval(loadReports, 3000); // Check every 3 seconds
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -55,13 +55,13 @@ export default function ReportsPage() {
     { value: "custom", label: "Custom Reports" },
   ];
 
-  const filteredReports = reports.filter(report => 
+  const filteredReports = reports.filter(report =>
     filterType === "all" || report.type === filterType
   );
 
   const generateReport = async (type: string) => {
     setGenerating(type);
-    
+
     // Simulate report generation
     setTimeout(() => {
       const newReport: Report = {
@@ -75,13 +75,13 @@ export default function ReportsPage() {
         downloadCount: 0,
         status: "ready",
       };
-      
+
       const updatedReports = [newReport, ...reports];
       setReports(updatedReports);
-      
+
       // Save to localStorage
       localStorage.setItem('adminReports', JSON.stringify(updatedReports));
-      
+
       setGenerating(null);
     }, 3000);
   };

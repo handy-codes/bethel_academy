@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  BarChart3, 
-  TrendingUp, 
-  Users, 
+import {
+  BarChart3,
+  TrendingUp,
+  Users,
   BookOpen,
   Clock,
   Target,
@@ -45,18 +45,18 @@ export default function AnalyticsPage() {
     const loadAnalytics = () => {
       const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
       const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
-      
+
       // Calculate real analytics
       const totalStudents = new Set(examResults.map((r: any) => r.studentId)).size;
       const totalExams = availableExams.length;
       const totalAttempts = examResults.length;
-      const averageScore = examResults.length > 0 
+      const averageScore = examResults.length > 0
         ? Math.round(examResults.reduce((acc: number, r: any) => acc + r.percentage, 0) / examResults.length)
         : 0;
-      const completionRate = examResults.length > 0 
+      const completionRate = examResults.length > 0
         ? Math.round((examResults.filter((r: any) => r.isApproved).length / examResults.length) * 100)
         : 0;
-      
+
       // Top performers (top 5 by score)
       const topPerformers = examResults
         .sort((a: any, b: any) => b.percentage - a.percentage)
@@ -66,7 +66,7 @@ export default function AnalyticsPage() {
           score: result.percentage,
           subject: result.subject
         }));
-      
+
       // Subject performance
       const subjectStats = examResults.reduce((acc: any, result: any) => {
         if (!acc[result.subject]) {
@@ -77,13 +77,13 @@ export default function AnalyticsPage() {
         acc[result.subject].attempts += 1;
         return acc;
       }, {});
-      
+
       const subjectPerformance = Object.keys(subjectStats).map(subject => ({
         subject,
         averageScore: Math.round(subjectStats[subject].total / subjectStats[subject].count),
         attempts: subjectStats[subject].attempts
       }));
-      
+
       // Monthly trends (simplified - using last 6 months)
       const monthlyTrends = [];
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
@@ -93,16 +93,16 @@ export default function AnalyticsPage() {
           const month = date.getMonth();
           return month === i;
         });
-        
+
         monthlyTrends.push({
           month: months[i],
           attempts: monthResults.length,
-          averageScore: monthResults.length > 0 
+          averageScore: monthResults.length > 0
             ? Math.round(monthResults.reduce((acc: number, r: any) => acc + r.percentage, 0) / monthResults.length)
             : 0
         });
       }
-      
+
       setAnalytics({
         totalStudents,
         totalExams,
@@ -115,12 +115,12 @@ export default function AnalyticsPage() {
       });
       setLoading(false);
     };
-    
+
     loadAnalytics();
-    
+
     // Set up real-time updates by checking localStorage periodically
     const interval = setInterval(loadAnalytics, 5000); // Check every 5 seconds
-    
+
     return () => clearInterval(interval);
   }, [timeRange]);
 
@@ -227,8 +227,8 @@ export default function AnalyticsPage() {
                 <div className="flex items-center space-x-3">
                   <div className="w-8 text-sm font-medium text-gray-600">{trend.month}</div>
                   <div className="flex-1 bg-gray-200 rounded-full h-2 max-w-32">
-                    <div 
-                      className="bg-indigo-600 h-2 rounded-full" 
+                    <div
+                      className="bg-indigo-600 h-2 rounded-full"
                       style={{ width: `${(trend.attempts / 70) * 100}%` }}
                     ></div>
                   </div>
@@ -253,8 +253,8 @@ export default function AnalyticsPage() {
                 <div className="flex items-center space-x-3">
                   <div className="w-20 text-sm font-medium text-gray-900">{subject.subject}</div>
                   <div className="flex-1 bg-gray-200 rounded-full h-2 max-w-32">
-                    <div 
-                      className="bg-green-600 h-2 rounded-full" 
+                    <div
+                      className="bg-green-600 h-2 rounded-full"
                       style={{ width: `${subject.averageScore}%` }}
                     ></div>
                   </div>

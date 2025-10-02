@@ -33,55 +33,56 @@ export default function ResultsPage() {
       setResults(examResults);
       setLoading(false);
     };
-    
+
     loadResults();
-    
+
     // Set up real-time updates by checking localStorage periodically
     const interval = setInterval(loadResults, 2000); // Check every 2 seconds
-    
+
     return () => clearInterval(interval);
   }, []);
 
   const filteredResults = results.filter(result => {
-    const matchesSearch = 
-      result.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      result.examTitle.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = 
-      filterStatus === "all" || 
+    const matchesSearch =
+      result.studentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      result.examTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      false;
+
+    const matchesStatus =
+      filterStatus === "all" ||
       (filterStatus === "approved" && result.isApproved) ||
       (filterStatus === "pending" && !result.isApproved);
-    
+
     return matchesSearch && matchesStatus;
   });
 
   const approveResult = (resultId: string) => {
-    const updatedResults = results.map(result => 
-      result.id === resultId 
-        ? { 
-            ...result, 
-            isApproved: true, 
-            approvedBy: "Current Admin",
-            approvedAt: new Date().toISOString()
-          }
+    const updatedResults = results.map(result =>
+      result.id === resultId
+        ? {
+          ...result,
+          isApproved: true,
+          approvedBy: "Current Admin",
+          approvedAt: new Date().toISOString()
+        }
         : result
     );
-    
+
     setResults(updatedResults);
-    
+
     // Update localStorage for real-time sync
     localStorage.setItem('examResults', JSON.stringify(updatedResults));
   };
 
   const rejectResult = (resultId: string) => {
-    const updatedResults = results.map(result => 
-      result.id === resultId 
+    const updatedResults = results.map(result =>
+      result.id === resultId
         ? { ...result, isApproved: false }
         : result
     );
-    
+
     setResults(updatedResults);
-    
+
     // Update localStorage for real-time sync
     localStorage.setItem('examResults', JSON.stringify(updatedResults));
   };
@@ -125,7 +126,7 @@ export default function ResultsPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-lg bg-orange-500">
@@ -139,7 +140,7 @@ export default function ResultsPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-lg bg-green-500">
@@ -153,7 +154,7 @@ export default function ResultsPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-lg bg-purple-500">
@@ -277,11 +278,10 @@ export default function ResultsPage() {
                     {new Date(result.submittedAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      result.isApproved 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-orange-100 text-orange-800'
-                    }`}>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${result.isApproved
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-orange-100 text-orange-800'
+                      }`}>
                       {result.isApproved ? 'Approved' : 'Pending'}
                     </span>
                   </td>

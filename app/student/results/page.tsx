@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  CheckCircle, 
-  Clock, 
-  TrendingUp, 
+import {
+  CheckCircle,
+  Clock,
+  TrendingUp,
   Filter,
   Search,
   Download,
@@ -44,12 +44,12 @@ export default function ResultsPage() {
       setResults(examResults);
       setLoading(false);
     };
-    
+
     loadResults();
-    
+
     // Set up real-time updates by checking localStorage periodically
     const interval = setInterval(loadResults, 2000); // Check every 2 seconds
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -83,8 +83,9 @@ export default function ResultsPage() {
   // Filter and sort results
   const filteredResults = results
     .filter(result => {
-      const matchesSearch = result.examTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           result.subject.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = result.examTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        result.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        false;
       const matchesSubject = filterSubject === "all" || result.subject === filterSubject;
       const matchesGrade = filterGrade === "all" || result.grade === filterGrade;
       return matchesSearch && matchesSubject && matchesGrade;
@@ -272,7 +273,7 @@ export default function ResultsPage() {
                         <span className="text-sm text-gray-500">{result.subject}</span>
                         {getPerformanceIcon(result.percentage)}
                       </div>
-                      
+
                       <div className="flex items-center space-x-6 text-sm text-gray-600">
                         <span>Submitted: {new Date(result.submittedAt).toLocaleDateString()}</span>
                         <span>Time: {formatTime(result.timeSpent)}</span>

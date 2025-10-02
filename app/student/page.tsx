@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { 
-  BookOpen, 
-  CheckCircle, 
-  Clock, 
+import {
+  BookOpen,
+  CheckCircle,
+  Clock,
   TrendingUp,
   AlertCircle,
   Play
@@ -46,7 +46,7 @@ export default function StudentDashboard() {
     const loadData = () => {
       const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
       const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
-      
+
       setStats({
         totalExams: availableExams.length,
         completedExams: examResults.length,
@@ -55,7 +55,7 @@ export default function StudentDashboard() {
         totalTimeSpent: examResults.reduce((acc: number, r: any) => acc + (r.timeSpent || 0), 0),
         currentStreak: 0,
       });
-      
+
       // Show recent exams from available exams and completed results
       const recentExamsData = availableExams.slice(0, 4).map((exam: any) => {
         const result = examResults.find((r: any) => r.examId === exam.id);
@@ -68,16 +68,16 @@ export default function StudentDashboard() {
           submittedAt: result?.submittedAt,
         };
       });
-      
+
       setRecentExams(recentExamsData);
       setLoading(false);
     };
-    
+
     loadData();
-    
+
     // Set up real-time updates by checking localStorage periodically
     const interval = setInterval(loadData, 3000); // Check every 3 seconds
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -248,7 +248,7 @@ export default function StudentDashboard() {
               <p className="text-sm font-medium text-gray-900">Take New Exam</p>
               <p className="text-xs text-gray-500">Start a practice test</p>
             </Link>
-            
+
             <Link
               href="/student/results"
               className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors text-center"
@@ -257,7 +257,7 @@ export default function StudentDashboard() {
               <p className="text-sm font-medium text-gray-900">View Results</p>
               <p className="text-xs text-gray-500">Check your scores</p>
             </Link>
-            
+
             <Link
               href="/student/history"
               className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors text-center"

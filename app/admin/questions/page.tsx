@@ -28,8 +28,21 @@ export default function QuestionsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [newQuestion, setNewQuestion] = useState<Partial<Question>>({
+    questionText: '',
+    optionA: '',
+    optionB: '',
+    optionC: '',
+    optionD: '',
+    optionE: '',
+    correctAnswer: 'A',
+    difficulty: 'EASY',
+    points: 1,
+    subject: 'MATHEMATICS'
+  });
   const [actionToast, setActionToast] = useState<{
     show: boolean;
     type: 'success' | 'error' | 'info';
@@ -43,7 +56,7 @@ export default function QuestionsPage() {
     // Load questions from localStorage only (no dummy data)
     const loadQuestions = () => {
       const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
-      
+
       // Extract all questions from exams
       const allQuestions: Question[] = [];
       availableExams.forEach((exam: any) => {
@@ -56,21 +69,21 @@ export default function QuestionsPage() {
           });
         }
       });
-      
+
       setQuestions(allQuestions);
       setLoading(false);
     };
-    
+
     loadQuestions();
-    
+
     // Set up real-time updates by checking localStorage periodically
     const interval = setInterval(loadQuestions, 3000); // Check every 3 seconds
-    
+
     return () => clearInterval(interval);
   }, []);
 
   const filteredQuestions = questions.filter(question => {
-    const matchesSearch = question.questionText.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = question.questionText?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
     const matchesSubject = filterSubject === "all" || question.subject === filterSubject;
     const matchesDifficulty = filterDifficulty === "all" || question.difficulty === filterDifficulty;
     return matchesSearch && matchesSubject && matchesDifficulty;
@@ -126,16 +139,105 @@ export default function QuestionsPage() {
     setShowDeleteConfirm(true);
   };
 
+  const handleAddQuestion = () => {
+    setNewQuestion({
+      questionText: '',
+      optionA: '',
+      optionB: '',
+      optionC: '',
+      optionD: '',
+      optionE: '',
+      correctAnswer: 'A',
+      difficulty: 'EASY',
+      points: 1,
+      subject: 'MATHEMATICS'
+    });
+    setShowAddModal(true);
+  };
+
+  const handleCreateQuestion = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!newQuestion.questionText || !newQuestion.optionA || !newQuestion.optionB ||
+      !newQuestion.optionC || !newQuestion.optionD || !newQuestion.optionE) {
+      showToast('error', '❌ Please fill in all required fields.');
+      return;
+    }
+
+    try {
+      const question: Question = {
+        id: `q-${Date.now()}`,
+        questionText: newQuestion.questionText,
+        optionA: newQuestion.optionA,
+        optionB: newQuestion.optionB,
+        optionC: newQuestion.optionC,
+        optionD: newQuestion.optionD,
+        optionE: newQuestion.optionE,
+        correctAnswer: newQuestion.correctAnswer as "A" | "B" | "C" | "D" | "E",
+        difficulty: newQuestion.difficulty as "EASY" | "MEDIUM" | "HARD",
+        points: newQuestion.points || 1,
+        subject: newQuestion.subject as ExamSubject
+      };
+
+      setQuestions([...questions, question]);
+
+      // Update localStorage - add question to an existing exam or create a new exam
+      const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
+      const examWithSubject = availableExams.find((exam: any) => exam.subject === question.subject);
+
+      if (examWithSubject) {
+        // Add question to existing exam
+        examWithSubject.questions.push(question);
+        examWithSubject.totalQuestions = examWithSubject.questions.length;
+      } else {
+        // Create new exam for this subject
+        const newExam = {
+          id: `exam-${question.subject.toLowerCase()}-${Date.now()}`,
+          title: `${question.subject} Questions`,
+          description: `Questions for ${question.subject}`,
+          subject: question.subject,
+          duration: 60,
+          totalQuestions: 1,
+          difficulty: question.difficulty,
+          instructions: `Answer all questions carefully.`,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          attempts: 0,
+          questions: [question]
+        };
+        availableExams.push(newExam);
+      }
+
+      localStorage.setItem('mockExams', JSON.stringify(availableExams));
+
+      setShowAddModal(false);
+      showToast('success', '✅ Question added successfully!');
+    } catch (error) {
+      showToast('error', '❌ Failed to add question. Please try again.');
+    }
+  };
+
   const handleUpdateQuestion = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!editingQuestion || !selectedQuestion) return;
-    
+
     try {
-      setQuestions(questions.map(q => 
+      setQuestions(questions.map(q =>
         q.id === selectedQuestion.id ? editingQuestion : q
       ));
-      
+
+      // Update localStorage
+      const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
+      availableExams.forEach((exam: any) => {
+        if (exam.questions) {
+          exam.questions = exam.questions.map((q: any) =>
+            q.id === selectedQuestion.id ? editingQuestion : q
+          );
+        }
+      });
+      localStorage.setItem('mockExams', JSON.stringify(availableExams));
+
       setShowEditModal(false);
       setSelectedQuestion(null);
       setEditingQuestion(null);
@@ -147,11 +249,21 @@ export default function QuestionsPage() {
 
   const confirmDeleteQuestion = () => {
     if (!selectedQuestion) return;
-    
+
     try {
       const deletedQuestion = selectedQuestion;
       setQuestions(questions.filter(q => q.id !== selectedQuestion.id));
-      
+
+      // Update localStorage
+      const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
+      availableExams.forEach((exam: any) => {
+        if (exam.questions) {
+          exam.questions = exam.questions.filter((q: any) => q.id !== selectedQuestion.id);
+          exam.totalQuestions = exam.questions.length;
+        }
+      });
+      localStorage.setItem('mockExams', JSON.stringify(availableExams));
+
       setShowDeleteConfirm(false);
       setSelectedQuestion(null);
       showToast('success', `✅ Question deleted successfully!`);
@@ -175,7 +287,10 @@ export default function QuestionsPage() {
           <h1 className="text-3xl font-bold text-gray-900">Question Bank</h1>
           <p className="text-gray-600 mt-2">Manage exam questions for all subjects</p>
         </div>
-        <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2">
+        <button
+          onClick={handleAddQuestion}
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+        >
           <Plus className="h-5 w-5" />
           <span>Add Question</span>
         </button>
@@ -194,7 +309,7 @@ export default function QuestionsPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-lg bg-green-500">
@@ -206,7 +321,7 @@ export default function QuestionsPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-lg bg-purple-500">
@@ -220,7 +335,7 @@ export default function QuestionsPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-lg bg-orange-500">
@@ -347,23 +462,23 @@ export default function QuestionsPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-2">
-                      <button 
+                      <button
                         onClick={() => handleViewQuestion(question)}
-                        className="p-1 text-blue-600 hover:bg-blue-100 rounded" 
+                        className="p-1 text-blue-600 hover:bg-blue-100 rounded"
                         title="View"
                       >
                         <Eye className="h-4 w-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={(e) => handleEditQuestion(question, e)}
-                        className="p-1 text-indigo-600 hover:bg-indigo-100 rounded" 
+                        className="p-1 text-indigo-600 hover:bg-indigo-100 rounded"
                         title="Edit"
                       >
                         <Edit className="h-4 w-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDeleteQuestion(question)}
-                        className="p-1 text-red-600 hover:bg-red-100 rounded" 
+                        className="p-1 text-red-600 hover:bg-red-100 rounded"
                         title="Delete"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -392,13 +507,12 @@ export default function QuestionsPage() {
 
       {/* Action Toast Notification */}
       {actionToast.show && (
-        <div className={`fixed top-4 right-4 z-50 flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg ${
-          actionToast.type === 'success' 
-            ? 'bg-green-50 text-green-800 border border-green-200' 
+        <div className={`fixed top-4 right-4 z-50 flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg ${actionToast.type === 'success'
+            ? 'bg-green-50 text-green-800 border border-green-200'
             : actionToast.type === 'error'
-            ? 'bg-red-50 text-red-800 border border-red-200'
-            : 'bg-blue-50 text-blue-800 border border-blue-200'
-        }`}>
+              ? 'bg-red-50 text-red-800 border border-red-200'
+              : 'bg-blue-50 text-blue-800 border border-blue-200'
+          }`}>
           {actionToast.type === 'success' ? (
             <CheckCircle className="h-5 w-5 text-green-600" />
           ) : actionToast.type === 'error' ? (
@@ -430,13 +544,13 @@ export default function QuestionsPage() {
                   <X className="h-6 w-6" />
                 </button>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Question</label>
                   <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">{selectedQuestion.questionText}</p>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Subject</label>
@@ -459,7 +573,7 @@ export default function QuestionsPage() {
                     <p className="text-sm text-gray-900 font-semibold">Option {selectedQuestion.correctAnswer}</p>
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Options</label>
                   <div className="space-y-2">
@@ -475,7 +589,7 @@ export default function QuestionsPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => setShowViewModal(false)}
@@ -507,7 +621,7 @@ export default function QuestionsPage() {
                   <X className="h-6 w-6" />
                 </button>
               </div>
-              
+
               <form onSubmit={handleUpdateQuestion} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Question Text *</label>
@@ -575,7 +689,7 @@ export default function QuestionsPage() {
                     />
                   </div>
                 </div>
-                
+
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     type="button"
@@ -617,7 +731,7 @@ export default function QuestionsPage() {
                   <p className="text-sm text-gray-500">This action cannot be undone.</p>
                 </div>
               </div>
-              
+
               <div className="mb-6">
                 <p className="text-sm text-gray-700">
                   Are you sure you want to delete this question?
@@ -628,7 +742,7 @@ export default function QuestionsPage() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => {
@@ -646,6 +760,127 @@ export default function QuestionsPage() {
                   Delete
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Question Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">Add New Question</h2>
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateQuestion} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Question Text *</label>
+                  <textarea
+                    value={newQuestion.questionText}
+                    onChange={(e) => setNewQuestion({ ...newQuestion, questionText: e.target.value })}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Enter the question..."
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {["A", "B", "C", "D", "E"].map((option) => (
+                    <div key={option}>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Option {option} *
+                      </label>
+                      <input
+                        type="text"
+                        value={newQuestion[`option${option}` as keyof typeof newQuestion] as string}
+                        onChange={(e) => setNewQuestion({ ...newQuestion, [`option${option}`]: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder={`Option ${option}`}
+                        required
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Correct Answer *</label>
+                    <select
+                      value={newQuestion.correctAnswer}
+                      onChange={(e) => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value as "A" | "B" | "C" | "D" | "E" })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    >
+                      {["A", "B", "C", "D", "E"].map((option) => (
+                        <option key={option} value={option}>Option {option}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
+                    <select
+                      value={newQuestion.subject}
+                      onChange={(e) => setNewQuestion({ ...newQuestion, subject: e.target.value as ExamSubject })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    >
+                      {subjects.map(subject => (
+                        <option key={subject} value={subject}>
+                          {subject.charAt(0) + subject.slice(1).toLowerCase()}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
+                    <select
+                      value={newQuestion.difficulty}
+                      onChange={(e) => setNewQuestion({ ...newQuestion, difficulty: e.target.value as "EASY" | "MEDIUM" | "HARD" })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    >
+                      <option value="EASY">Easy</option>
+                      <option value="MEDIUM">Medium</option>
+                      <option value="HARD">Hard</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Points</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={newQuestion.points}
+                      onChange={(e) => setNewQuestion({ ...newQuestion, points: parseInt(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddModal(false)}
+                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    Add Question
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { 
-  BookOpen, 
-  Users, 
-  CheckCircle, 
+import {
+  BookOpen,
+  Users,
+  CheckCircle,
   Clock,
   TrendingUp,
   AlertCircle,
@@ -37,21 +37,21 @@ export default function AdminDashboard() {
     const loadStats = () => {
       const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
       const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
-      
+
       // Calculate real statistics
       const totalExams = availableExams.length;
       const totalAttempts = examResults.length;
       const pendingApprovals = examResults.filter((r: any) => !r.isApproved).length;
-      const averageScore = examResults.length > 0 
+      const averageScore = examResults.length > 0
         ? Math.round(examResults.reduce((acc: number, r: any) => acc + r.percentage, 0) / examResults.length)
         : 0;
-      const completionRate = examResults.length > 0 
+      const completionRate = examResults.length > 0
         ? Math.round((examResults.filter((r: any) => r.isApproved).length / examResults.length) * 100)
         : 0;
-      
+
       // Estimate unique students (in real app, this would come from user database)
       const uniqueStudents = new Set(examResults.map((r: any) => r.studentId)).size;
-      
+
       setStats({
         totalExams,
         totalStudents: uniqueStudents || 0,
@@ -62,12 +62,12 @@ export default function AdminDashboard() {
       });
       setLoading(false);
     };
-    
+
     loadStats();
-    
+
     // Set up real-time updates by checking localStorage periodically
     const interval = setInterval(loadStats, 3000); // Check every 3 seconds
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -164,12 +164,12 @@ export default function AdminDashboard() {
             {(() => {
               const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
               const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
-              
+
               // Get recent exam results (last 3)
               const recentResults = examResults
                 .sort((a: any, b: any) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())
                 .slice(0, 3);
-              
+
               if (recentResults.length === 0) {
                 return (
                   <div className="text-center py-8">
@@ -177,12 +177,11 @@ export default function AdminDashboard() {
                   </div>
                 );
               }
-              
+
               return recentResults.map((result: any, index: number) => (
                 <div key={result.id} className="flex items-center space-x-3">
-                  <div className={`w-2 h-2 rounded-full ${
-                    result.isApproved ? 'bg-green-500' : 'bg-orange-500'
-                  }`}></div>
+                  <div className={`w-2 h-2 rounded-full ${result.isApproved ? 'bg-green-500' : 'bg-orange-500'
+                    }`}></div>
                   <div className="flex-1">
                     <p className="text-sm text-gray-900">
                       <span className="font-medium">{result.studentName}</span> {result.isApproved ? 'completed' : 'submitted'} {result.examTitle}
@@ -191,9 +190,8 @@ export default function AdminDashboard() {
                       {new Date(result.submittedAt).toLocaleString()}
                     </p>
                   </div>
-                  <span className={`text-sm font-medium ${
-                    result.isApproved ? 'text-green-600' : 'text-orange-600'
-                  }`}>
+                  <span className={`text-sm font-medium ${result.isApproved ? 'text-green-600' : 'text-orange-600'
+                    }`}>
                     {result.isApproved ? `Score: ${result.percentage}%` : 'Pending Review'}
                   </span>
                 </div>
@@ -218,7 +216,7 @@ export default function AdminDashboard() {
               <p className="text-sm font-medium text-gray-900">Create New Exam</p>
               <p className="text-xs text-gray-500">Set up a new CBT exam</p>
             </Link>
-            
+
             <Link
               href="/admin/questions"
               className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors text-center"
@@ -227,7 +225,7 @@ export default function AdminDashboard() {
               <p className="text-sm font-medium text-gray-900">Add Questions</p>
               <p className="text-xs text-gray-500">Create new exam questions</p>
             </Link>
-            
+
             <Link
               href="/admin/results"
               className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors text-center"

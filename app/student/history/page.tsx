@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  CheckCircle, 
-  Clock, 
-  TrendingUp, 
+import {
+  CheckCircle,
+  Clock,
+  TrendingUp,
   Calendar,
   Filter,
   Search,
@@ -41,7 +41,7 @@ export default function ExamHistoryPage() {
     // Load real data from localStorage
     const loadHistory = () => {
       const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
-      
+
       // Convert exam results to history format
       const historyData = examResults.map((result: any, index: number) => ({
         id: result.id,
@@ -57,16 +57,16 @@ export default function ExamHistoryPage() {
         attempt: index + 1, // Simple attempt numbering
         status: result.isApproved ? "completed" : "completed" // All submitted results are completed
       }));
-      
+
       setHistory(historyData);
       setLoading(false);
     };
-    
+
     loadHistory();
-    
+
     // Set up real-time updates by checking localStorage periodically
     const interval = setInterval(loadHistory, 3000); // Check every 3 seconds
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -103,23 +103,23 @@ export default function ExamHistoryPage() {
   const filteredHistory = history
     .filter(item => {
       const matchesSearch = item.examTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           item.subject.toLowerCase().includes(searchTerm.toLowerCase());
+        item.subject.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesSubject = filterSubject === "all" || item.subject === filterSubject;
-      
+
       let matchesPeriod = true;
       if (filterPeriod !== "all") {
         const itemDate = new Date(item.submittedAt);
         const now = new Date();
         const diffTime = Math.abs(now.getTime() - itemDate.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
+
         switch (filterPeriod) {
           case "week": matchesPeriod = diffDays <= 7; break;
           case "month": matchesPeriod = diffDays <= 30; break;
           case "year": matchesPeriod = diffDays <= 365; break;
         }
       }
-      
+
       return matchesSearch && matchesSubject && matchesPeriod;
     })
     .sort((a, b) => {
@@ -138,11 +138,11 @@ export default function ExamHistoryPage() {
 
   // Calculate statistics
   const completedExams = history.filter(h => h.status === "completed");
-  const averageScore = completedExams.length > 0 
+  const averageScore = completedExams.length > 0
     ? Math.round(completedExams.reduce((acc, h) => acc + h.percentage, 0) / completedExams.length)
     : 0;
   const totalTimeSpent = history.reduce((acc, h) => acc + h.timeSpent, 0);
-  const bestScore = completedExams.length > 0 
+  const bestScore = completedExams.length > 0
     ? Math.max(...completedExams.map(h => h.percentage))
     : 0;
 
@@ -298,7 +298,7 @@ export default function ExamHistoryPage() {
                         </span>
                       )}
                     </div>
-                    
+
                     <div className="flex items-center space-x-6 text-sm text-gray-600">
                       <span>Submitted: {new Date(item.submittedAt).toLocaleDateString()}</span>
                       <span>Time: {formatTime(item.timeSpent)}</span>

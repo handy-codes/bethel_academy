@@ -45,7 +45,7 @@ export default function AvailableExamsPage() {
   }, []);
 
   const filteredExams = exams.filter(exam => {
-    const matchesSearch = exam.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = exam.title?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
     const matchesSubject = filterSubject === "all" || exam.subject === filterSubject;
     return matchesSearch && matchesSubject && exam.isActive;
   });

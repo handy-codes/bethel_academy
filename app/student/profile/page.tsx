@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  BookOpen, 
+import {
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  BookOpen,
   Trophy,
   Edit3,
   Save,
@@ -47,13 +47,13 @@ export default function ProfilePage() {
     const loadProfile = () => {
       const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
       const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
-      
+
       // Calculate real statistics from exam results
       const totalExamsTaken = examResults.length;
-      const averageScore = examResults.length > 0 
+      const averageScore = examResults.length > 0
         ? Math.round(examResults.reduce((acc: number, r: any) => acc + r.percentage, 0) / examResults.length)
         : 0;
-      
+
       // Find best subject
       const subjectScores = examResults.reduce((acc: any, result: any) => {
         if (!acc[result.subject]) {
@@ -63,13 +63,13 @@ export default function ProfilePage() {
         acc[result.subject].count += 1;
         return acc;
       }, {});
-      
-      const bestSubject = Object.keys(subjectScores).length > 0 
-        ? Object.keys(subjectScores).reduce((a, b) => 
-            subjectScores[a].total / subjectScores[a].count > subjectScores[b].total / subjectScores[b].count ? a : b
-          )
+
+      const bestSubject = Object.keys(subjectScores).length > 0
+        ? Object.keys(subjectScores).reduce((a, b) =>
+          subjectScores[a].total / subjectScores[a].count > subjectScores[b].total / subjectScores[b].count ? a : b
+        )
         : undefined;
-      
+
       // Generate achievements based on performance
       const achievements = [];
       if (averageScore >= 90) achievements.push("Academic Excellence Award");
@@ -78,10 +78,10 @@ export default function ProfilePage() {
       if (bestSubject && subjectScores[bestSubject].total / subjectScores[bestSubject].count >= 85) {
         achievements.push(`Best Student in ${bestSubject}`);
       }
-      
+
       // Load profile from localStorage or create default
       const savedProfile = JSON.parse(localStorage.getItem('studentProfile') || '{}');
-      
+
       setProfile({
         id: user?.id || "student-1",
         fullName: savedProfile.fullName || user?.fullName || "Student User",
@@ -101,12 +101,12 @@ export default function ProfilePage() {
       });
       setLoading(false);
     };
-    
+
     loadProfile();
-    
+
     // Set up real-time updates by checking localStorage periodically
     const interval = setInterval(loadProfile, 5000); // Check every 5 seconds
-    
+
     return () => clearInterval(interval);
   }, [user]);
 
@@ -129,7 +129,7 @@ export default function ProfilePage() {
         ...editForm
       };
       setProfile(updatedProfile);
-      
+
       // Save to localStorage for persistence
       const profileToSave = {
         fullName: updatedProfile.fullName,
