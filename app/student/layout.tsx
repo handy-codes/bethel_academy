@@ -73,26 +73,6 @@ export default function StudentLayout({
           `,
         }}
       />
-      {typeof window !== 'undefined' && window.addEventListener &&
-        // attach runtime listener once
-        (() => { window.removeEventListener('dashboard:toggleSidebar:student', () => { }); })()}
-      {
-        // runtime effect substitute since this is in a client component
-      }
-      {/* Notify navbar about current sidebar state for icon sync */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            (function(){
-              if (typeof window !== 'undefined') {
-                const notify = () => {
-                  const ev = new CustomEvent('dashboard:sidebar:state', { detail: { open: ${'${'}Boolean(${''})${'}'} } });
-                };
-              }
-            })();
-          `,
-        }}
-      />
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div

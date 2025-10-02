@@ -22,11 +22,16 @@ const navigation = [
   { name: "Settings", href: "/lecturer/settings", icon: Settings },
 ];
 
-export default function LecturerSidebar() {
+interface LecturerSidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function LecturerSidebar({ isOpen, onClose }: LecturerSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg pt-20">
+    <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg pt-20 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
       <nav className="mt-5 px-2">
         <div className="space-y-1">
           {navigation.map((item) => {
