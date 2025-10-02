@@ -157,7 +157,7 @@ export default function SettingsPage() {
   if (!settings) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mt-12">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">System Settings</h1>

@@ -107,7 +107,7 @@ export default function ResultsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mt-12">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Exam Results</h1>
         <p className="text-gray-600 mt-2">Review and approve student exam results</p>
