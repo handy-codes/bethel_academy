@@ -255,8 +255,8 @@ export default function ExamResultPage({ params }: { params: { id: string } }) {
                       </span>
                       <div className="flex items-center space-x-2">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${question.difficulty === "EASY" ? "bg-green-100 text-green-800" :
-                            question.difficulty === "MEDIUM" ? "bg-yellow-100 text-yellow-800" :
-                              "bg-red-100 text-red-800"
+                          question.difficulty === "MEDIUM" ? "bg-yellow-100 text-yellow-800" :
+                            "bg-red-100 text-red-800"
                           }`}>
                           {question.difficulty}
                         </span>
@@ -282,10 +282,10 @@ export default function ExamResultPage({ params }: { params: { id: string } }) {
                           <div
                             key={option}
                             className={`p-3 rounded-lg border-2 ${isCorrect
-                                ? "border-green-500 bg-green-50"
-                                : isUserAnswer && !isCorrect
-                                  ? "border-red-500 bg-red-50"
-                                  : "border-gray-200"
+                              ? "border-green-500 bg-green-50"
+                              : isUserAnswer && !isCorrect
+                                ? "border-red-500 bg-red-50"
+                                : "border-gray-200"
                               }`}
                           >
                             <div className="flex items-center space-x-3">
