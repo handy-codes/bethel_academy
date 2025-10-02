@@ -2,16 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  BookOpen, 
-  FileText, 
-  Users, 
-  BarChart3, 
+import {
+  LayoutDashboard,
+  BookOpen,
+  FileText,
+  Users,
+  BarChart3,
   Settings,
   ClipboardList,
-  CheckCircle,
-  X
+  CheckCircle
 } from "lucide-react";
 
 const navigation = [
@@ -34,7 +33,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <div 
+    <div
       className={`
         fixed left-0 z-50 w-64 bg-white shadow-lg
         lg:top-0 lg:h-screen
@@ -47,15 +46,6 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       }}
     >
       <nav className="mt-5 px-2">
-        <div className="flex items-center justify-between mb-4 px-2 lg:hidden">
-          <h2 className="text-lg font-semibold text-gray-900">Admin Menu</h2>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
         <div className="space-y-1">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
@@ -64,16 +54,14 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                 key={item.name}
                 href={item.href}
                 onClick={() => onClose()} // Close sidebar on mobile after navigation
-                className={`${
-                  isActive
+                className={`${isActive
                     ? "bg-indigo-100 text-indigo-900"
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`}
+                  } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`}
               >
                 <item.icon
-                  className={`${
-                    isActive ? "text-indigo-500" : "text-gray-400 group-hover:text-gray-500"
-                  } mr-3 h-5 w-5`}
+                  className={`${isActive ? "text-indigo-500" : "text-gray-400 group-hover:text-gray-500"
+                    } mr-3 h-5 w-5`}
                 />
                 {item.name}
               </Link>

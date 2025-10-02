@@ -41,12 +41,12 @@ export default function ExamsPage() {
       setExams(customExams);
       setLoading(false);
     };
-    
+
     loadExams();
-    
+
     // Set up real-time updates by checking localStorage periodically
     const interval = setInterval(loadExams, 3000); // Check every 3 seconds
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -57,7 +57,7 @@ export default function ExamsPage() {
   });
 
   const toggleExamStatus = (examId: string) => {
-    setExams(exams.map(exam => 
+    setExams(exams.map(exam =>
       exam.id === examId ? { ...exam, isActive: !exam.isActive } : exam
     ));
   };
@@ -88,15 +88,15 @@ export default function ExamsPage() {
 
   const confirmDeleteExam = () => {
     if (!selectedExam) return;
-    
+
     const deletedExam = selectedExam;
     setExams(exams.filter(exam => exam.id !== selectedExam.id));
-    
+
     // Update localStorage
     const customExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
     const updatedCustomExams = customExams.filter((exam: Exam) => exam.id !== selectedExam.id);
     localStorage.setItem('mockExams', JSON.stringify(updatedCustomExams));
-    
+
     setShowDeleteConfirm(false);
     setSelectedExam(null);
     showToast('success', `✅ Exam "${deletedExam.title}" deleted successfully!`);
@@ -223,11 +223,10 @@ export default function ExamsPage() {
                     {exam.attempts}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      exam.isActive 
-                        ? 'bg-green-100 text-green-800' 
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${exam.isActive
+                        ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
-                    }`}>
+                      }`}>
                       {exam.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </td>
@@ -235,32 +234,31 @@ export default function ExamsPage() {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => toggleExamStatus(exam.id)}
-                        className={`p-1 rounded ${
-                          exam.isActive 
-                            ? 'text-orange-600 hover:bg-orange-100' 
+                        className={`p-1 rounded ${exam.isActive
+                            ? 'text-orange-600 hover:bg-orange-100'
                             : 'text-green-600 hover:bg-green-100'
-                        }`}
+                          }`}
                         title={exam.isActive ? 'Deactivate' : 'Activate'}
                       >
                         {exam.isActive ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleViewExam(exam)}
-                        className="p-1 text-blue-600 hover:bg-blue-100 rounded" 
+                        className="p-1 text-blue-600 hover:bg-blue-100 rounded"
                         title="View"
                       >
                         <Eye className="h-4 w-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={(e) => handleEditExam(exam, e)}
-                        className="p-1 text-indigo-600 hover:bg-indigo-100 rounded" 
+                        className="p-1 text-indigo-600 hover:bg-indigo-100 rounded"
                         title="Edit"
                       >
                         <Edit className="h-4 w-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDeleteExam(exam)}
-                        className="p-1 text-red-600 hover:bg-red-100 rounded" 
+                        className="p-1 text-red-600 hover:bg-red-100 rounded"
                         title="Delete"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -276,11 +274,10 @@ export default function ExamsPage() {
 
       {/* Toast Notification */}
       {actionToast.show && (
-        <div className={`fixed top-4 right-4 z-50 flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg ${
-          actionToast.type === 'success' 
-            ? 'bg-green-50 text-green-800 border border-green-200' 
+        <div className={`fixed top-4 right-4 z-50 flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg ${actionToast.type === 'success'
+            ? 'bg-green-50 text-green-800 border border-green-200'
             : 'bg-red-50 text-red-800 border border-red-200'
-        }`}>
+          }`}>
           {actionToast.type === 'success' ? (
             <CheckCircle className="h-5 w-5 text-green-600" />
           ) : (
@@ -310,13 +307,13 @@ export default function ExamsPage() {
                   <X className="h-6 w-6" />
                 </button>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Title</label>
                   <p className="text-sm text-gray-900">{selectedExam.title}</p>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Subject</label>
@@ -335,24 +332,23 @@ export default function ExamsPage() {
                     <p className="text-sm text-gray-900">{selectedExam.attempts}</p>
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Status</label>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    selectedExam.isActive 
-                      ? 'bg-green-100 text-green-800' 
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${selectedExam.isActive
+                      ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
-                  }`}>
+                    }`}>
                     {selectedExam.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Created</label>
                   <p className="text-sm text-gray-900">{selectedExam.createdAt}</p>
                 </div>
               </div>
-              
+
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => setShowViewModal(false)}
@@ -382,14 +378,14 @@ export default function ExamsPage() {
                   <p className="text-sm text-gray-500">This action cannot be undone.</p>
                 </div>
               </div>
-              
+
               <div className="mb-6">
                 <p className="text-sm text-gray-700">
-                  Are you sure you want to delete <strong>&ldquo;{selectedExam.title}&rdquo;</strong>? 
+                  Are you sure you want to delete <strong>&ldquo;{selectedExam.title}&rdquo;</strong>?
                   This will permanently remove the exam and all its data.
                 </p>
               </div>
-              
+
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => {

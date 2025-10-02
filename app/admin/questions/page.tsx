@@ -508,10 +508,10 @@ export default function QuestionsPage() {
       {/* Action Toast Notification */}
       {actionToast.show && (
         <div className={`fixed top-4 right-4 z-50 flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg ${actionToast.type === 'success'
-            ? 'bg-green-50 text-green-800 border border-green-200'
-            : actionToast.type === 'error'
-              ? 'bg-red-50 text-red-800 border border-red-200'
-              : 'bg-blue-50 text-blue-800 border border-blue-200'
+          ? 'bg-green-50 text-green-800 border border-green-200'
+          : actionToast.type === 'error'
+            ? 'bg-red-50 text-red-800 border border-red-200'
+            : 'bg-blue-50 text-blue-800 border border-blue-200'
           }`}>
           {actionToast.type === 'success' ? (
             <CheckCircle className="h-5 w-5 text-green-600" />

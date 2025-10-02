@@ -2,7 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import LecturerSidebar from "./components/LecturerSidebar";
 import LecturerHeader from "./components/LecturerHeader";
 
@@ -13,6 +13,21 @@ export default function LecturerLayout({
 }) {
   const { user, isLoaded } = useUser();
   const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // React to navbar global toggle
+  useEffect(() => {
+    const onToggle = () => setSidebarOpen(prev => !prev);
+    const channel = 'dashboard:toggleSidebar:lecturer';
+    if (typeof window !== 'undefined') {
+      window.addEventListener(channel, onToggle as EventListener);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener(channel, onToggle as EventListener);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (isLoaded && !user) {
@@ -33,13 +48,55 @@ export default function LecturerLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" style={{ '--navbar-height': '64px' } as React.CSSProperties}>
       <LecturerHeader />
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      {/* Global navbar toggle hooks */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            (function(){
+              if (typeof window !== 'undefined') {
+                window.addEventListener('dashboard:toggleSidebar', function(){
+                  const ev = new CustomEvent('dashboard:toggleSidebar:lecturer');
+                  window.dispatchEvent(ev);
+                });
+              }
+            })();
+          `,
+        }}
+      />
       <div className="flex">
-        <LecturerSidebar />
-        <main className="flex-1 p-6 ml-64">
-          {children}
-        </main>
+        <LecturerSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <div className="flex-1 min-h-screen">
+          {/* Floating toggle below navbar on mobile - positioned to avoid content overlap */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className={`lg:hidden fixed z-50 top-20 left-4 p-2 rounded-full shadow-lg transition-all duration-200 ${sidebarOpen ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700'} `}
+            aria-label="Toggle sidebar"
+          >
+            {sidebarOpen ? (
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="M9 5v14" />
+              </svg>
+            )}
+          </button>
+          <main className="p-4 sm:p-6 w-full pt-20 lg:pt-20 ml-0 lg:ml-0">
+            <div className="max-w-full">
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   );

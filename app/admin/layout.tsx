@@ -14,13 +14,27 @@ export default function AdminLayout({
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // React to navbar global toggle
+  useEffect(() => {
+    const onToggle = () => setSidebarOpen(prev => !prev);
+    const channel = 'dashboard:toggleSidebar:admin';
+    if (typeof window !== 'undefined') {
+      window.addEventListener(channel, onToggle as EventListener);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener(channel, onToggle as EventListener);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     if (isLoaded) {
       if (!user) {
         router.push("/sign-in");
         return;
       }
-      
+
       // Check if user has admin role
       const userRole = user.publicMetadata?.role as string;
       if (userRole !== 'admin') {
@@ -70,6 +84,21 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen bg-gray-100" style={{ '--navbar-height': '64px' } as React.CSSProperties}>
+      {/* Global navbar toggle hooks */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            (function(){
+              if (typeof window !== 'undefined') {
+                window.addEventListener('dashboard:toggleSidebar', function(){
+                  const ev = new CustomEvent('dashboard:toggleSidebar:admin');
+                  window.dispatchEvent(ev);
+                });
+              }
+            })();
+          `,
+        }}
+      />
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div
@@ -77,32 +106,30 @@ export default function AdminLayout({
           onClick={() => setSidebarOpen(false)}
         />
       )}
-      
+
       <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      
+
       <div className="lg:ml-64 min-h-screen">
-        {/* Animated Mobile menu button */}
-        <span className={`lg:hidden fixed top-20 z-50 transition-all duration-300 ${
-          sidebarOpen ? 'left-60' : 'left-4'
-        }`}>
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-3 bg-white rounded-full shadow-lg text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200 hover:scale-105"
-          >
-            {sidebarOpen ? (
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            )}
-          </button>
-        </span>
-        <main className="p-4 sm:p-6 w-full pt-20 lg:pt-20 bg-gray-100 min-h-screen">
+        {/* Floating toggle below navbar on mobile - positioned to avoid content overlap */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className={`lg:hidden fixed z-50 top-20 left-4 p-2 rounded-full shadow-lg transition-all duration-200 ${sidebarOpen ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700'} `}
+          aria-label="Toggle sidebar"
+        >
+          {sidebarOpen ? (
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="5" width="18" height="14" rx="2" />
+              <path d="M9 5v14" />
+            </svg>
+          )}
+        </button>
+        <main className="p-4 sm:p-6 w-full pt-20 lg:pt-20 bg-gray-100 min-h-screen ml-0 lg:ml-0">
           <div className="max-w-full">
-          {children}
+            {children}
           </div>
         </main>
       </div>
