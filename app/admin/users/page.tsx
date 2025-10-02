@@ -44,56 +44,27 @@ export default function UsersPage() {
   });
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    setTimeout(() => {
-      setUsers([
-        {
-          id: "1",
-          email: "paxymek@gmail.com",
-          name: "Paxymek Admin",
-          role: "admin",
-          createdAt: "2024-01-01",
-          isActive: true,
-        },
-        {
-          id: "2",
-          email: "walsam4christ@gmail.com",
-          name: "Walsam Admin",
-          role: "admin",
-          createdAt: "2024-01-01",
-          isActive: true,
-        },
-        {
-          id: "3",
-          email: "john.doe@student.com",
-          name: "John Doe",
-          role: "student",
-          createdAt: "2024-01-15",
-          isActive: true,
-        },
-        {
-          id: "4",
-          email: "jane.smith@lecturer.com",
-          name: "Jane Smith",
-          role: "lecturer",
-          createdAt: "2024-01-10",
-          isActive: true,
-        },
-        {
-          id: "5",
-          email: "mike.johnson@student.com",
-          name: "Mike Johnson",
-          role: "student",
-          createdAt: "2024-01-20",
-          isActive: false,
-        },
-      ]);
-      setLoading(false);
-    }, 1000);
+    const loadUsers = async () => {
+      try {
+        const res = await fetch('/api/admin/users', { cache: 'no-store' });
+        const data = await res.json();
+        if (res.ok) {
+          setUsers((data.users || []).map((u: any) => ({
+            ...u,
+            isActive: u.isActive ?? true,
+          })));
+        }
+      } catch (e) {
+        console.error('Failed to load users', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadUsers();
   }, []);
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = 
+    const matchesSearch =
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = filterRole === "all" || user.role === filterRole;
@@ -102,7 +73,7 @@ export default function UsersPage() {
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const response = await fetch('/api/admin/create-user', {
         method: 'POST',
@@ -115,15 +86,19 @@ export default function UsersPage() {
       const result = await response.json();
 
       if (response.ok) {
-        // Add the new user to the list
-        setUsers([...users, result.user]);
+        // Refresh from API to ensure persistence
+        try {
+          const res = await fetch('/api/admin/users', { cache: 'no-store' });
+          const data = await res.json();
+          if (res.ok) setUsers(data.users || []);
+        } catch { }
         setNewUser({ email: "", firstName: "", lastName: "", role: "student" });
-        
+
         // Show success toast
         setSuccessMessage("User created successfully!");
         setShowSuccessToast(true);
         setErrorMessage("");
-        
+
         // Auto-close modal after showing success
         setTimeout(() => {
           setShowSuccessToast(false);
@@ -175,12 +150,12 @@ export default function UsersPage() {
   const handleEditUser = (user: User, event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
-    
+
     // Parse the user's name to get first and last name
     const nameParts = user.name.split(' ');
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
-    
+
     setEditingUser({
       email: user.email,
       firstName: firstName,
@@ -198,24 +173,26 @@ export default function UsersPage() {
 
   const handleUpdateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedUser) return;
-    
+
     try {
       const updatedName = `${editingUser.firstName} ${editingUser.lastName}`.trim();
-      
-      // Update the user in the state
-      setUsers(users.map(user => 
-        user.id === selectedUser.id 
-          ? { 
-              ...user, 
-              name: updatedName,
-              email: editingUser.email,
-              role: editingUser.role
-            }
-          : user
-      ));
-      
+      await fetch(`/api/admin/users/${selectedUser.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: editingUser.email,
+          name: updatedName,
+          role: editingUser.role,
+        }),
+      });
+      // Refetch
+      try {
+        const res = await fetch('/api/admin/users', { cache: 'no-store' });
+        const data = await res.json();
+        if (res.ok) setUsers(data.users || []);
+      } catch { }
       setShowEditModal(false);
       setSelectedUser(null);
       showToast('success', `✅ User "${updatedName}" updated successfully!`);
@@ -224,16 +201,17 @@ export default function UsersPage() {
     }
   };
 
-  const confirmDeleteUser = () => {
+  const confirmDeleteUser = async () => {
     if (!selectedUser) return;
-    
     try {
-      const deletedUser = selectedUser;
-      setUsers(users.filter(user => user.id !== selectedUser.id));
-      
+      await fetch(`/api/admin/users/${selectedUser.id}`, { method: 'DELETE' });
+      // Refetch from API to ensure persistence
+      const res = await fetch('/api/admin/users', { cache: 'no-store' });
+      const data = await res.json();
+      if (res.ok) setUsers(data.users || []);
       setShowDeleteConfirm(false);
       setSelectedUser(null);
-      showToast('success', `✅ User "${deletedUser.name}" deleted successfully!`);
+      showToast('success', `✅ User "${selectedUser.name}" deleted successfully!`);
     } catch (error) {
       showToast('error', '❌ Failed to delete user. Please try again.');
     }
@@ -276,7 +254,7 @@ export default function UsersPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-lg bg-green-500">
@@ -290,7 +268,7 @@ export default function UsersPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-lg bg-purple-500">
@@ -304,7 +282,7 @@ export default function UsersPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-lg bg-red-500">
@@ -411,11 +389,10 @@ export default function UsersPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      user.isActive 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                      }`}>
                       {user.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </td>
@@ -424,23 +401,23 @@ export default function UsersPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-2">
-                      <button 
+                      <button
                         onClick={() => handleViewUser(user)}
-                        className="p-1 text-blue-600 hover:bg-blue-100 rounded" 
+                        className="p-1 text-blue-600 hover:bg-blue-100 rounded"
                         title="View"
                       >
                         <Eye className="h-4 w-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={(e) => handleEditUser(user, e)}
-                        className="p-1 text-indigo-600 hover:bg-indigo-100 rounded" 
+                        className="p-1 text-indigo-600 hover:bg-indigo-100 rounded"
                         title="Edit"
                       >
                         <Edit className="h-4 w-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDeleteUser(user)}
-                        className="p-1 text-red-600 hover:bg-red-100 rounded" 
+                        className="p-1 text-red-600 hover:bg-red-100 rounded"
                         title="Delete"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -468,12 +445,12 @@ export default function UsersPage() {
                   type="email"
                   required
                   value={newUser.email}
-                  onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="user@example.com"
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -483,7 +460,7 @@ export default function UsersPage() {
                     type="text"
                     required
                     value={newUser.firstName}
-                    onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
+                    onChange={(e) => setNewUser({ ...newUser, firstName: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="John"
                   />
@@ -496,20 +473,20 @@ export default function UsersPage() {
                     type="text"
                     required
                     value={newUser.lastName}
-                    onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
+                    onChange={(e) => setNewUser({ ...newUser, lastName: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="Doe"
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Role
                 </label>
                 <select
                   value={newUser.role}
-                  onChange={(e) => setNewUser({...newUser, role: e.target.value as any})}
+                  onChange={(e) => setNewUser({ ...newUser, role: e.target.value as any })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   <option value="student">Student</option>
@@ -517,7 +494,7 @@ export default function UsersPage() {
                   <option value="admin">Administrator</option>
                 </select>
               </div>
-              
+
               {/* Error Message */}
               {errorMessage && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -536,7 +513,7 @@ export default function UsersPage() {
                   <p className="text-sm font-medium text-green-800">{successMessage}</p>
                 </div>
               )}
-              
+
               <div className="flex space-x-3 pt-4">
                 <button
                   type="button"
@@ -564,13 +541,12 @@ export default function UsersPage() {
 
       {/* Action Toast Notification */}
       {actionToast.show && (
-        <div className={`fixed top-4 right-4 z-50 flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg ${
-          actionToast.type === 'success' 
-            ? 'bg-green-50 text-green-800 border border-green-200' 
-            : actionToast.type === 'error'
+        <div className={`fixed top-4 right-4 z-50 flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg ${actionToast.type === 'success'
+          ? 'bg-green-50 text-green-800 border border-green-200'
+          : actionToast.type === 'error'
             ? 'bg-red-50 text-red-800 border border-red-200'
             : 'bg-blue-50 text-blue-800 border border-blue-200'
-        }`}>
+          }`}>
           {actionToast.type === 'success' ? (
             <CheckCircle className="h-5 w-5 text-green-600" />
           ) : actionToast.type === 'error' ? (
@@ -604,18 +580,18 @@ export default function UsersPage() {
                   </svg>
                 </button>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Name</label>
                   <p className="text-sm text-gray-900">{selectedUser.name}</p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Email</label>
                   <p className="text-sm text-gray-900">{selectedUser.email}</p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Role</label>
                   <div className="flex items-center space-x-2">
@@ -625,24 +601,23 @@ export default function UsersPage() {
                     </span>
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Status</label>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    selectedUser.isActive 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${selectedUser.isActive
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-red-100 text-red-800'
+                    }`}>
                     {selectedUser.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Created</label>
                   <p className="text-sm text-gray-900">{new Date(selectedUser.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
-              
+
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => setShowViewModal(false)}
@@ -675,7 +650,7 @@ export default function UsersPage() {
                   placeholder="First name"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Last Name *
@@ -689,7 +664,7 @@ export default function UsersPage() {
                   placeholder="Last name"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Email *
@@ -703,7 +678,7 @@ export default function UsersPage() {
                   placeholder="Email address"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Role *
@@ -718,7 +693,7 @@ export default function UsersPage() {
                   <option value="admin">Admin</option>
                 </select>
               </div>
-              
+
               <div className="flex space-x-3 pt-4">
                 <button
                   type="button"
@@ -758,14 +733,14 @@ export default function UsersPage() {
                   <p className="text-sm text-gray-500">This action cannot be undone.</p>
                 </div>
               </div>
-              
+
               <div className="mb-6">
                 <p className="text-sm text-gray-700">
-                  Are you sure you want to delete <strong>&ldquo;{selectedUser.name}&rdquo;</strong>? 
+                  Are you sure you want to delete <strong>&ldquo;{selectedUser.name}&rdquo;</strong>?
                   This will permanently remove the user and all their data.
                 </p>
               </div>
-              
+
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => {
