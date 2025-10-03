@@ -7,14 +7,14 @@ import Link from "next/link";
 interface AvailableExam {
   id: string;
   title: string;
-  description: string;
+  description?: string | null;
   subject: string;
   totalQuestions: number;
   duration: number;
-  difficulty: string;
+  difficulty?: string; // optional, fallback to MEDIUM
   isActive: boolean;
   createdAt: string;
-  attempts: number;
+  attempts?: number; // not tracked yet server-side
 }
 
 export default function AvailableExamsPage() {
@@ -29,19 +29,42 @@ export default function AvailableExamsPage() {
   ];
 
   useEffect(() => {
-    // Load exams from localStorage only (created by admin)
-    const loadExams = () => {
-      const customExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
-      setExams(customExams);
-      setLoading(false);
+    let isMounted = true;
+    const load = async () => {
+      try {
+        const res = await fetch('/api/exams?isActive=true', { cache: 'no-store' });
+        const data = await res.json();
+        const list: any[] = Array.isArray(data.exams) ? data.exams : [];
+        // Only show exams that have at least one question
+        const mapped: AvailableExam[] = list
+          .filter((e: any) => e?.totalQuestions > 0 || (Array.isArray(e?.questions) && e.questions.length > 0))
+          .map((e: any) => ({
+            id: e.id,
+            title: e.title,
+            description: e.description ?? "",
+            subject: e.subject,
+            totalQuestions: e.totalQuestions ?? (Array.isArray(e?.questions) ? e.questions.length : 0),
+            duration: e.duration,
+            difficulty: e.difficulty || 'MEDIUM',
+            isActive: Boolean(e.isActive),
+            createdAt: e.createdAt,
+            attempts: 0,
+          }))
+          // newest first
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          // only show the last two from the question bank
+          .slice(0, 2);
+        if (isMounted) setExams(mapped);
+      } catch (err) {
+        console.error('Failed to load exams', err);
+        if (isMounted) setExams([]);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
     };
-    
-    loadExams();
-    
-    // Set up real-time updates by checking localStorage periodically
-    const interval = setInterval(loadExams, 3000); // Check every 3 seconds
-    
-    return () => clearInterval(interval);
+    load();
+    const t = setInterval(load, 5000);
+    return () => { isMounted = false; clearInterval(t); };
   }, []);
 
   const filteredExams = exams.filter(exam => {
@@ -50,7 +73,7 @@ export default function AvailableExamsPage() {
     return matchesSearch && matchesSubject && exam.isActive;
   });
 
-  const getDifficultyColor = (difficulty: string) => {
+  const getDifficultyColor = (difficulty: string | undefined) => {
     switch (difficulty) {
       case "EASY": return "bg-green-100 text-green-800";
       case "MEDIUM": return "bg-yellow-100 text-yellow-800";
@@ -137,8 +160,8 @@ export default function AvailableExamsPage() {
               
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-500">Difficulty:</span>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(exam.difficulty)}`}>
-                  {exam.difficulty}
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(exam.difficulty || 'MEDIUM')}`}>
+                  {exam.difficulty || 'MEDIUM'}
                 </span>
               </div>
               

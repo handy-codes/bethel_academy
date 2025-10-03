@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Users, 
-  Search, 
+import { useUser } from "@clerk/nextjs";
+import {
+  Users,
+  Search,
   Filter,
   Mail,
   Phone,
@@ -22,9 +23,9 @@ interface Student {
   name: string;
   email: string;
   phone?: string;
-  enrollmentDate: string;
-  program: string;
-  level: string;
+  enrollmentDate?: string;
+  program?: string;
+  level?: string;
   totalExams: number;
   completedExams: number;
   averageScore: number;
@@ -34,6 +35,7 @@ interface Student {
 }
 
 export default function StudentsPage() {
+  const { user, isLoaded } = useUser();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -42,113 +44,48 @@ export default function StudentsPage() {
   const [sortBy, setSortBy] = useState("name"); // name, performance, activity
 
   const programs = [
-    "Computer Science", "Mathematics", "Physics", "Chemistry", 
+    "Computer Science", "Mathematics", "Physics", "Chemistry",
     "Biology", "English", "Economics", "Accounting"
   ];
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    setTimeout(() => {
-      setStudents([
-        {
-          id: "1",
-          name: "John Doe",
-          email: "john.doe@student.edu",
-          phone: "+234 801 234 5678",
-          enrollmentDate: "2024-01-15",
-          program: "Computer Science",
-          level: "200 Level",
-          totalExams: 8,
-          completedExams: 6,
-          averageScore: 84,
-          lastActivity: "2024-01-20T10:30:00Z",
-          status: "active",
-        },
-        {
-          id: "2",
-          name: "Jane Smith",
-          email: "jane.smith@student.edu",
-          phone: "+234 802 345 6789",
-          enrollmentDate: "2024-01-10",
-          program: "Mathematics",
-          level: "300 Level",
-          totalExams: 12,
-          completedExams: 10,
-          averageScore: 78,
-          lastActivity: "2024-01-19T14:20:00Z",
-          status: "active",
-        },
-        {
-          id: "3",
-          name: "Mike Johnson",
-          email: "mike.johnson@student.edu",
-          enrollmentDate: "2024-01-08",
-          program: "Physics",
-          level: "100 Level",
-          totalExams: 5,
-          completedExams: 3,
-          averageScore: 65,
-          lastActivity: "2024-01-18T09:15:00Z",
-          status: "active",
-        },
-        {
-          id: "4",
-          name: "Sarah Wilson",
-          email: "sarah.wilson@student.edu",
-          phone: "+234 803 456 7890",
-          enrollmentDate: "2023-09-01",
-          program: "Chemistry",
-          level: "400 Level",
-          totalExams: 15,
-          completedExams: 15,
-          averageScore: 92,
-          lastActivity: "2024-01-20T16:45:00Z",
-          status: "active",
-        },
-        {
-          id: "5",
-          name: "David Brown",
-          email: "david.brown@student.edu",
-          enrollmentDate: "2024-01-12",
-          program: "Biology",
-          level: "200 Level",
-          totalExams: 6,
-          completedExams: 4,
-          averageScore: 58,
-          lastActivity: "2024-01-17T11:30:00Z",
-          status: "inactive",
-        },
-        {
-          id: "6",
-          name: "Emily Davis",
-          email: "emily.davis@student.edu",
-          phone: "+234 804 567 8901",
-          enrollmentDate: "2023-08-15",
-          program: "English",
-          level: "300 Level",
-          totalExams: 11,
-          completedExams: 9,
-          averageScore: 87,
-          lastActivity: "2024-01-20T08:20:00Z",
-          status: "active",
-        },
-        {
-          id: "7",
-          name: "Alex Thompson",
-          email: "alex.thompson@student.edu",
-          enrollmentDate: "2024-01-05",
-          program: "Economics",
-          level: "100 Level",
-          totalExams: 4,
-          completedExams: 2,
-          averageScore: 45,
-          lastActivity: "2024-01-15T13:10:00Z",
-          status: "suspended",
-        },
-      ]);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    const load = async () => {
+      if (!isLoaded || !user) return;
+      try {
+        const res = await fetch(`/api/results?lecturerId=${encodeURIComponent(user.id)}`, { cache: 'no-store' });
+        const data = await res.json();
+        const results: any[] = Array.isArray(data.results) ? data.results : [];
+        const byStudent: Record<string, { exams: number; completed: number; totalScore: number; lastActivity: string; name: string; email: string; }> = {};
+        for (const r of results) {
+          const sid = r.studentId || r.studentEmail || 'unknown';
+          if (!byStudent[sid]) byStudent[sid] = { exams: 0, completed: 0, totalScore: 0, lastActivity: r.createdAt || new Date().toISOString(), name: r.studentName || 'Unknown', email: r.studentEmail || '' };
+          byStudent[sid].exams += 1;
+          byStudent[sid].completed += r.isApproved ? 1 : 0;
+          byStudent[sid].totalScore += r.percentage || 0;
+          if (r.createdAt && new Date(r.createdAt) > new Date(byStudent[sid].lastActivity)) byStudent[sid].lastActivity = r.createdAt;
+        }
+        const compiled: Student[] = Object.entries(byStudent).map(([sid, v]) => ({
+          id: sid,
+          name: v.name,
+          email: v.email,
+          totalExams: v.exams,
+          completedExams: v.completed,
+          averageScore: v.exams ? Math.round(v.totalScore / v.exams) : 0,
+          lastActivity: v.lastActivity,
+          status: 'active',
+        }));
+        setStudents(compiled.sort((a, b) => a.name.localeCompare(b.name)));
+      } catch (e) {
+        console.error('Failed to load students', e);
+        setStudents([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+    const t = setInterval(load, 5000);
+    return () => clearInterval(t);
+  }, [user, isLoaded]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -176,7 +113,7 @@ export default function StudentsPage() {
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 1) return "1 day ago";
     if (diffDays < 7) return `${diffDays} days ago`;
     if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
@@ -186,7 +123,7 @@ export default function StudentsPage() {
   // Filter and sort students
   const filteredStudents = students
     .filter(student => {
-      const matchesSearch = 
+      const matchesSearch =
         student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.program.toLowerCase().includes(searchTerm.toLowerCase());
@@ -209,7 +146,7 @@ export default function StudentsPage() {
   // Calculate statistics
   const totalStudents = students.length;
   const activeStudents = students.filter(s => s.status === "active").length;
-  const averageClassScore = students.length > 0 
+  const averageClassScore = students.length > 0
     ? Math.round(students.reduce((acc, s) => acc + s.averageScore, 0) / students.length)
     : 0;
   const totalExamsCompleted = students.reduce((acc, s) => acc + s.completedExams, 0);
@@ -370,7 +307,7 @@ export default function StudentsPage() {
                           {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
                         </span>
                       </div>
-                      
+
                       <div className="flex items-center space-x-4 text-sm text-gray-600 mb-1">
                         <div className="flex items-center space-x-1">
                           <Mail className="h-4 w-4" />
@@ -404,8 +341,8 @@ export default function StudentsPage() {
                       </div>
                       <div className="text-xs text-gray-500">Exams</div>
                       <div className="w-16 bg-gray-200 rounded-full h-1.5 mt-1">
-                        <div 
-                          className="bg-indigo-600 h-1.5 rounded-full" 
+                        <div
+                          className="bg-indigo-600 h-1.5 rounded-full"
                           style={{ width: `${getCompletionRate(student.completedExams, student.totalExams)}%` }}
                         ></div>
                       </div>
@@ -433,7 +370,7 @@ export default function StudentsPage() {
                         <Eye className="h-4 w-4" />
                         <span>View</span>
                       </button>
-                      
+
                       <button className="flex items-center space-x-1 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                         <MessageSquare className="h-4 w-4" />
                         <span>Message</span>

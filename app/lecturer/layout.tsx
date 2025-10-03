@@ -4,7 +4,6 @@ import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import LecturerSidebar from "./components/LecturerSidebar";
-import LecturerHeader from "./components/LecturerHeader";
 
 export default function LecturerLayout({
   children,
@@ -48,14 +47,7 @@ export default function LecturerLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50" style={{ '--navbar-height': '64px' } as React.CSSProperties}>
-      <LecturerHeader />
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+    <div className="min-h-screen bg-gray-100" style={{ '--navbar-height': '64px' } as React.CSSProperties}>
       {/* Global navbar toggle hooks */}
       <script
         dangerouslySetInnerHTML={{
@@ -71,32 +63,39 @@ export default function LecturerLayout({
           `,
         }}
       />
-      <div className="flex">
-        <LecturerSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <div className="flex-1 min-h-screen">
-          {/* Floating toggle below navbar on mobile - positioned to avoid content overlap */}
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className={`lg:hidden fixed z-50 top-20 left-4 p-2 rounded-full shadow-lg transition-all duration-200 ${sidebarOpen ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700'} `}
-            aria-label="Toggle sidebar"
-          >
-            {sidebarOpen ? (
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <rect x="3" y="5" width="18" height="14" rx="2" />
-                <path d="M9 5v14" />
-              </svg>
-            )}
-          </button>
-          <main className="p-4 sm:p-6 w-full pt-20 lg:pt-20 ml-0 lg:ml-0">
-            <div className="max-w-full">
-              {children}
-            </div>
-          </main>
-        </div>
+      {/* Mobile backdrop for sidebar */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <LecturerSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      <div className="lg:ml-64 min-h-screen">
+        {/* Floating toggle below navbar on mobile - positioned to avoid content overlap */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className={`lg:hidden fixed z-50 top-20 left-4 p-2 rounded-full shadow-lg transition-all duration-200 ${sidebarOpen ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700'} `}
+          aria-label="Toggle sidebar"
+        >
+          {sidebarOpen ? (
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="5" width="18" height="14" rx="2" />
+              <path d="M9 5v14" />
+            </svg>
+          )}
+        </button>
+        <main className="p-4 sm:p-6 w-full pt-20 lg:pt-20 ml-0 lg:ml-0">
+          <div className="max-w-full">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );

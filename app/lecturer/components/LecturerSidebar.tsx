@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  BookOpen, 
-  Users, 
+import {
+  LayoutDashboard,
+  BookOpen,
+  Users,
   BarChart3,
   Settings,
   FileText,
@@ -31,7 +31,17 @@ export default function LecturerSidebar({ isOpen, onClose }: LecturerSidebarProp
   const pathname = usePathname();
 
   return (
-    <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg pt-20 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+    <div
+      className={`
+        fixed left-0 z-50 w-64 bg-white shadow-lg
+        transform transition-transform duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}
+      style={{
+        top: 'var(--navbar-height, 64px)',
+        height: 'calc(100vh - var(--navbar-height, 64px))',
+      }}
+    >
       <nav className="mt-5 px-2">
         <div className="space-y-1">
           {navigation.map((item) => {
@@ -40,16 +50,14 @@ export default function LecturerSidebar({ isOpen, onClose }: LecturerSidebarProp
               <Link
                 key={item.name}
                 href={item.href}
-                className={`${
-                  isActive
+                className={`${isActive
                     ? "bg-indigo-100 text-indigo-900"
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`}
+                  } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`}
               >
                 <item.icon
-                  className={`${
-                    isActive ? "text-indigo-500" : "text-gray-400 group-hover:text-gray-500"
-                  } mr-3 h-5 w-5`}
+                  className={`${isActive ? "text-indigo-500" : "text-gray-400 group-hover:text-gray-500"
+                    } mr-3 h-5 w-5`}
                 />
                 {item.name}
               </Link>

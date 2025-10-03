@@ -74,34 +74,20 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     resolveStudentId();
   }, [user]);
 
-  // Load exam data from localStorage only (after student id is ready)
+  // Load exam via Prisma API (after student id is ready)
   useEffect(() => {
-    const loadExam = () => {
-      // Load custom exams from localStorage only
-      const customExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
-
-      // Find the exam with the matching ID
-      const foundExam = customExams.find((exam: any) => exam.id === params.id);
-
-      if (foundExam) {
-        setExam(foundExam);
-        setTimeLeft(foundExam.duration * 60); // Convert to seconds
-
-        // Check if exam has already been completed by this student
-        const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
-        const existingResult = examResults.find((result: any) =>
-          result.examId === params.id && result.studentId === studentId
-        );
-
-        if (existingResult) {
-          setIsSubmitted(true);
-        }
-      } else {
-        // Exam not found, redirect to exams page
+    const loadExam = async () => {
+      try {
+        const res = await fetch(`/api/exams/${params.id}`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('Exam not found');
+        const data = await res.json();
+        setExam(data.exam);
+        setTimeLeft(data.exam.duration * 60);
+      } catch (e) {
         router.push('/student/exams');
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     if (studentId) loadExam();
@@ -212,38 +198,34 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     setSidebarOpen(false);
   };
 
-  const handleSubmitExam = useCallback(() => {
+  const handleSubmitExam = useCallback(async () => {
     if (!exam) return;
 
-    const result = calculateScore();
-    const timeSpent = Math.floor((exam.duration * 60 - timeLeft) / 60); // Convert to minutes
+    const timeSpent = Math.floor((exam.duration * 60 - timeLeft) / 60);
+    const answersArray = exam.questions.map(q => ({
+      questionId: q.id,
+      selectedAnswer: answers[q.id] || null,
+    }));
 
-    const examResult = {
-      id: Date.now().toString(),
-      examId: exam.id,
-      examTitle: exam.title,
-      subject: exam.subject,
-      studentId: studentId,
-      studentName: user?.fullName || 'Student',
-      studentEmail: user?.primaryEmailAddress?.emailAddress || 'student@example.com',
-      score: result.score,
-      totalQuestions: result.total,
-      correctAnswers: result.score,
-      percentage: result.percentage,
-      grade: result.grade,
-      submittedAt: new Date().toISOString(),
-      timeSpent: timeSpent,
-      isApproved: false,
-    };
-
-    // Save result to localStorage
-    const existingResults = JSON.parse(localStorage.getItem('examResults') || '[]');
-    existingResults.push(examResult);
-    localStorage.setItem('examResults', JSON.stringify(existingResults));
-
-    setIsSubmitted(true);
-    setShowConfirmSubmit(false);
-  }, [exam, timeLeft, calculateScore, studentId, user]);
+    try {
+      const res = await fetch('/api/attempts', {
+        method: 'POST',
+        body: JSON.stringify({
+          examId: exam.id,
+          studentId,
+          studentName: user?.fullName || 'Student',
+          studentEmail: user?.primaryEmailAddress?.emailAddress || 'student@example.com',
+          answers: answersArray,
+          timeSpent,
+        }),
+      });
+      if (!res.ok) throw new Error('Submit failed');
+      setIsSubmitted(true);
+      setShowConfirmSubmit(false);
+    } catch (e) {
+      alert('Failed to submit exam. Please try again.');
+    }
+  }, [exam, timeLeft, answers, studentId, user]);
 
   const startExam = () => {
     setExamStarted(true);
@@ -363,7 +345,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
 
         {/* Start Confirmation Modal */}
         {showStartConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
               <div className="p-6">
                 <div className="flex items-center space-x-3 mb-4">
@@ -581,7 +563,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
 
       {/* Submit Confirmation Modal */}
       {showConfirmSubmit && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-center space-x-3 mb-4">

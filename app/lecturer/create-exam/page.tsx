@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Trash2, Save } from "lucide-react";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 
 interface Question {
   id: string;
@@ -21,6 +22,7 @@ interface Question {
 
 export default function CreateExamPage() {
   const router = useRouter();
+  const { user } = useUser();
   const [loading, setLoading] = useState(false);
   const [examData, setExamData] = useState({
     title: "",
@@ -55,7 +57,7 @@ export default function CreateExamPage() {
   };
 
   const updateQuestion = (id: string, field: keyof Question, value: any) => {
-    setQuestions(questions.map(q => 
+    setQuestions(questions.map(q =>
       q.id === id ? { ...q, [field]: value } : q
     ));
   };
@@ -78,19 +80,19 @@ export default function CreateExamPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (questions.length === 0) {
       alert("Please add at least one question to the exam.");
       return;
     }
 
     // Validate all questions are complete
-    const incompleteQuestions = questions.filter(q => 
-      !q.questionText.trim() || 
-      !q.optionA.trim() || 
-      !q.optionB.trim() || 
-      !q.optionC.trim() || 
-      !q.optionD.trim() || 
+    const incompleteQuestions = questions.filter(q =>
+      !q.questionText.trim() ||
+      !q.optionA.trim() ||
+      !q.optionB.trim() ||
+      !q.optionC.trim() ||
+      !q.optionD.trim() ||
       !q.optionE.trim()
     );
 
@@ -100,16 +102,27 @@ export default function CreateExamPage() {
     }
 
     setLoading(true);
-    
+
     try {
-      // Here you would typically send the data to your API
-      console.log("Creating exam:", { examData, questions });
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      alert(`Exam "${examData.title}" created successfully with ${questions.length} questions!`);
-      router.push("/lecturer");
+      const payload = {
+        ...examData,
+        createdBy: user?.id || 'anonymous-lecturer',
+        questions: questions.map(q => ({
+          questionText: q.questionText,
+          optionA: q.optionA,
+          optionB: q.optionB,
+          optionC: q.optionC,
+          optionD: q.optionD,
+          optionE: q.optionE,
+          correctAnswer: q.correctAnswer,
+          explanation: q.explanation,
+          difficulty: q.difficulty,
+          points: q.points,
+        })),
+      };
+      const res = await fetch('/api/exams', { method: 'POST', body: JSON.stringify(payload) });
+      if (!res.ok) throw new Error('Failed to create exam');
+      router.push('/lecturer/exams');
     } catch (error) {
       console.error("Error creating exam:", error);
       alert("Failed to create exam. Please try again.");
@@ -137,7 +150,7 @@ export default function CreateExamPage() {
         {/* Basic Exam Information */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Exam Configuration</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -383,7 +396,7 @@ export default function CreateExamPage() {
             <div>
               <h3 className="text-lg font-semibold text-gray-900">Ready to Create?</h3>
               <p className="text-gray-600">
-                {questions.length > 0 
+                {questions.length > 0
                   ? `Your exam has ${questions.length} question${questions.length === 1 ? '' : 's'} and will take approximately ${examData.duration} minutes.`
                   : "Add some questions to continue."
                 }

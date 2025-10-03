@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Bell, 
-  Moon, 
-  Sun, 
-  Globe, 
-  Shield, 
-  Eye, 
+import {
+  Bell,
+  Moon,
+  Sun,
+  Globe,
+  Shield,
+  Eye,
   EyeOff,
   Save,
   RefreshCw,
@@ -97,10 +97,10 @@ export default function SettingsPage() {
 
   const handleExportData = () => {
     const dataStr = JSON.stringify(settings, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
     const exportFileDefaultName = 'bethel-academy-settings.json';
-    
+
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
@@ -169,7 +169,7 @@ export default function SettingsPage() {
             <Bell className="h-5 w-5 text-indigo-600" />
             <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -243,7 +243,7 @@ export default function SettingsPage() {
             <Sun className="h-5 w-5 text-indigo-600" />
             <h3 className="text-lg font-semibold text-gray-900">Display</h3>
           </div>
-          
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Theme</label>
@@ -309,7 +309,7 @@ export default function SettingsPage() {
             <Shield className="h-5 w-5 text-indigo-600" />
             <h3 className="text-lg font-semibold text-gray-900">Exam Settings</h3>
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -383,7 +383,7 @@ export default function SettingsPage() {
             <Eye className="h-5 w-5 text-indigo-600" />
             <h3 className="text-lg font-semibold text-gray-900">Privacy</h3>
           </div>
-          
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Profile Visibility</label>
@@ -464,7 +464,7 @@ export default function SettingsPage() {
 
       {/* Delete Account Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <div className="flex items-center space-x-3 mb-4">
               <AlertTriangle className="h-6 w-6 text-red-600" />

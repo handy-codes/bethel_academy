@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { 
-  BookOpen, 
-  Users, 
-  CheckCircle, 
+import { useUser } from "@clerk/nextjs";
+import {
+  BookOpen,
+  Users,
+  CheckCircle,
   TrendingUp,
   Clock,
   Plus
@@ -31,6 +32,7 @@ interface RecentActivity {
 }
 
 export default function LecturerDashboard() {
+  const { user, isLoaded } = useUser();
   const [stats, setStats] = useState<LecturerStats>({
     totalExams: 0,
     totalStudents: 0,
@@ -43,47 +45,42 @@ export default function LecturerDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    setTimeout(() => {
-      setStats({
-        totalExams: 8,
-        totalStudents: 45,
-        totalAttempts: 120,
-        averageScore: 78.5,
-        pendingReviews: 12,
-        activeExams: 3,
-      });
-      
-      setRecentActivity([
-        {
-          id: "1",
-          type: "exam_completed",
-          title: "Student completed exam",
-          studentName: "John Doe",
-          examName: "Mathematics Test",
-          timestamp: "2024-01-15T10:30:00Z",
-          score: 85,
-        },
-        {
-          id: "2",
-          type: "exam_created",
-          title: "New exam created",
-          examName: "Physics Fundamentals",
-          timestamp: "2024-01-15T09:15:00Z",
-        },
-        {
-          id: "3",
-          type: "result_reviewed",
-          title: "Result reviewed and approved",
-          studentName: "Jane Smith",
-          examName: "Chemistry Test",
-          timestamp: "2024-01-15T08:45:00Z",
-          score: 92,
-        },
+    const load = async () => {
+      if (!isLoaded || !user) return;
+      const lecturerId = user.id;
+      const [exRes, rRes] = await Promise.all([
+        fetch(`/api/exams?createdBy=${encodeURIComponent(lecturerId)}`, { cache: 'no-store' }),
+        fetch(`/api/results?lecturerId=${encodeURIComponent(lecturerId)}`, { cache: 'no-store' }),
       ]);
+      const exData = await exRes.json();
+      const rData = await rRes.json();
+      const exams = exData.exams || [];
+      const results = rData.results || [];
+
+      const totalExams = exams.length;
+      const activeExams = exams.filter((e: any) => e.isActive).length;
+      const totalAttempts = results.length;
+      const averageScore = totalAttempts ? Math.round(results.reduce((s: number, r: any) => s + (r.percentage || 0), 0) / totalAttempts) : 0;
+      const pendingReviews = results.filter((r: any) => !r.isApproved).length;
+
+      setStats({ totalExams, totalStudents: 0, totalAttempts, averageScore, pendingReviews, activeExams });
+
+      const recent = results.slice(0, 5).map((r: any, i: number) => ({
+        id: String(i),
+        type: r.isApproved ? 'result_reviewed' : 'exam_completed',
+        title: r.isApproved ? 'Result reviewed' : 'Student completed exam',
+        studentName: r.studentName,
+        examName: r.examTitle || '',
+        timestamp: r.createdAt || new Date().toISOString(),
+        score: r.percentage,
+      }));
+      setRecentActivity(recent);
       setLoading(false);
-    }, 1000);
-  }, []);
+    };
+    load();
+    const t = setInterval(load, 5000);
+    return () => clearInterval(t);
+  }, [user, isLoaded]);
 
   const statCards = [
     {
@@ -201,7 +198,7 @@ export default function LecturerDashboard() {
               <p className="text-sm font-medium text-gray-900">Create New Exam</p>
               <p className="text-xs text-gray-500">Set up a new CBT exam</p>
             </Link>
-            
+
             <Link
               href="/lecturer/results"
               className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors text-center"
@@ -210,7 +207,7 @@ export default function LecturerDashboard() {
               <p className="text-sm font-medium text-gray-900">Review Results</p>
               <p className="text-xs text-gray-500">Check student performance</p>
             </Link>
-            
+
             <Link
               href="/lecturer/students"
               className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors text-center"

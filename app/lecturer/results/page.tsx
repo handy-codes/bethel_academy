@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { 
-  CheckCircle, 
-  Clock, 
-  TrendingUp, 
+import {
+  CheckCircle,
+  Clock,
+  TrendingUp,
   Filter,
   Search,
   Eye,
@@ -37,6 +38,7 @@ interface StudentResult {
 }
 
 export default function LecturerResultsPage() {
+  const { user, isLoaded } = useUser();
   const [results, setResults] = useState<StudentResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -45,119 +47,45 @@ export default function LecturerResultsPage() {
   const [sortBy, setSortBy] = useState("date"); // date, score, student
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    setTimeout(() => {
-      setResults([
-        {
-          id: "1",
-          studentName: "John Doe",
-          studentEmail: "john.doe@student.edu",
-          examTitle: "JAMB Mathematics Practice Test",
-          examId: "1",
-          subject: "MATHEMATICS",
-          score: 42,
-          totalQuestions: 50,
-          correctAnswers: 42,
-          percentage: 84,
-          grade: "A",
-          submittedAt: "2024-01-15T10:30:00Z",
-          timeSpent: 95,
-          isApproved: false,
-          attempt: 1,
-        },
-        {
-          id: "2",
-          studentName: "Jane Smith",
-          studentEmail: "jane.smith@student.edu",
-          examTitle: "WAEC English Language Mock",
-          examId: "2",
-          subject: "ENGLISH",
-          score: 75,
-          totalQuestions: 100,
-          correctAnswers: 75,
-          percentage: 75,
-          grade: "B",
-          submittedAt: "2024-01-14T14:20:00Z",
-          timeSpent: 120,
-          isApproved: true,
-          approvedAt: "2024-01-14T15:00:00Z",
-          feedback: "Good work! Focus on improving grammar and vocabulary.",
-          attempt: 1,
-        },
-        {
-          id: "3",
-          studentName: "Mike Johnson",
-          studentEmail: "mike.johnson@student.edu",
-          examTitle: "Chemistry Basic Concepts",
-          examId: "4",
-          subject: "CHEMISTRY",
-          score: 35,
-          totalQuestions: 50,
-          correctAnswers: 35,
-          percentage: 70,
-          grade: "B",
-          submittedAt: "2024-01-13T16:45:00Z",
-          timeSpent: 110,
-          isApproved: true,
-          approvedAt: "2024-01-13T17:30:00Z",
-          feedback: "Solid understanding of basic chemistry. Keep practicing!",
-          attempt: 2,
-        },
-        {
-          id: "4",
-          studentName: "Sarah Wilson",
-          studentEmail: "sarah.wilson@student.edu",
-          examTitle: "Biology Cell Structure",
-          examId: "5",
-          subject: "BIOLOGY",
-          score: 28,
-          totalQuestions: 30,
-          correctAnswers: 28,
-          percentage: 93,
-          grade: "A",
-          submittedAt: "2024-01-12T11:30:00Z",
-          timeSpent: 75,
-          isApproved: false,
-          attempt: 1,
-        },
-        {
-          id: "5",
-          studentName: "David Brown",
-          studentEmail: "david.brown@student.edu",
-          examTitle: "JAMB Mathematics Practice Test",
-          examId: "1",
-          subject: "MATHEMATICS",
-          score: 30,
-          totalQuestions: 50,
-          correctAnswers: 30,
-          percentage: 60,
-          grade: "C",
-          submittedAt: "2024-01-11T09:15:00Z",
-          timeSpent: 118,
-          isApproved: true,
-          approvedAt: "2024-01-11T10:00:00Z",
-          feedback: "You're making progress. Review algebra and geometry sections.",
-          attempt: 3,
-        },
-      ]);
+    const load = async () => {
+      if (!isLoaded || !user) return;
+      const res = await fetch(`/api/results?lecturerId=${encodeURIComponent(user.id)}`, { cache: 'no-store' });
+      const data = await res.json();
+      const mapped = (data.results || []).map((r: any, idx: number) => ({
+        id: r.id,
+        studentName: r.studentName || '',
+        studentEmail: r.studentEmail || '',
+        examTitle: r.examTitle || '',
+        examId: r.examId,
+        subject: r.subject || '',
+        score: r.score,
+        totalQuestions: r.totalQuestions,
+        correctAnswers: r.correctAnswers,
+        percentage: r.percentage,
+        grade: r.grade || '',
+        submittedAt: r.createdAt || new Date().toISOString(),
+        timeSpent: r.timeSpent || 0,
+        isApproved: r.isApproved,
+        approvedAt: r.approvedAt || undefined,
+        feedback: r.feedback || '',
+        attempt: 1,
+      }));
+      setResults(mapped);
       setLoading(false);
-    }, 1000);
-  }, []);
+    };
+    load();
+    const t = setInterval(load, 5000);
+    return () => clearInterval(t);
+  }, [user, isLoaded]);
 
-  const handleApproveResult = (resultId: string) => {
-    setResults(results.map(result => 
-      result.id === resultId 
-        ? { ...result, isApproved: true, approvedAt: new Date().toISOString() }
-        : result
-    ));
+  const handleApproveResult = async (resultId: string) => {
+    await fetch(`/api/results/${resultId}`, { method: 'PATCH', body: JSON.stringify({ isApproved: true, approvedBy: user?.id }) });
+    setResults(results.map(result => result.id === resultId ? { ...result, isApproved: true, approvedAt: new Date().toISOString() } : result));
   };
 
-  const handleAddFeedback = (resultId: string, feedback: string) => {
-    setResults(results.map(result => 
-      result.id === resultId 
-        ? { ...result, feedback, isApproved: true, approvedAt: new Date().toISOString() }
-        : result
-    ));
+  const handleAddFeedback = async (resultId: string, feedback: string) => {
+    await fetch(`/api/results/${resultId}`, { method: 'PATCH', body: JSON.stringify({ feedback, isApproved: true, approvedBy: user?.id }) });
+    setResults(results.map(result => result.id === resultId ? { ...result, feedback, isApproved: true, approvedAt: new Date().toISOString() } : result));
   };
 
   const getGradeColor = (grade: string) => {
@@ -183,12 +111,12 @@ export default function LecturerResultsPage() {
   // Filter and sort results
   const filteredResults = results
     .filter(result => {
-      const matchesSearch = 
+      const matchesSearch =
         result.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         result.examTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
         result.studentEmail.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesExam = filterExam === "all" || result.examId === filterExam;
-      const matchesStatus = filterStatus === "all" || 
+      const matchesStatus = filterStatus === "all" ||
         (filterStatus === "approved" && result.isApproved) ||
         (filterStatus === "pending" && !result.isApproved);
       return matchesSearch && matchesExam && matchesStatus;
@@ -218,7 +146,7 @@ export default function LecturerResultsPage() {
   // Calculate statistics
   const totalResults = results.length;
   const pendingResults = results.filter(r => !r.isApproved).length;
-  const averageScore = results.length > 0 
+  const averageScore = results.length > 0
     ? Math.round(results.reduce((acc, r) => acc + r.percentage, 0) / results.length)
     : 0;
 
@@ -373,7 +301,7 @@ export default function LecturerResultsPage() {
                         </span>
                       )}
                     </div>
-                    
+
                     <div className="flex items-center space-x-6 text-sm text-gray-600 mb-2">
                       <span><strong>Exam:</strong> {result.examTitle}</span>
                       <span><strong>Subject:</strong> {result.subject}</span>
@@ -428,7 +356,7 @@ export default function LecturerResultsPage() {
                         <Eye className="h-4 w-4" />
                         <span>View</span>
                       </Link>
-                      
+
                       {!result.isApproved && (
                         <button
                           onClick={() => handleApproveResult(result.id)}
@@ -438,7 +366,7 @@ export default function LecturerResultsPage() {
                           <span>Approve</span>
                         </button>
                       )}
-                      
+
                       <button className="flex items-center space-x-1 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                         <Download className="h-4 w-4" />
                         <span>Export</span>

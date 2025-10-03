@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Trash2, CheckCircle, X, Search, Filter } from "lucide-react";
 import Link from "next/link";
-import { dummyExams, getAllSubjects, ExamSubject } from "@/lib/dummyData";
+import { getAllSubjects, ExamSubject } from "@/lib/dummyData";
+import { useUser } from "@clerk/nextjs";
 
 interface Question {
   id: string;
@@ -47,23 +48,34 @@ export default function CreateExamPage() {
     "ACCOUNTING", "ECONOMICS", "LITERATURE", "IGBO", "YORUBA"
   ];
 
-  // Load questions from question bank when modal opens
+  const { user, isLoaded } = useUser();
+
+  // Load questions from question bank when modal opens (from API)
   useEffect(() => {
     if (showQuestionBank) {
-      // Load questions from dummy data (in real app, this would be an API call)
-      const allQuestions: Question[] = [];
-      dummyExams.forEach(exam => {
-        if (exam.questions) {
-          // Cast the questions to our Question interface
-          const typedQuestions = exam.questions.map(q => ({
-            ...q,
-            correctAnswer: q.correctAnswer as "A" | "B" | "C" | "D" | "E",
-            subject: exam.subject as ExamSubject
-          }));
-          allQuestions.push(...typedQuestions);
+      (async () => {
+        try {
+          const res = await fetch('/api/questions', { cache: 'no-store' });
+          const data = await res.json();
+          const qs = (data.questions || []).map((q: any) => ({
+            id: q.id,
+            questionText: q.questionText,
+            optionA: q.optionA,
+            optionB: q.optionB,
+            optionC: q.optionC,
+            optionD: q.optionD,
+            optionE: q.optionE,
+            correctAnswer: q.correctAnswer,
+            difficulty: q.difficulty || 'MEDIUM',
+            points: q.points || 1,
+            subject: q.subject as ExamSubject,
+          })) as Question[];
+          setAvailableQuestions(qs);
+        } catch (e) {
+          console.error('Failed to load question bank', e);
+          setAvailableQuestions([]);
         }
-      });
-      setAvailableQuestions(allQuestions);
+      })();
     }
   }, [showQuestionBank]);
 
@@ -85,7 +97,7 @@ export default function CreateExamPage() {
   };
 
   const updateQuestion = (id: string, field: keyof Question, value: any) => {
-    setQuestions(questions.map(q => 
+    setQuestions(questions.map(q =>
       q.id === id ? { ...q, [field]: value } : q
     ));
   };
@@ -117,8 +129,8 @@ export default function CreateExamPage() {
   };
 
   const toggleQuestionSelection = (questionId: string) => {
-    setSelectedQuestions(prev => 
-      prev.includes(questionId) 
+    setSelectedQuestions(prev =>
+      prev.includes(questionId)
         ? prev.filter(id => id !== questionId)
         : [...prev, questionId]
     );
@@ -126,18 +138,18 @@ export default function CreateExamPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (questions.length === 0) {
       showToast('error', 'Please add at least one question to the exam.');
       return;
     }
 
     // Validate that all questions have required fields
-    const incompleteQuestions = questions.filter(q => 
-      !q.questionText.trim() || 
-      !q.optionA.trim() || 
-      !q.optionB.trim() || 
-      !q.optionC.trim() || 
+    const incompleteQuestions = questions.filter(q =>
+      !q.questionText.trim() ||
+      !q.optionA.trim() ||
+      !q.optionB.trim() ||
+      !q.optionC.trim() ||
       !q.optionD.trim()
     );
 
@@ -147,41 +159,35 @@ export default function CreateExamPage() {
     }
 
     setLoading(true);
-    
+
     try {
-      // Create the exam object
-      const newExam = {
-        id: Date.now().toString(),
+      const payload = {
         title: examData.title,
-        subject: examData.subject,
-        totalQuestions: questions.length,
-        duration: examData.duration,
-        isActive: true,
-        createdAt: new Date().toISOString().split('T')[0],
-        attempts: 0,
         description: examData.description,
+        subject: examData.subject,
+        duration: examData.duration,
         instructions: examData.instructions,
-        questions: questions
+        isActive: true,
+        createdBy: user?.id,
+        questions: questions.map(q => ({
+          questionText: q.questionText,
+          optionA: q.optionA,
+          optionB: q.optionB,
+          optionC: q.optionC,
+          optionD: q.optionD,
+          optionE: q.optionE,
+          correctAnswer: q.correctAnswer,
+          difficulty: q.difficulty,
+          points: q.points,
+        })),
       };
 
-      // Here you would typically send the data to your API
-      console.log("Creating exam:", newExam);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Save to localStorage for demo purposes (in real app, this would be an API call)
-      const existingExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
-      existingExams.push(newExam);
-      localStorage.setItem('mockExams', JSON.stringify(existingExams));
-      
+      const res = await fetch('/api/exams', { method: 'POST', body: JSON.stringify(payload) });
+      if (!res.ok) throw new Error('Failed to create');
+
       showToast('success', `✅ Exam "${examData.title}" created successfully!`);
-      
-      // Redirect after a short delay to show the toast
-      setTimeout(() => {
-        router.push("/admin/exams");
-      }, 1500);
-      
+      setTimeout(() => router.push('/admin/exams'), 1200);
+
     } catch (error) {
       console.error("Error creating exam:", error);
       showToast('error', '❌ Failed to create exam. Please try again.');
@@ -194,11 +200,10 @@ export default function CreateExamPage() {
     <div className="space-y-6">
       {/* Toast Notification */}
       {toast.show && (
-        <div className={`fixed top-4 right-4 z-50 flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg ${
-          toast.type === 'success' 
-            ? 'bg-green-50 text-green-800 border border-green-200' 
-            : 'bg-red-50 text-red-800 border border-red-200'
-        }`}>
+        <div className={`fixed top-4 right-4 z-50 flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg ${toast.type === 'success'
+          ? 'bg-green-50 text-green-800 border border-green-200'
+          : 'bg-red-50 text-red-800 border border-red-200'
+          }`}>
           {toast.type === 'success' ? (
             <CheckCircle className="h-5 w-5 text-green-600" />
           ) : (
@@ -230,7 +235,7 @@ export default function CreateExamPage() {
         {/* Basic Exam Information */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Exam Details</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -532,11 +537,10 @@ export default function CreateExamPage() {
                   filteredAvailableQuestions.map((question) => (
                     <div
                       key={question.id}
-                      className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                        selectedQuestions.includes(question.id)
-                          ? 'border-indigo-500 bg-indigo-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                      className={`border rounded-lg p-4 cursor-pointer transition-colors ${selectedQuestions.includes(question.id)
+                        ? 'border-indigo-500 bg-indigo-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                        }`}
                       onClick={() => toggleQuestionSelection(question.id)}
                     >
                       <div className="flex items-start space-x-3">
@@ -552,11 +556,10 @@ export default function CreateExamPage() {
                             <span className="bg-gray-100 px-2 py-1 rounded">
                               {question.subject}
                             </span>
-                            <span className={`px-2 py-1 rounded ${
-                              question.difficulty === 'EASY' ? 'bg-green-100 text-green-800' :
+                            <span className={`px-2 py-1 rounded ${question.difficulty === 'EASY' ? 'bg-green-100 text-green-800' :
                               question.difficulty === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-red-100 text-red-800'
-                            }`}>
+                                'bg-red-100 text-red-800'
+                              }`}>
                               {question.difficulty}
                             </span>
                             <span className="bg-gray-100 px-2 py-1 rounded">

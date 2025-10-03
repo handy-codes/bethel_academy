@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle, XCircle, Eye, Clock, Filter } from "lucide-react";
+import { CheckCircle, XCircle, Eye, Clock, Filter, X } from "lucide-react";
 
 interface ExamResult {
   id: string;
@@ -26,20 +26,42 @@ export default function ResultsPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [selected, setSelected] = useState<ExamResult | null>(null);
+
   useEffect(() => {
-    // Load real data from localStorage
-    const loadResults = () => {
-      const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
-      setResults(examResults);
-      setLoading(false);
+    const load = async () => {
+      try {
+        const res = await fetch('/api/results', { cache: 'no-store' });
+        const data = await res.json();
+        const list: any[] = Array.isArray(data.results) ? data.results : [];
+        const mapped: ExamResult[] = list.map((r: any) => ({
+          id: r.id,
+          studentName: r.studentName || '',
+          studentEmail: r.studentEmail || '',
+          examTitle: r.examTitle || '',
+          subject: r.subject || '',
+          score: r.score,
+          totalQuestions: r.totalQuestions,
+          correctAnswers: r.correctAnswers,
+          percentage: r.percentage,
+          grade: r.grade || '',
+          submittedAt: r.createdAt || new Date().toISOString(),
+          isApproved: r.isApproved,
+          approvedBy: r.approvedBy || undefined,
+          approvedAt: r.approvedAt || undefined,
+        }));
+        setResults(mapped);
+      } catch (e) {
+        console.error('Failed to load results', e);
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
     };
-
-    loadResults();
-
-    // Set up real-time updates by checking localStorage periodically
-    const interval = setInterval(loadResults, 2000); // Check every 2 seconds
-
-    return () => clearInterval(interval);
+    load();
+    const t = setInterval(load, 5000);
+    return () => clearInterval(t);
   }, []);
 
   const filteredResults = results.filter(result => {
@@ -56,35 +78,22 @@ export default function ResultsPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const approveResult = (resultId: string) => {
-    const updatedResults = results.map(result =>
-      result.id === resultId
-        ? {
-          ...result,
-          isApproved: true,
-          approvedBy: "Current Admin",
-          approvedAt: new Date().toISOString()
-        }
-        : result
-    );
-
-    setResults(updatedResults);
-
-    // Update localStorage for real-time sync
-    localStorage.setItem('examResults', JSON.stringify(updatedResults));
+  const approveResult = async (resultId: string) => {
+    try {
+      await fetch(`/api/results/${resultId}`, { method: 'PATCH', body: JSON.stringify({ isApproved: true }) });
+      setResults(results.map(r => r.id === resultId ? { ...r, isApproved: true, approvedAt: new Date().toISOString() } : r));
+    } catch (e) {
+      console.error('Approve failed', e);
+    }
   };
 
-  const rejectResult = (resultId: string) => {
-    const updatedResults = results.map(result =>
-      result.id === resultId
-        ? { ...result, isApproved: false }
-        : result
-    );
-
-    setResults(updatedResults);
-
-    // Update localStorage for real-time sync
-    localStorage.setItem('examResults', JSON.stringify(updatedResults));
+  const deleteResult = async (resultId: string) => {
+    try {
+      await fetch(`/api/results/${resultId}`, { method: 'DELETE' });
+      setResults(results.filter(r => r.id !== resultId));
+    } catch (e) {
+      console.error('Delete failed', e);
+    }
   };
 
   const getGradeColor = (grade: string) => {
@@ -287,7 +296,7 @@ export default function ResultsPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-2">
-                      <button className="p-1 text-blue-600 hover:bg-blue-100 rounded" title="View Details">
+                      <button className="p-1 text-blue-600 hover:bg-blue-100 rounded" title="View Details" onClick={() => { setSelected(result); setShowViewModal(true); }}>
                         <Eye className="h-4 w-4" />
                       </button>
                       {!result.isApproved && (
@@ -299,11 +308,7 @@ export default function ResultsPage() {
                           >
                             <CheckCircle className="h-4 w-4" />
                           </button>
-                          <button
-                            onClick={() => rejectResult(result.id)}
-                            className="p-1 text-red-600 hover:bg-red-100 rounded"
-                            title="Reject"
-                          >
+                          <button onClick={() => deleteResult(result.id)} className="p-1 text-red-600 hover:bg-red-100 rounded" title="Delete">
                             <XCircle className="h-4 w-4" />
                           </button>
                         </>

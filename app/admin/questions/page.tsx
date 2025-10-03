@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, Eye, Filter, Search, CheckCircle, X } from "lucide-react";
-import { dummyExams, getAllSubjects, ExamSubject } from "@/lib/dummyData";
+import { getAllSubjects, ExamSubject } from "@/lib/dummyData";
 
 interface Question {
   id: string;
@@ -17,6 +17,8 @@ interface Question {
   difficulty: string;
   points: number;
   subject: ExamSubject;
+  createdBy?: string;
+  examId?: string;
 }
 
 export default function QuestionsPage() {
@@ -53,32 +55,28 @@ export default function QuestionsPage() {
   const difficulties = ["EASY", "MEDIUM", "HARD"];
 
   useEffect(() => {
-    // Load questions from localStorage only (no dummy data)
-    const loadQuestions = () => {
-      const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
-
-      // Extract all questions from exams
-      const allQuestions: Question[] = [];
-      availableExams.forEach((exam: any) => {
-        if (exam.questions) {
-          exam.questions.forEach((question: any) => {
-            allQuestions.push({
-              ...question,
-              subject: exam.subject,
-            });
-          });
+    const loadQuestions = async () => {
+      try {
+        const res = await fetch('/api/questions', { cache: 'no-store' });
+        const data = await res.json();
+        const qs = data.questions || [];
+        // fetch creator profiles
+        const ids = Array.from(new Set(qs.map((q: any) => q.createdBy).filter(Boolean)));
+        let profiles: Record<string, { name: string; email: string; role: string }> = {};
+        if (ids.length) {
+          const ures = await fetch(`/api/users/lookup?ids=${encodeURIComponent(ids.join(','))}`, { cache: 'no-store' });
+          const udata = await ures.json();
+          (udata.users || []).forEach((u: any) => { profiles[u.id] = { name: u.name, email: u.email, role: u.role }; });
         }
-      });
-
-      setQuestions(allQuestions);
-      setLoading(false);
+        setQuestions(qs.map((q: any) => ({ ...q, creator: profiles[q.createdBy || ''] })));
+      } catch (e) {
+        console.error('Load questions failed', e);
+      } finally {
+        setLoading(false);
+      }
     };
-
     loadQuestions();
-
-    // Set up real-time updates by checking localStorage periodically
-    const interval = setInterval(loadQuestions, 3000); // Check every 3 seconds
-
+    const interval = setInterval(loadQuestions, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -429,9 +427,10 @@ export default function QuestionsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Points
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Creator (name)</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Creator Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -457,9 +456,10 @@ export default function QuestionsPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <span className="font-medium text-green-600">{question.correctAnswer}</span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {question.points}
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{question.points}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{(question as any).creator?.name || ''}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{(question as any).creator?.email || ''}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{(question as any).creator?.role || ''}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-2">
                       <button
@@ -532,7 +532,7 @@ export default function QuestionsPage() {
 
       {/* View Question Modal */}
       {showViewModal && selectedQuestion && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
@@ -605,7 +605,7 @@ export default function QuestionsPage() {
 
       {/* Edit Question Modal */}
       {showEditModal && editingQuestion && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
@@ -717,7 +717,7 @@ export default function QuestionsPage() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && selectedQuestion && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-center space-x-3 mb-4">
@@ -767,7 +767,7 @@ export default function QuestionsPage() {
 
       {/* Add Question Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">

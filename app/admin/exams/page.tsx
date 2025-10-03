@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, Eye, Play, Pause, CheckCircle, X } from "lucide-react";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 
 interface Exam {
   id: string;
@@ -12,10 +13,11 @@ interface Exam {
   duration: number;
   isActive: boolean;
   createdAt: string;
-  attempts: number;
+  attempts?: number;
 }
 
 export default function ExamsPage() {
+  const { user, isLoaded } = useUser();
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,20 +37,37 @@ export default function ExamsPage() {
   ];
 
   useEffect(() => {
-    // Load exams from localStorage only (no default mock data)
-    const loadExams = () => {
-      const customExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
-      setExams(customExams);
-      setLoading(false);
+    let isMounted = true;
+    const load = async () => {
+      try {
+        if (!isLoaded || !user) return;
+        const res = await fetch(`/api/exams?createdBy=${encodeURIComponent(user.id)}`, { cache: 'no-store' });
+        const data = await res.json();
+        const list: any[] = Array.isArray(data.exams) ? data.exams : [];
+        const mapped: Exam[] = list
+          .filter((e: any) => (e?.totalQuestions ?? (Array.isArray(e?.questions) ? e.questions.length : 0)) > 0)
+          .map((e: any) => ({
+            id: e.id,
+            title: e.title,
+            subject: e.subject,
+            totalQuestions: e.totalQuestions ?? (Array.isArray(e?.questions) ? e.questions.length : 0),
+            duration: e.duration,
+            isActive: Boolean(e.isActive),
+            createdAt: e.createdAt,
+            attempts: 0,
+          }));
+        if (isMounted) setExams(mapped);
+      } catch (err) {
+        console.error('Failed to load exams', err);
+        if (isMounted) setExams([]);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
     };
-
-    loadExams();
-
-    // Set up real-time updates by checking localStorage periodically
-    const interval = setInterval(loadExams, 3000); // Check every 3 seconds
-
-    return () => clearInterval(interval);
-  }, []);
+    load();
+    const t = setInterval(load, 5000);
+    return () => { isMounted = false; clearInterval(t); };
+  }, [user, isLoaded]);
 
   const filteredExams = exams.filter(exam => {
     const matchesSearch = exam.title?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
@@ -56,10 +75,18 @@ export default function ExamsPage() {
     return matchesSearch && matchesSubject;
   });
 
-  const toggleExamStatus = (examId: string) => {
-    setExams(exams.map(exam =>
-      exam.id === examId ? { ...exam, isActive: !exam.isActive } : exam
-    ));
+  const toggleExamStatus = async (examId: string) => {
+    try {
+      const target = exams.find(e => e.id === examId);
+      if (!target) return;
+      const next = !target.isActive;
+      await fetch(`/api/exams/${examId}`, { method: 'PATCH', body: JSON.stringify({ isActive: next }) });
+      setExams(exams.map(exam => exam.id === examId ? { ...exam, isActive: next } : exam));
+      showToast('success', next ? '✅ Exam activated' : '✅ Exam deactivated');
+    } catch (e) {
+      console.error(e);
+      showToast('error', '❌ Failed to update status');
+    }
   };
 
   const showToast = (type: 'success' | 'error', message: string) => {
@@ -86,20 +113,19 @@ export default function ExamsPage() {
     setShowDeleteConfirm(true);
   };
 
-  const confirmDeleteExam = () => {
+  const confirmDeleteExam = async () => {
     if (!selectedExam) return;
-
-    const deletedExam = selectedExam;
-    setExams(exams.filter(exam => exam.id !== selectedExam.id));
-
-    // Update localStorage
-    const customExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
-    const updatedCustomExams = customExams.filter((exam: Exam) => exam.id !== selectedExam.id);
-    localStorage.setItem('mockExams', JSON.stringify(updatedCustomExams));
-
-    setShowDeleteConfirm(false);
-    setSelectedExam(null);
-    showToast('success', `✅ Exam "${deletedExam.title}" deleted successfully!`);
+    try {
+      await fetch(`/api/exams/${selectedExam.id}`, { method: 'DELETE' });
+      const deletedExam = selectedExam;
+      setExams(exams.filter(exam => exam.id !== selectedExam.id));
+      setShowDeleteConfirm(false);
+      setSelectedExam(null);
+      showToast('success', `✅ Exam "${deletedExam.title}" deleted successfully!`);
+    } catch (e) {
+      console.error(e);
+      showToast('error', '❌ Failed to delete exam');
+    }
   };
 
   if (loading) {
@@ -224,8 +250,8 @@ export default function ExamsPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${exam.isActive
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
                       }`}>
                       {exam.isActive ? 'Active' : 'Inactive'}
                     </span>
@@ -235,8 +261,8 @@ export default function ExamsPage() {
                       <button
                         onClick={() => toggleExamStatus(exam.id)}
                         className={`p-1 rounded ${exam.isActive
-                            ? 'text-orange-600 hover:bg-orange-100'
-                            : 'text-green-600 hover:bg-green-100'
+                          ? 'text-orange-600 hover:bg-orange-100'
+                          : 'text-green-600 hover:bg-green-100'
                           }`}
                         title={exam.isActive ? 'Deactivate' : 'Activate'}
                       >
@@ -275,8 +301,8 @@ export default function ExamsPage() {
       {/* Toast Notification */}
       {actionToast.show && (
         <div className={`fixed top-4 right-4 z-50 flex items-center space-x-3 px-6 py-4 rounded-lg shadow-lg ${actionToast.type === 'success'
-            ? 'bg-green-50 text-green-800 border border-green-200'
-            : 'bg-red-50 text-red-800 border border-red-200'
+          ? 'bg-green-50 text-green-800 border border-green-200'
+          : 'bg-red-50 text-red-800 border border-red-200'
           }`}>
           {actionToast.type === 'success' ? (
             <CheckCircle className="h-5 w-5 text-green-600" />
@@ -295,7 +321,7 @@ export default function ExamsPage() {
 
       {/* View Exam Modal */}
       {showViewModal && selectedExam && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
@@ -336,8 +362,8 @@ export default function ExamsPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Status</label>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${selectedExam.isActive
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-red-100 text-red-800'
                     }`}>
                     {selectedExam.isActive ? 'Active' : 'Inactive'}
                   </span>

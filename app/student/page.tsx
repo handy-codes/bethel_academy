@@ -10,6 +10,7 @@ import {
   Play
 } from "lucide-react";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 
 interface StudentStats {
   totalExams: number;
@@ -30,6 +31,7 @@ interface RecentExam {
 }
 
 export default function StudentDashboard() {
+  const { user, isLoaded } = useUser();
   const [stats, setStats] = useState<StudentStats>({
     totalExams: 0,
     completedExams: 0,
@@ -42,44 +44,78 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load real data from localStorage
-    const loadData = () => {
-      const availableExams = JSON.parse(localStorage.getItem('mockExams') || '[]');
-      const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+    const loadData = async () => {
+      if (!isLoaded) return;
+      try {
+        // Resolve studentId (Clerk ID or anonymous fallback)
+        let studentId = user?.id || '';
+        if (!studentId) {
+          const existing = localStorage.getItem('anonStudentId');
+          if (existing) studentId = existing; else {
+            const generated = `anon_${Math.random().toString(36).slice(2, 10)}`;
+            localStorage.setItem('anonStudentId', generated);
+            studentId = generated;
+          }
+        }
 
-      setStats({
-        totalExams: availableExams.length,
-        completedExams: examResults.length,
-        averageScore: examResults.length > 0 ? examResults.reduce((acc: number, r: any) => acc + r.percentage, 0) / examResults.length : 0,
-        pendingResults: examResults.filter((r: any) => !r.isApproved).length,
-        totalTimeSpent: examResults.reduce((acc: number, r: any) => acc + (r.timeSpent || 0), 0),
-        currentStreak: 0,
-      });
+        // Fetch exams and student results from API
+        const [examsRes, resultsRes] = await Promise.all([
+          fetch('/api/exams?isActive=true', { cache: 'no-store' }),
+          fetch(`/api/results?studentId=${encodeURIComponent(studentId)}`, { cache: 'no-store' })
+        ]);
+        const examsJson = await examsRes.json();
+        const resultsJson = await resultsRes.json();
+        const exams: any[] = Array.isArray(examsJson.exams) ? examsJson.exams : [];
+        const results: any[] = Array.isArray(resultsJson.results) ? resultsJson.results : [];
 
-      // Show recent exams from available exams and completed results
-      const recentExamsData = availableExams.slice(0, 4).map((exam: any) => {
-        const result = examResults.find((r: any) => r.examId === exam.id);
-        return {
-          id: exam.id,
-          title: exam.title,
-          subject: exam.subject,
-          score: result?.percentage,
-          status: result ? "completed" : "available",
-          submittedAt: result?.submittedAt,
-        };
-      });
+        const filteredExams = exams
+          .filter((e: any) => (e?.totalQuestions ?? (Array.isArray(e?.questions) ? e.questions.length : 0)) > 0)
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 2);
+        const totalExams = filteredExams.length;
+        const completedExams = results.length;
+        const averageScore = results.length > 0 ? Math.round(results.reduce((acc: number, r: any) => acc + (r.percentage || 0), 0) / results.length) : 0;
+        const pendingResults = results.filter((r: any) => !r.isApproved).length;
+        const totalTimeSpent = results.reduce((acc: number, r: any) => acc + (r.timeSpent || 0), 0);
 
-      setRecentExams(recentExamsData);
-      setLoading(false);
+        setStats({
+          totalExams,
+          completedExams,
+          averageScore,
+          pendingResults,
+          totalTimeSpent,
+          currentStreak: 0,
+        });
+
+        // Recent exams: newest 4 with status based on results
+        const resultByExam: Record<string, any> = {};
+        for (const r of results) resultByExam[r.examId] = r;
+        const recentExamsData: RecentExam[] = filteredExams
+          .map((exam: any) => {
+            const r = resultByExam[exam.id];
+            return {
+              id: exam.id,
+              title: exam.title,
+              subject: exam.subject,
+              score: r?.percentage,
+              status: r ? "completed" : "available",
+              submittedAt: r?.createdAt,
+            };
+          });
+
+        setRecentExams(recentExamsData);
+      } catch (e) {
+        console.error('Failed to load student dashboard data', e);
+        setRecentExams([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadData();
-
-    // Set up real-time updates by checking localStorage periodically
-    const interval = setInterval(loadData, 3000); // Check every 3 seconds
-
-    return () => clearInterval(interval);
-  }, []);
+    const t = setInterval(loadData, 5000);
+    return () => clearInterval(t);
+  }, [user, isLoaded]);
 
   const statCards = [
     {
