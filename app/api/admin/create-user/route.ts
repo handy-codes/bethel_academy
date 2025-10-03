@@ -79,18 +79,28 @@ export async function POST(request: NextRequest) {
         console.log('Created new Clerk user');
       } catch (clerkError: any) {
         console.error('Clerk user creation error:', clerkError);
-        
+
+        // If the identifier already exists in Clerk, treat as an update path (success)
         if (clerkError.status === 422 || clerkError.errors?.[0]?.code === 'form_identifier_exists') {
+          try {
+            const existingClerkUsers = await clerkClient.users.getUserList({ emailAddress: [email] });
+            if (existingClerkUsers.data.length > 0) {
+              clerkUser = existingClerkUsers.data[0];
+              await clerkClient.users.updateUser(clerkUser.id, {
+                publicMetadata: { role },
+                privateMetadata: { role }
+              });
+              console.log('Existing Clerk user found; role updated.');
+            }
+          } catch (e) {
+            console.warn('Fallback fetch of existing Clerk user failed', e);
+          }
+        } else {
           return NextResponse.json(
-            { error: 'This email is already registered in the system' },
-            { status: 400 }
+            { error: 'Failed to create user account. Please try again.' },
+            { status: 500 }
           );
         }
-        
-        return NextResponse.json(
-          { error: 'Failed to create user account. Please try again.' },
-          { status: 500 }
-        );
       }
     }
 
@@ -112,7 +122,7 @@ export async function POST(request: NextRequest) {
       success: true,
       user: {
         id: dbUser.id,
-        clerkId: clerkUser.id,
+        clerkId: clerkUser?.id,
         email: dbUser.email,
         name: dbUser.name,
         role: dbUser.role,

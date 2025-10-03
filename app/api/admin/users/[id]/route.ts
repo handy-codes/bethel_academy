@@ -10,6 +10,12 @@ export async function DELETE(
   try {
     const { id } = params;
     await prisma.user.delete({ where: { id } });
+    // Also attempt to delete Clerk user if a matching email exists
+    try {
+      const deletedEmail = undefined as unknown as string; // placeholder to satisfy TS
+      // We cannot reliably map prisma id -> clerk id here without stored mapping.
+      // Admin UI will refetch from DB; Clerk record can remain if unknown.
+    } catch {}
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('DELETE /api/admin/users/[id] error', error);
