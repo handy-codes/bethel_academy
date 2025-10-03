@@ -26,8 +26,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    await prisma.studentAnswer.deleteMany({ where: { attempt: { resultId: params.id } } }).catch(() => {});
-    await prisma.examAttempt.deleteMany({ where: { resultId: params.id } }).catch(() => {});
+    // Delete the result. If your schema uses cascading deletes, related rows
+    // (answers/attempts) will be handled by the database.
     await prisma.examResult.delete({ where: { id: params.id } });
     return NextResponse.json({ ok: true });
   } catch (err) {

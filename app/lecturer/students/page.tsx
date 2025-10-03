@@ -126,7 +126,7 @@ export default function StudentsPage() {
       const matchesSearch =
         student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.program.toLowerCase().includes(searchTerm.toLowerCase());
+        (student.program || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesProgram = filterProgram === "all" || student.program === filterProgram;
       const matchesStatus = filterStatus === "all" || student.status === filterStatus;
       return matchesSearch && matchesProgram && matchesStatus;
@@ -136,7 +136,7 @@ export default function StudentsPage() {
         case "performance":
           return b.averageScore - a.averageScore;
         case "activity":
-          return new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime();
+          return new Date(b.lastActivity || '').getTime() - new Date(a.lastActivity || '').getTime();
         case "name":
         default:
           return a.name.localeCompare(b.name);
