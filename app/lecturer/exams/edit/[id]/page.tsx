@@ -389,7 +389,7 @@ export default function EditLecturerExamPage() {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Question Text *</n+                      label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Question Text *</label>
                       <textarea
                         value={question.questionText}
                         onChange={(e) => updateQuestion(question.id, "questionText", e.target.value)}
