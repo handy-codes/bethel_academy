@@ -326,7 +326,9 @@ export default function StudentsPage() {
                         <span><strong>Level:</strong> {student.level}</span>
                         <div className="flex items-center space-x-1">
                           <Calendar className="h-4 w-4" />
-                          <span>Enrolled: {new Date(student.enrollmentDate).toLocaleDateString()}</span>
+                          <span>
+                            Enrolled: {student.enrollmentDate ? new Date(student.enrollmentDate).toLocaleDateString() : '-'}
+                          </span>
                         </div>
                       </div>
                     </div>
