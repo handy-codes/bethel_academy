@@ -15,6 +15,9 @@ interface User {
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -75,6 +78,7 @@ export default function UsersPage() {
     e.preventDefault();
 
     try {
+      setCreating(true);
       const response = await fetch('/api/admin/create-user', {
         method: 'POST',
         headers: {
@@ -114,6 +118,8 @@ export default function UsersPage() {
       setErrorMessage('Failed to create user. Please try again.');
       setSuccessMessage("");
       setShowSuccessToast(false);
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -177,6 +183,7 @@ export default function UsersPage() {
     if (!selectedUser) return;
 
     try {
+      setUpdating(true);
       const updatedName = `${editingUser.firstName} ${editingUser.lastName}`.trim();
       await fetch(`/api/admin/users/${selectedUser.id}`, {
         method: 'PATCH',
@@ -198,12 +205,15 @@ export default function UsersPage() {
       showToast('success', `✅ User "${updatedName}" updated successfully!`);
     } catch (error) {
       showToast('error', '❌ Failed to update user. Please try again.');
+    } finally {
+      setUpdating(false);
     }
   };
 
   const confirmDeleteUser = async () => {
     if (!selectedUser) return;
     try {
+      setDeleting(true);
       await fetch(`/api/admin/users/${selectedUser.id}`, { method: 'DELETE' });
       // Refetch from API to ensure persistence
       const res = await fetch('/api/admin/users', { cache: 'no-store' });
@@ -214,6 +224,8 @@ export default function UsersPage() {
       showToast('success', `✅ User "${selectedUser.name}" deleted successfully!`);
     } catch (error) {
       showToast('error', '❌ Failed to delete user. Please try again.');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -529,9 +541,10 @@ export default function UsersPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                  disabled={creating}
+                  className={`flex-1 px-4 py-2 text-white rounded-lg ${creating ? 'bg-indigo-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
                 >
-                  Create User
+                  {creating ? 'Creating…' : 'Create User'}
                 </button>
               </div>
             </form>
@@ -707,9 +720,10 @@ export default function UsersPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  disabled={updating}
+                  className={`flex-1 px-4 py-2 text-white rounded-lg transition-colors ${updating ? 'bg-indigo-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
                 >
-                  Update User
+                  {updating ? 'Updating…' : 'Update User'}
                 </button>
               </div>
             </form>
@@ -753,9 +767,10 @@ export default function UsersPage() {
                 </button>
                 <button
                   onClick={confirmDeleteUser}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  disabled={deleting}
+                  className={`px-4 py-2 text-white rounded-lg transition-colors ${deleting ? 'bg-red-300 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
                 >
-                  Delete
+                  {deleting ? 'Deleting…' : 'Delete'}
                 </button>
               </div>
             </div>
