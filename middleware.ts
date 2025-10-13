@@ -14,6 +14,7 @@ const isPublicRoute = createRouteMatcher([
 const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 const isStudentRoute = createRouteMatcher(['/student(.*)']);
 const isLecturerRoute = createRouteMatcher(['/lecturer(.*)']);
+const isParentRoute = createRouteMatcher(['/parent(.*)']);
 
 export default clerkMiddleware((auth, req) => {
   const pathname = req.nextUrl.pathname;
@@ -76,6 +77,16 @@ export default clerkMiddleware((auth, req) => {
       }
     }
     
+    if (isParentRoute(req)) {
+      if (!userRole) {
+        console.log('No role detected for parent access - allowing access for development');
+        // Allow access if no role is detected - let the component handle it
+      } else if (userRole !== 'parent') {
+        console.log(`User with role ${userRole} denied parent access`);
+        return Response.redirect(new URL(userRole === 'admin' ? '/admin' : userRole === 'student' ? '/student' : '/lecturer', req.url));
+      }
+    }
+    
     // Redirect from root based on role
     if (pathname === '/') {
       if (userRole) {
@@ -86,6 +97,8 @@ export default clerkMiddleware((auth, req) => {
           return Response.redirect(new URL('/lecturer', req.url));
         } else if (userRole === 'student') {
           return Response.redirect(new URL('/student', req.url));
+        } else if (userRole === 'parent') {
+          return Response.redirect(new URL('/parent', req.url));
         }
       } else {
         console.log('No role detected on root, staying on homepage');

@@ -16,11 +16,13 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const studentRoutes = ['/student'];
   const lecturerRoutes = ['/lecturer'];
   const adminRoutes = ['/admin'];
+  const parentRoutes = ['/parent'];
 
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
   const isStudentRoute = studentRoutes.some(route => pathname.startsWith(route));
   const isLecturerRoute = lecturerRoutes.some(route => pathname.startsWith(route));
   const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
+  const isParentRoute = parentRoutes.some(route => pathname.startsWith(route));
 
   if (isAuthRoute) {
     // For auth routes, just render children without navbar/footer
@@ -56,6 +58,18 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
     return (
       <div className="min-h-screen flex flex-col">
         {/* Reuse admin style for dashboard navbar visuals */}
+        <Navbar isAdminRoute={true} />
+        <main className="flex-grow">
+          {children}
+        </main>
+      </div>
+    );
+  }
+
+  if (isParentRoute) {
+    // For parent routes, render with navbar but no footer
+    return (
+      <div className="min-h-screen flex flex-col">
         <Navbar isAdminRoute={true} />
         <main className="flex-grow">
           {children}

@@ -382,6 +382,9 @@ model User {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   mathsDemo MathsDemo?
+  parent    Parent?    @relation("ParentStudent")
+
+  @@index([role])
 }
 
 model MathsDemo {
@@ -453,6 +456,26 @@ enum ZoomMeetingStatus {
   STARTED
   ENDED
   CANCELLED
+}
+
+// Parent Model for Parent Dashboard
+model Parent {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  name        String
+  phone       String?
+  studentEmail String  // Links to student
+  studentId   String?  @unique // Optional Clerk ID reference
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  student     User?    @relation("ParentStudent", fields: [studentId], references: [id])
+  
+  @@index([studentEmail])
+  @@index([studentId])
+  @@index([isActive])
 }
 
 // CBT System Models
