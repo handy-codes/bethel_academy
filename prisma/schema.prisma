@@ -382,6 +382,7 @@ model User {
   updatedAt DateTime   @updatedAt
   mathsDemo MathsDemo?
   parent    Parent?    @relation("ParentStudent")
+  examResults ExamResult[]
 
   @@index([role])
 }
@@ -493,7 +494,8 @@ model Exam {
   
   questions   Question[]
   attempts    ExamAttempt[]
-  
+  results     ExamResult[]
+
   @@index([subject])
   @@index([isActive])
   @@index([createdBy])
@@ -587,6 +589,9 @@ model ExamResult {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   
+  exam          Exam        @relation(fields: [examId], references: [id], onDelete: Cascade)
+  student       User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
   @@index([studentId])
   @@index([examId])
   @@index([isApproved])
