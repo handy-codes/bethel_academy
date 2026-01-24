@@ -178,7 +178,7 @@ export default function ParentSettings() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-medium text-gray-900">Show Grades Publicly</h3>
-                <p className="text-sm text-gray-600">Allow other parents to see your child's grades</p>
+                <p className="text-sm text-gray-600">Allow other parents to see your child&apos;s grades</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input

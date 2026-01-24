@@ -49,8 +49,12 @@ const nextConfig = {
         hostname: 'images.unsplash.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'www.techxos.com',
+        pathname: '/**',
+      },
     ],
-    domains: ['www.techxos.com'], // Add your production domain
   },
   async headers() {
     return [

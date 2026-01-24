@@ -8,7 +8,7 @@ const Hero = () => {
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
       {/* Background Video with Fallback */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/40 to-blue-900/40 z-10"></div>
+        <div className="absolute inset-0 bg-black/20 z-10"></div>
         <video 
           autoPlay 
           loop 
@@ -30,7 +30,8 @@ const Hero = () => {
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80")',
+            backgroundImage: 'url("https://i.ibb.co/WrQ2dZT/bethel-students.jpg")',
+            // backgroundImage: 'url("https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80")',
             zIndex: -1
           }}
         ></div>
