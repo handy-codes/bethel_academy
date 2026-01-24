@@ -5,34 +5,16 @@ import React from 'react';
 
 const Hero = () => {
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Video with Fallback */}
+    <section className="relative h-screen flex items-center justify-center overflow-hidden bg-slate-900">
+      {/* Background Image/Video Container */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-black/20 z-10"></div>
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline
-          preload="metadata"
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            console.log('Video failed to load, using fallback background');
-            e.currentTarget.style.display = 'none';
-          }}
-        >
-          {/* <source src="/sayo-birds.mp4" type="video/mp4" /> */}
-          {/* <source src="https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c0fd273d2c6d9a064f3ae35579b2bbdf&profile_id=139&oauth2_token_id=57447761" type="video/mp4" /> */}
-          Your browser does not support the video tag.
-        </video>
+        <div className="absolute inset-0 bg-black/40 z-10"></div>
         
-        {/* Fallback background image */}
+        {/* Background image with overlay */}
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
           style={{
             backgroundImage: 'url("https://i.ibb.co/WrQ2dZT/bethel-students.jpg")',
-            // backgroundImage: 'url("https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80")',
-            zIndex: -1
           }}
         ></div>
       </div>
