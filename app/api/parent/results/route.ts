@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Parent not found' }, { status: 404 });
     }
 
-    if (!parent.studentId) {
+    if (!parent.studentId || !parent.student) {
       return NextResponse.json({ error: 'No linked student found' }, { status: 404 });
     }
 

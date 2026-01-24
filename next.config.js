@@ -31,9 +31,18 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'i.ibb.co',
         pathname: '/**',
-      }
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.clerk.dev',
+        pathname: '/**',
+      },
     ],
-    domains: ['img.clerk.com', 'images.clerk.dev'],
   },
 }
 
