@@ -3,9 +3,7 @@ export const revalidate = 0;
 
 import { NextResponse } from 'next/server';
 import { clerkClient } from '@clerk/nextjs/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export async function POST() {
   try {
@@ -67,8 +65,12 @@ export async function POST() {
     });
   } catch (error: any) {
     console.error('Sync from Clerk error', error);
+    const message =
+      error?.code === 'P1001' || error?.message?.includes('connect')
+        ? 'Database unreachable. Check DATABASE_URL and that your database is running.'
+        : error?.message || 'Failed to sync users from Clerk.';
     return NextResponse.json(
-      { error: error?.message || 'Failed to sync users from Clerk.' },
+      { error: message },
       { status: 500 }
     );
   }

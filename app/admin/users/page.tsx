@@ -52,18 +52,25 @@ export default function UsersPage() {
     setLoadError(null);
     try {
       const res = await fetch('/api/admin/users', { cache: 'no-store' });
-      const data = await res.json();
+      let data: { users?: unknown[]; error?: string } = {};
+      try {
+        data = await res.json();
+      } catch {
+        data = { error: `Server error (${res.status}). Check that DATABASE_URL is set and the database is running.` };
+      }
       if (res.ok) {
         setUsers((data.users || []).map((u: any) => ({
           ...u,
           isActive: u.isActive ?? true,
         })));
       } else {
-        setLoadError(data.error || 'Failed to load users');
+        setUsers([]);
+        setLoadError(data.error || `Failed to load users (${res.status}). Check DATABASE_URL and server logs.`);
       }
     } catch (e) {
       console.error('Failed to load users', e);
-      setLoadError('Failed to load users. Check the console and that the database is connected.');
+      setUsers([]);
+      setLoadError('Failed to load users. Check the console, DATABASE_URL, and that the database is running. You can try "Sync from Clerk" once the database is available.');
     } finally {
       setLoading(false);
     }

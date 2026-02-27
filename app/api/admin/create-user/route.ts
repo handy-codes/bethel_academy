@@ -2,9 +2,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 import { NextRequest, NextResponse } from 'next/server';
 import { clerkClient } from '@clerk/nextjs/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,9 +34,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists in database - if so, we'll update instead of create
-    const existingDbUser = await prisma.user.findUnique({
-      where: { email }
-    });
+    let existingDbUser;
+    try {
+      existingDbUser = await prisma.user.findUnique({
+        where: { email }
+      });
+    } catch (dbErr: any) {
+      console.error('Database check failed:', dbErr);
+      const msg = dbErr?.code === 'P1001' || dbErr?.message?.includes('connect')
+        ? 'Database unreachable. Check DATABASE_URL and that your database is running.'
+        : 'Database error. Please try again or check your connection.';
+      return NextResponse.json({ error: msg }, { status: 503 });
+    }
 
     console.log('Existing DB user check:', existingDbUser ? 'Found' : 'Not found');
 
@@ -98,8 +105,14 @@ export async function POST(request: NextRequest) {
             console.warn('Fallback fetch of existing Clerk user failed', e);
           }
         } else {
+          const clerkMsg = clerkError?.errors?.[0]?.message || clerkError?.message || '';
+          const friendly = clerkMsg.includes('identifier') || clerkError?.status === 422
+            ? 'A user with this email may already exist. Try signing in or use a different email.'
+            : clerkMsg
+              ? `Clerk error: ${clerkMsg}`
+              : 'Failed to create user in authentication. Please try again.';
           return NextResponse.json(
-            { error: 'Failed to create user account. Please try again.' },
+            { error: friendly },
             { status: 500 }
           );
         }
@@ -107,7 +120,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Create or update user in database
-    const dbUser = await prisma.user.upsert({
+    let dbUser;
+    try {
+      dbUser = await prisma.user.upsert({
       where: { email },
       update: {
         name: `${firstName.charAt(0).toUpperCase() + firstName.slice(1)} ${lastName.charAt(0).toUpperCase() + lastName.slice(1)}`,
@@ -119,6 +134,15 @@ export async function POST(request: NextRequest) {
         role: role.toLowerCase(),
       }
     });
+    } catch (dbErr: any) {
+      console.error('Database upsert failed:', dbErr);
+      const msg = dbErr?.code === 'P1001' || dbErr?.message?.includes('connect')
+        ? 'Database unreachable. User may exist in auth; check DATABASE_URL or try Sync from Clerk.'
+        : dbErr?.code === 'P2002'
+          ? 'A user with this email already exists.'
+          : 'Database error while saving user. Try again or use Sync from Clerk.';
+      return NextResponse.json({ error: msg }, { status: 503 });
+    }
 
     return NextResponse.json({
       success: true,
@@ -137,17 +161,23 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Error creating user:', error);
-    
-    // Handle Prisma unique constraint errors
-    if (error.code === 'P2002') {
+
+    if (error?.code === 'P2002') {
       return NextResponse.json(
         { error: 'A user with this email already exists' },
         { status: 400 }
       );
     }
+    if (error?.code === 'P1001' || error?.message?.includes('connect')) {
+      return NextResponse.json(
+        { error: 'Database unreachable. Check DATABASE_URL and that your database is running.' },
+        { status: 503 }
+      );
+    }
 
+    const message = error?.message || 'Failed to create user. Please try again.';
     return NextResponse.json(
-      { error: 'Failed to create user. Please try again.' },
+      { error: message },
       { status: 500 }
     );
   }
