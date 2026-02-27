@@ -1,6 +1,18 @@
 # Production database (Neon) checklist
 
-If **development** works but **production** returns 500 on `/api/admin/users` or "Failed to load users":
+If **development** works but **production** returns 500/503 on `/api/admin/users` or "Failed to load users" / "Cannot create users":
+
+## "URL must start with postgresql:// or postgres://"
+
+This means **DATABASE_URL** in production is wrong: it's either empty, has extra quotes/spaces, or is not the real connection string.
+
+- In **Vercel:** Project → **Settings** → **Environment Variables**
+- **Name:** `DATABASE_URL` (exactly)
+- **Value:** Your full Neon URL, e.g. `postgresql://user:password@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require`
+  - Must start with `postgresql://` or `postgres://`
+  - No quotes around the value in the UI (Vercel adds them when needed)
+  - No leading/trailing spaces
+- Save, then **redeploy** the project.
 
 ## 1. Set `DATABASE_URL` in production
 

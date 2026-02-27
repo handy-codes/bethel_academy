@@ -4,8 +4,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { clerkClient } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 
+function isValidDatabaseUrl(url: string | undefined): boolean {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  return trimmed.startsWith('postgresql://') || trimmed.startsWith('postgres://');
+}
+
 export async function POST(request: NextRequest) {
   try {
+    const dbUrl = process.env.DATABASE_URL;
+    if (!dbUrl) {
+      return NextResponse.json(
+        { error: 'DATABASE_URL is not set. In Vercel: Project → Settings → Environment Variables → add DATABASE_URL with your Neon URL.' },
+        { status: 503 }
+      );
+    }
+    if (!isValidDatabaseUrl(dbUrl)) {
+      return NextResponse.json(
+        { error: 'DATABASE_URL must start with postgresql:// or postgres://. Check Vercel env vars and remove any extra quotes or spaces.' },
+        { status: 503 }
+      );
+    }
+
     const { email, firstName, lastName, role } = await request.json();
 
     // Validate required fields
@@ -136,11 +156,13 @@ export async function POST(request: NextRequest) {
     });
     } catch (dbErr: any) {
       console.error('Database upsert failed:', dbErr);
-      const msg = dbErr?.code === 'P1001' || dbErr?.message?.includes('connect')
-        ? 'Database unreachable. User may exist in auth; check DATABASE_URL or try Sync from Clerk.'
-        : dbErr?.code === 'P2002'
-          ? 'A user with this email already exists.'
-          : 'Database error while saving user. Try again or use Sync from Clerk.';
+      const msg = typeof dbErr?.message === 'string' && (dbErr.message.includes('must start with the protocol') || dbErr.message.includes('postgresql://'))
+        ? 'DATABASE_URL is invalid. It must start with postgresql://. Set it in Vercel → Settings → Environment Variables (no extra quotes).'
+        : dbErr?.code === 'P1001' || dbErr?.message?.includes('connect')
+          ? 'Database unreachable. User may exist in auth; check DATABASE_URL or try Sync from Clerk.'
+          : dbErr?.code === 'P2002'
+            ? 'A user with this email already exists.'
+            : 'Database error while saving user. Try again or use Sync from Clerk.';
       return NextResponse.json({ error: msg }, { status: 503 });
     }
 
@@ -168,16 +190,22 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    if (error?.code === 'P1001' || error?.message?.includes('connect')) {
+    const msg = typeof error?.message === 'string' ? error.message : '';
+    if (msg.includes('must start with the protocol') || msg.includes('postgresql://')) {
+      return NextResponse.json(
+        { error: 'DATABASE_URL is invalid. It must start with postgresql://. Set it in Vercel → Settings → Environment Variables.' },
+        { status: 503 }
+      );
+    }
+    if (error?.code === 'P1001' || msg.includes('connect')) {
       return NextResponse.json(
         { error: 'Database unreachable. Check DATABASE_URL and that your database is running.' },
         { status: 503 }
       );
     }
 
-    const message = error?.message || 'Failed to create user. Please try again.';
     return NextResponse.json(
-      { error: message },
+      { error: msg || 'Failed to create user. Please try again.' },
       { status: 500 }
     );
   }

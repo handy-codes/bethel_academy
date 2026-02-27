@@ -18,11 +18,24 @@ function isDbConnectionError(err: unknown): boolean {
   );
 }
 
+function isValidDatabaseUrl(url: string | undefined): boolean {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  return trimmed.startsWith('postgresql://') || trimmed.startsWith('postgres://');
+}
+
 export async function GET() {
   try {
-    if (!process.env.DATABASE_URL) {
+    const dbUrl = process.env.DATABASE_URL;
+    if (!dbUrl) {
       return NextResponse.json(
-        { error: 'DATABASE_URL is not set in this environment. Add it in your hosting dashboard (e.g. Vercel → Settings → Environment Variables).', users: [] },
+        { error: 'DATABASE_URL is not set. In Vercel: Project → Settings → Environment Variables → add DATABASE_URL with your Neon URL.', users: [] },
+        { status: 503 }
+      );
+    }
+    if (!isValidDatabaseUrl(dbUrl)) {
+      return NextResponse.json(
+        { error: 'DATABASE_URL must start with postgresql:// or postgres://. Check Vercel env vars and remove any extra quotes or spaces.', users: [] },
         { status: 503 }
       );
     }
@@ -42,14 +55,17 @@ export async function GET() {
     return NextResponse.json({ users: mapped });
   } catch (error: unknown) {
     const err = error as Record<string, unknown> | undefined;
-    const message = typeof err?.message === 'string' ? err.message : 'Failed to load users';
+    const message = typeof err?.message === 'string' ? err.message : '';
     console.error('GET /api/admin/users error', error);
 
-    const userMessage = isDbConnectionError(error)
-      ? 'Database unreachable. Check DATABASE_URL and that the database is running.'
-      : message || 'Failed to load users';
+    const isInvalidUrl = message.includes('must start with the protocol') || message.includes('postgresql://') || message.includes('postgres://');
+    const userMessage = isInvalidUrl
+      ? 'DATABASE_URL is invalid. It must start with postgresql:// (e.g. your Neon connection string). Check Vercel → Settings → Environment Variables.'
+      : isDbConnectionError(error)
+        ? 'Database unreachable. Check DATABASE_URL and that the database is running.'
+        : message || 'Failed to load users';
 
-    const status = isDbConnectionError(error) ? 503 : 500;
+    const status = isInvalidUrl || isDbConnectionError(error) ? 503 : 500;
     return NextResponse.json(
       { error: userMessage, users: [] },
       { status }
