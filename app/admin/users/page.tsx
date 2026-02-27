@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Eye, Mail, User, GraduationCap, BookOpen, CheckCircle, X } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Mail, User, GraduationCap, BookOpen, CheckCircle, X, RefreshCw } from "lucide-react";
 
 interface User {
   id: string;
@@ -45,26 +45,55 @@ export default function UsersPage() {
     lastName: "",
     role: "student" as "admin" | "student" | "lecturer"
   });
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+
+  const loadUsers = async () => {
+    setLoadError(null);
+    try {
+      const res = await fetch('/api/admin/users', { cache: 'no-store' });
+      const data = await res.json();
+      if (res.ok) {
+        setUsers((data.users || []).map((u: any) => ({
+          ...u,
+          isActive: u.isActive ?? true,
+        })));
+      } else {
+        setLoadError(data.error || 'Failed to load users');
+      }
+    } catch (e) {
+      console.error('Failed to load users', e);
+      setLoadError('Failed to load users. Check the console and that the database is connected.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadUsers = async () => {
-      try {
-        const res = await fetch('/api/admin/users', { cache: 'no-store' });
-        const data = await res.json();
-        if (res.ok) {
-          setUsers((data.users || []).map((u: any) => ({
-            ...u,
-            isActive: u.isActive ?? true,
-          })));
-        }
-      } catch (e) {
-        console.error('Failed to load users', e);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadUsers();
   }, []);
+
+  const handleSyncFromClerk = async () => {
+    setSyncing(true);
+    setLoadError(null);
+    try {
+      const res = await fetch('/api/admin/users/sync-from-clerk', { method: 'POST', cache: 'no-store' });
+      const data = await res.json();
+      if (res.ok) {
+        await loadUsers();
+        setActionToast({ show: true, type: 'success', message: data.message || 'Users synced from Clerk.' });
+      } else {
+        setLoadError(data.error || 'Sync failed');
+        setActionToast({ show: true, type: 'error', message: data.error || 'Sync failed' });
+      }
+    } catch (e) {
+      console.error('Sync from Clerk failed', e);
+      setLoadError('Sync failed. Check the console.');
+      setActionToast({ show: true, type: 'error', message: 'Sync failed.' });
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const filteredUsers = users.filter(user => {
     const matchesSearch =
@@ -244,14 +273,35 @@ export default function UsersPage() {
           <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
           <p className="text-gray-600 mt-2">Manage students, lecturers, and administrators</p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
-        >
-          <Plus className="h-5 w-5" />
-          <span>Add User</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleSyncFromClerk}
+            disabled={syncing}
+            className="bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-60"
+          >
+            {syncing ? "Syncing..." : "Sync from Clerk"}
+          </button>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+          >
+            <Plus className="h-5 w-5" />
+            <span>Add User</span>
+          </button>
+        </div>
       </div>
+
+      {loadError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 flex items-center justify-between">
+          <span>{loadError}</span>
+          <button
+            onClick={loadUsers}
+            className="ml-3 bg-red-100 text-red-800 px-3 py-1 rounded-md hover:bg-red-200 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

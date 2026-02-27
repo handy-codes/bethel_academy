@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     // Determine role based on email or default to student
     let role = 'student';
-    if (email.includes('admin') || email === 'paxymek@gmail.com' || email === 'walsam4christ@gmail.com') {
+    if (email.includes('admin') || email === 'paxymek@gmail.com' || email === 'paxyme@gmail.com' || email === 'walsam4christ@gmail.com') {
       role = 'admin';
     } else if (email.includes('lecturer') || email.includes('teacher')) {
       role = 'lecturer';

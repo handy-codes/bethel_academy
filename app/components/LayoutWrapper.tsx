@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import RoleSync from "./RoleSync";
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
@@ -26,13 +27,14 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
 
   if (isAuthRoute) {
     // For auth routes, just render children without navbar/footer
-    return <>{children}</>;
+    return <><RoleSync />{children}</>;
   }
 
   if (isStudentRoute) {
     // For student routes, render with navbar but no footer for better dashboard experience
     return (
       <div className="min-h-screen flex flex-col">
+        <RoleSync />
         <Navbar isStudentRoute={true} />
         <main className="flex-grow">
           {children}
@@ -45,6 +47,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
     // For admin routes, render with navbar but no footer for better dashboard experience
     return (
       <div className="min-h-screen flex flex-col">
+        <RoleSync />
         <Navbar isAdminRoute={true} />
         <main className="flex-grow">
           {children}
@@ -57,6 +60,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
     // For lecturer routes, render with navbar but no footer
     return (
       <div className="min-h-screen flex flex-col">
+        <RoleSync />
         {/* Reuse admin style for dashboard navbar visuals */}
         <Navbar isAdminRoute={true} />
         <main className="flex-grow">
@@ -70,6 +74,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
     // For parent routes, render with navbar but no footer
     return (
       <div className="min-h-screen flex flex-col">
+        <RoleSync />
         <Navbar isAdminRoute={true} />
         <main className="flex-grow">
           {children}
@@ -81,6 +86,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   // For all other routes (home page, public pages), render with navbar and footer
   return (
     <div className="min-h-screen flex flex-col">
+      <RoleSync />
       <Navbar />
       <main className="flex-grow">
         {children}
