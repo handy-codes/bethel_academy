@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 // GET /api/questions?subject=&difficulty=
 export async function GET(req: NextRequest) {
@@ -10,11 +8,12 @@ export async function GET(req: NextRequest) {
     const subject = searchParams.get('subject') || undefined;
     const difficulty = searchParams.get('difficulty') || undefined;
 
+    const where: { difficulty?: string; exam?: { subject: string } } = {};
+    if (difficulty) where.difficulty = difficulty as any;
+    if (subject) where.exam = { subject: subject as any };
+
     const questions = await prisma.question.findMany({
-      where: {
-        difficulty: difficulty as any | undefined,
-        exam: subject ? { subject: subject as any } : undefined,
-      },
+      where,
       orderBy: { createdAt: 'desc' },
       include: { exam: true },
     });

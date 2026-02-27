@@ -41,7 +41,8 @@ export default function ExamsPage() {
     const load = async () => {
       try {
         if (!isLoaded || !user) return;
-        const res = await fetch(`/api/exams?createdBy=${encodeURIComponent(user.id)}`, { cache: 'no-store' });
+        // Admin sees all exams in the DB; omit createdBy to load every exam
+        const res = await fetch('/api/exams', { cache: 'no-store' });
         const data = await res.json();
         const list: any[] = Array.isArray(data.exams) ? data.exams : [];
         const mapped: Exam[] = list

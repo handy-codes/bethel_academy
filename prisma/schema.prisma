@@ -498,6 +498,7 @@ model ExamAttempt {
   updatedAt      DateTime        @updatedAt
   exam           Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
   answers        StudentAnswer[]
+  examResults    ExamResult[]
 
   @@index([examId])
   @@index([studentId])
@@ -524,8 +525,8 @@ model StudentAnswer {
 }
 
 model ExamResult {
-  id             String    @id @default(uuid())
-  attemptId      String    @unique
+  id             String       @id @default(uuid())
+  attemptId      String       @unique
   studentId      String
   examId         String
   score          Float
@@ -533,13 +534,14 @@ model ExamResult {
   correctAnswers Int
   percentage     Float
   grade          String?
-  isApproved     Boolean   @default(false)
+  isApproved     Boolean      @default(false)
   approvedBy     String?
   approvedAt     DateTime?
   feedback       String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  exam           Exam      @relation(fields: [examId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  exam           Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
+  attempt        ExamAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
   @@index([examId])
