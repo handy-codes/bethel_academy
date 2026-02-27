@@ -448,6 +448,7 @@ model Exam {
   createdBy      String
   attempts       ExamAttempt[]
   questions      Question[]
+  examResults    ExamResult[]
 
   @@index([subject])
   @@index([isActive])
@@ -538,6 +539,7 @@ model ExamResult {
   feedback       String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+  exam           Exam      @relation(fields: [examId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
   @@index([examId])

@@ -2,10 +2,8 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
-
-const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   try {
