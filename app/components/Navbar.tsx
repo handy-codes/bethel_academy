@@ -100,29 +100,30 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
       }`}
     >
       <div className="container mx-auto px-4 flex justify-between items-center">
-        <div className="flex items-center">
+        <div className="flex items-center gap-2 min-w-0 flex-1 md:flex-initial">
+          {/* Logo: separate container on mobile so it never shrinks */}
           <Link
             href="/"
-            className="flex items-center"
+            className="flex-shrink-0 rounded-full overflow-hidden w-12 h-12 focus:outline-none"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Bethel Academy home"
+          >
+            <Image
+              src="/bethel_logo2.jpg"
+              alt="Bethel Academy Logo"
+              width={48}
+              height={48}
+              className="w-12 h-12 object-cover"
+            />
+          </Link>
+          {/* Title: separate container; smaller on mobile to give logo space */}
+          <Link
+            href="/"
+            className="min-w-0 flex items-center"
             onClick={() => setMobileMenuOpen(false)}
           >
-            {/* <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold text-xl p-2 rounded mr-2">BA</div> */}
-            <div className="mr-2 rounded-full overflow-hidden w-12 h-12">
-              <Image
-                src="/bethel_logo2.jpg"
-                alt="Bethel Academy Logo"
-                width={40}
-                height={40}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            {/* Updated logo text */}
             <span
-              className={`text-2xl sm:text-3xl font-bold ${
-                isAdminRoute || isStudentRoute || isScrolled
-                  ? "text-indigo-900" 
-                  : "text-white"
-              }`}
+              className={`font-bold truncate text-lg sm:text-xl md:text-2xl lg:text-3xl text-[#1D4ED8] ${isAdminRoute || isStudentRoute || isScrolled ? 'md:text-[#1D4ED8]' : 'md:text-white'}`}
             >
               The Bethel Academy
             </span>
@@ -230,10 +231,10 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
           )}
           <button
             ref={menuButtonRef}
-            className={`${
-              isAdminRoute || isStudentRoute || isScrolled ? "text-indigo-900" : "text-white"
-            }`}
+            className="h-10 w-10 flex items-center justify-center flex-shrink-0"
+            style={{ color: '#FBBF24' }}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
