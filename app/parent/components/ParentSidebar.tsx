@@ -78,13 +78,13 @@ export default function ParentSidebar({ isOpen, onClose }: ParentSidebarProps) {
         </div>
       </div>
 
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:flex lg:flex-col lg:w-64 lg:bg-white lg:shadow-lg lg:border-r">
-        <div className="flex items-center justify-center p-4 border-b">
+      {/* Desktop Sidebar - full height below navbar */}
+      <div className="hidden lg:flex lg:flex-col lg:fixed lg:top-16 lg:left-0 lg:bottom-0 lg:w-64 lg:bg-white lg:shadow-lg lg:border-r lg:z-40">
+        <div className="flex items-center justify-center p-4 border-b flex-shrink-0">
           <h2 className="text-lg font-semibold text-gray-800">Parent Portal</h2>
         </div>
 
-        <nav className="flex-1 mt-4">
+        <nav className="flex-1 mt-4 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
             return (

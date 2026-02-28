@@ -28,7 +28,7 @@ export default function ParentLayout({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-full flex flex-col lg:flex-row bg-gray-50 pt-16">
       {/* Mobile Sidebar Toggle Button */}
       <button
         onClick={toggleSidebar}
@@ -50,12 +50,12 @@ export default function ParentLayout({
         </svg>
       </button>
 
-      {/* Sidebar */}
+      {/* Sidebar - full height on desktop */}
       <ParentSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* Main Content */}
-      <div className="lg:ml-64">
-        <main className="p-4 lg:p-6">
+      {/* Main Content - reduced top padding */}
+      <div className="flex-1 min-w-0 lg:ml-64">
+        <main className="px-4 pt-2 pb-6 lg:px-6 lg:pt-4 lg:pb-6">
           {children}
         </main>
       </div>
