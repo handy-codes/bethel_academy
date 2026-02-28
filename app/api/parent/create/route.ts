@@ -90,6 +90,13 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    // Keep User table in sync: one row per email with role 'parent' so admin list shows parent only
+    await prisma.user.upsert({
+      where: { email },
+      update: { name: name || undefined, role: 'parent' },
+      create: { email, name: name || undefined, role: 'parent' },
+    });
+
     return NextResponse.json({
       success: true,
       message: 'Parent account created successfully',

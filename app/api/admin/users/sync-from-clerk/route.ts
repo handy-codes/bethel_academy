@@ -36,25 +36,28 @@ export async function POST() {
           continue;
         }
 
-        const role = (cu.publicMetadata as any)?.role
-          || (cu.privateMetadata as any)?.role
-          || 'student';
         const name = [cu.firstName, cu.lastName].filter(Boolean).join(' ') || email;
 
-        const validRole = ['admin', 'student', 'lecturer', 'parent'].includes(role)
-          ? role.toLowerCase()
+        // If this email is in the Parent table, always keep role 'parent' (don't overwrite with Clerk's role)
+        const parentRecord = await prisma.parent.findUnique({ where: { email } }).catch(() => null);
+        const roleFromClerk = (cu.publicMetadata as any)?.role
+          || (cu.privateMetadata as any)?.role
+          || 'student';
+        const validRoleFromClerk = ['admin', 'student', 'lecturer', 'parent'].includes(roleFromClerk)
+          ? roleFromClerk.toLowerCase()
           : 'student';
+        const roleToSave = parentRecord ? 'parent' : validRoleFromClerk;
 
         await prisma.user.upsert({
           where: { email },
           update: {
             name: name || undefined,
-            role: validRole,
+            role: roleToSave,
           },
           create: {
             email,
             name: name || undefined,
-            role: validRole,
+            role: roleToSave,
           },
         });
         totalSynced += 1;

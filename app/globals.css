@@ -62,28 +62,6 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
-/* Auth sign-in: prevent Clerk from forcing full viewport height */
-.sign-in-compact [class*="cl-rootBox"],
-.sign-in-compact [class*="cl-card"],
-.sign-in-compact [class*="cl-cardBox"] {
-  min-height: 0 !important;
-}
-
-/* Auth sign-in: logo and "Sign in to..." / "Welcome back..." in a flex row inside the form */
-.sign-in-compact [class*="cl-header"],
-.sign-in-compact [class*="cl-cardBox"] > div:first-child {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 1rem !important;
-  flex-wrap: wrap !important;
-}
-.sign-in-compact [class*="cl-header"] > *,
-.sign-in-compact [class*="cl-cardBox"] > div:first-child > * {
-  flex-shrink: 0;
-}
-
 /* Mobile user button dropdown - simple approach */
 @media (max-width: 768px) {
   .mobile-user-button {

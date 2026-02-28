@@ -1,9 +1,7 @@
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export async function DELETE(
   _req: NextRequest,
@@ -11,13 +9,13 @@ export async function DELETE(
 ) {
   try {
     const { id } = params;
+    const user = await prisma.user.findUnique({ where: { id }, select: { email: true } });
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
     await prisma.user.delete({ where: { id } });
-    // Also attempt to delete Clerk user if a matching email exists
-    try {
-      const deletedEmail = undefined as unknown as string; // placeholder to satisfy TS
-      // We cannot reliably map prisma id -> clerk id here without stored mapping.
-      // Admin UI will refetch from DB; Clerk record can remain if unknown.
-    } catch {}
+    // If this email was a parent, remove the Parent row so sync doesn't bring back a duplicate
+    await prisma.parent.deleteMany({ where: { email: user.email } }).catch(() => {});
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('DELETE /api/admin/users/[id] error', error);

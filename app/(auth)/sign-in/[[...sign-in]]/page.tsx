@@ -4,7 +4,7 @@ import { SignIn } from "@clerk/nextjs";
 
 export default function Page() {
   return (
-    <div className="w-full max-w-md flex items-center justify-center px-4 py-6 sign-in-compact">
+    <div className="w-full max-w-md flex items-center justify-center">
       <SignIn
         fallbackRedirectUrl="/"
         appearance={{

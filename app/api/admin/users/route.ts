@@ -45,7 +45,6 @@ export async function GET() {
 
     const mapped = users.map(u => {
       const rawRole = (u as any).role || 'student';
-      // Normalize legacy/default "user" role to "student" so they appear in student lists and dropdowns
       const role = rawRole === 'user' ? 'student' : rawRole;
       return {
         id: u.id,
@@ -57,7 +56,17 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json({ users: mapped });
+    // One row per email: prefer 'parent' if same email appears twice (legacy data)
+    const byEmail = new Map<string, (typeof mapped)[0]>();
+    for (const u of mapped) {
+      const existing = byEmail.get(u.email);
+      if (!existing || u.role === 'parent') byEmail.set(u.email, u);
+    }
+    const deduped = Array.from(byEmail.values()).sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    return NextResponse.json({ users: deduped });
   } catch (error: unknown) {
     const err = error as Record<string, unknown> | undefined;
     const message = typeof err?.message === 'string' ? err.message : '';
