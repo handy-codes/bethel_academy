@@ -7,7 +7,7 @@ interface User {
   id: string;
   email: string;
   name: string;
-  role: 'admin' | 'student' | 'lecturer';
+  role: 'admin' | 'student' | 'lecturer' | 'user';
   createdAt: string;
   isActive: boolean;
 }
