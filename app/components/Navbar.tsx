@@ -123,7 +123,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
             onClick={() => setMobileMenuOpen(false)}
           >
             <span
-              className={`font-bold text-base leading-snug sm:text-xl md:text-2xl lg:text-3xl text-[#1D4ED8] ${isAdminRoute || isStudentRoute || isScrolled ? 'md:text-[#1D4ED8]' : 'md:text-white'} md:leading-normal`}
+              className={`font-bold text-lg leading-snug sm:text-xl md:text-2xl lg:text-3xl text-[#1D4ED8] ${isAdminRoute || isStudentRoute || isScrolled ? 'md:text-[#1D4ED8]' : 'md:text-white'} md:leading-normal`}
             >
               The Bethel Academy
             </span>
@@ -205,26 +205,8 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
           )}
         </div>
 
-        {/* Mobile user profile and menu button - smaller to give title more space */}
+        {/* Mobile: menu icon first, then login/user - smaller to give title more space */}
         <div className="md:hidden flex items-center space-x-2">
-          {user ? (
-            <div className="relative mobile-user-button flex-shrink-0">
-              <UserButton 
-                afterSignOutUrl="/"
-                appearance={{
-                  elements: {
-                    avatarBox: "!w-6 !h-6"
-                  }
-                }}
-              />
-            </div>
-          ) : (
-            <Link href="/sign-in">
-              <button className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium py-1.5 px-2 rounded-sm text-xs whitespace-nowrap transition-all min-w-0">
-                Login
-              </button>
-            </Link>
-          )}
           <button
             ref={menuButtonRef}
             className="h-8 w-8 flex items-center justify-center flex-shrink-0"
@@ -247,6 +229,24 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
               />
             </svg>
           </button>
+          {user ? (
+            <div className="relative mobile-user-button flex-shrink-0">
+              <UserButton 
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    avatarBox: "!w-6 !h-6"
+                  }
+                }}
+              />
+            </div>
+          ) : (
+            <Link href="/sign-in">
+              <button className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium py-1.5 px-2 rounded-md text-xs whitespace-nowrap transition-all min-w-0">
+                Login
+              </button>
+            </Link>
+          )}
         </div>
       </div>
 
