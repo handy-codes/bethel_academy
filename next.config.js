@@ -42,6 +42,11 @@ const nextConfig = {
         hostname: 'images.clerk.dev',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
+      },
     ],
   },
 }
