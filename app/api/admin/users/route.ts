@@ -43,14 +43,19 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
 
-    const mapped = users.map(u => ({
-      id: u.id,
-      email: u.email,
-      name: u.name || '',
-      role: (u as any).role || 'student',
-      createdAt: u.createdAt.toISOString(),
-      isActive: true,
-    }));
+    const mapped = users.map(u => {
+      const rawRole = (u as any).role || 'student';
+      // Normalize legacy/default "user" role to "student" so they appear in student lists and dropdowns
+      const role = rawRole === 'user' ? 'student' : rawRole;
+      return {
+        id: u.id,
+        email: u.email,
+        name: u.name || '',
+        role,
+        createdAt: u.createdAt.toISOString(),
+        isActive: true,
+      };
+    });
 
     return NextResponse.json({ users: mapped });
   } catch (error: unknown) {

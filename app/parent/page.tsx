@@ -11,6 +11,7 @@ import {
   CheckCircle,
   Clock
 } from 'lucide-react';
+import DashboardGreeting from '@/app/components/DashboardGreeting';
 
 interface DashboardStats {
   totalExams: number;
@@ -132,10 +133,8 @@ export default function ParentDashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Welcome, {data.parent.name}!
-        </h1>
-        <p className="text-gray-600">
+        <DashboardGreeting fallbackName="Parent" />
+        <p className="text-gray-600 mt-2">
           Monitoring academic progress for <span className="font-semibold">{data.student.name}</span>
         </p>
       </div>

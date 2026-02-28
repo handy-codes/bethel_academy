@@ -7,26 +7,34 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST() {
   try {
-    const limit = 100;
+    const limit = 500;
     let offset = 0;
     let totalSynced = 0;
-    let hasMore = true;
+    let totalCount: number | null = null;
+    const skipped: string[] = [];
 
-    while (hasMore) {
-      const { data: clerkUsers } = await clerkClient.users.getUserList({
+    while (true) {
+      const response = await clerkClient.users.getUserList({
         limit,
         offset,
         orderBy: '-created_at',
       });
 
-      if (!clerkUsers?.length) {
-        hasMore = false;
-        break;
-      }
+      const clerkUsers = response?.data ?? [];
+      if (typeof response?.totalCount === 'number') totalCount = response.totalCount;
+
+      if (!clerkUsers.length) break;
 
       for (const cu of clerkUsers) {
-        const email = cu.emailAddresses?.[0]?.emailAddress;
-        if (!email) continue;
+        const primaryId = (cu as any).primaryEmailAddressId;
+        const emails = cu.emailAddresses ?? [];
+        const email = primaryId
+          ? emails.find((e: { id: string }) => e.id === primaryId)?.emailAddress
+          : emails[0]?.emailAddress;
+        if (!email) {
+          skipped.push((cu as any).id ?? 'unknown');
+          continue;
+        }
 
         const role = (cu.publicMetadata as any)?.role
           || (cu.privateMetadata as any)?.role
@@ -53,16 +61,21 @@ export async function POST() {
       }
 
       offset += clerkUsers.length;
-      hasMore = clerkUsers.length === limit;
+      if (clerkUsers.length < limit) break;
+      if (totalCount != null && offset >= totalCount) break;
     }
 
-    return NextResponse.json({
+    const msg = totalSynced > 0
+      ? `Synced ${totalSynced} user(s) from Clerk into the database.`
+      : 'No users found in Clerk to sync, or they were already in the database.';
+    const body: { success: boolean; message: string; synced: number; skipped?: number } = {
       success: true,
-      message: totalSynced > 0
-        ? `Synced ${totalSynced} user(s) from Clerk into the database.`
-        : 'No users found in Clerk to sync, or they were already in the database.',
+      message: skipped.length > 0 ? `${msg} (${skipped.length} skipped: no email)` : msg,
       synced: totalSynced,
-    });
+    };
+    if (skipped.length > 0) body.skipped = skipped.length;
+
+    return NextResponse.json(body);
   } catch (error: any) {
     console.error('Sync from Clerk error', error);
     const message =

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
+import DashboardGreeting from "@/app/components/DashboardGreeting";
 
 interface StudentStats {
   totalExams: number;
@@ -181,12 +182,7 @@ export default function StudentDashboard() {
 
   return (
     <div className="space-y-6 mt-12">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Welcome to Your Dashboard</h1>
-        <p className="text-gray-600 mt-2">
-          Track your progress and continue your learning journey
-        </p>
-      </div>
+      <DashboardGreeting fallbackName="Student" />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

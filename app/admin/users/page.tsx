@@ -609,14 +609,14 @@ export default function UsersPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   >
                     <option value="">Select a student...</option>
-                    {users.filter((u) => u.role === "student").map((s) => (
+                    {users.filter((u) => u.role === "student" || u.role === "user").map((s) => (
                       <option key={s.id} value={s.email}>
                         {s.name} ({s.email})
                       </option>
                     ))}
                   </select>
-                  {users.filter((u) => u.role === "student").length === 0 && (
-                    <p className="text-xs text-amber-600 mt-1">No students yet. Add a student first.</p>
+                  {users.filter((u) => u.role === "student" || u.role === "user").length === 0 && (
+                    <p className="text-xs text-amber-600 mt-1">No students yet. Add a student first or use Sync from Clerk.</p>
                   )}
                 </div>
               )}
@@ -656,7 +656,7 @@ export default function UsersPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={creating || (newUser.role === "parent" && !parentStudentEmail) || (newUser.role === "parent" && users.filter((u) => u.role === "student").length === 0)}
+                  disabled={creating || (newUser.role === "parent" && !parentStudentEmail) || (newUser.role === "parent" && users.filter((u) => u.role === "student" || u.role === "user").length === 0)}
                   className={`flex-1 px-4 py-2 text-white rounded-lg ${creating ? 'bg-indigo-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
                 >
                   {creating ? 'Creating…' : newUser.role === 'parent' ? 'Create Parent' : 'Create User'}
