@@ -131,12 +131,12 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
         </div>
 
         {/* Desktop Navigation - Updated link colors */}
-        <nav className="hidden md:flex space-x-8">
+        <nav className="hidden md:flex items-center space-x-8 h-10">
           {navLinks.map((link) => (
             <Link
               key={link.name}
               href={link.path}
-              className={`font-semibold transition-colors nav-link ${
+              className={`font-semibold transition-colors nav-link leading-10 ${
                 pathname === link.path
                   ? isAdminRoute || isStudentRoute || isScrolled
                     ? "text-indigo-600 font-bold nav-link-active-scrolled"
@@ -151,18 +151,14 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
           ))}
         </nav>
 
-        <div className="hidden md:flex items-center space-x-4">
+        <div className="hidden md:flex items-center space-x-4 h-10">
           {user ? (
-            <div className="flex items-center space-x-4">
-              {/* Role-based dashboard link */}
+            <div className="flex items-center space-x-4 h-10">
+              {/* Role-based dashboard link - same height as nav for vertical alignment */}
               {userRole === 'admin' && (
                 <Link
                   href="/admin"
-                  className={`font-medium transition-colors ${
-                    isAdminRoute || isStudentRoute || isScrolled
-                      ? "text-indigo-900 hover:text-indigo-600"
-                      : "text-white hover:text-gray-200"
-                  }`}
+                  className="font-semibold transition-colors bg-[#FBBF24] text-white hover:bg-amber-400 px-3 rounded-lg inline-flex items-center h-10 leading-10 box-border"
                 >
                   Admin Dashboard
                 </Link>
@@ -170,11 +166,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
               {userRole === 'student' && (
                 <Link
                   href="/student"
-                  className={`font-medium transition-colors ${
-                    isAdminRoute || isStudentRoute || isScrolled
-                      ? "text-indigo-900 hover:text-indigo-600"
-                      : "text-white hover:text-gray-200"
-                  }`}
+                  className="font-semibold transition-colors bg-[#FBBF24] text-white hover:bg-amber-400 px-3 rounded-lg inline-flex items-center h-10 leading-10 box-border"
                 >
                   Student Dashboard
                 </Link>
@@ -182,11 +174,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
               {userRole === 'lecturer' && (
                 <Link
                   href="/lecturer"
-                  className={`font-medium transition-colors ${
-                    isAdminRoute || isStudentRoute || isScrolled
-                      ? "text-indigo-900 hover:text-indigo-600"
-                      : "text-white hover:text-gray-200"
-                  }`}
+                  className="font-semibold transition-colors bg-[#FBBF24] text-white hover:bg-amber-400 px-3 rounded-lg inline-flex items-center h-10 leading-10 box-border"
                 >
                   Lecturer Dashboard
                 </Link>
@@ -209,15 +197,15 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
           )}
         </div>
 
-        {/* Mobile user profile and menu button */}
-        <div className="md:hidden flex items-center space-x-3">
+        {/* Mobile user profile and menu button - smaller to give title more space */}
+        <div className="md:hidden flex items-center space-x-2">
           {user ? (
-            <div className="relative mobile-user-button">
+            <div className="relative mobile-user-button flex-shrink-0">
               <UserButton 
                 afterSignOutUrl="/"
                 appearance={{
                   elements: {
-                    avatarBox: "w-8 h-8"
+                    avatarBox: "!w-6 !h-6"
                   }
                 }}
               />
@@ -231,14 +219,14 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
           )}
           <button
             ref={menuButtonRef}
-            className="h-10 w-10 flex items-center justify-center flex-shrink-0"
+            className="h-8 w-8 flex items-center justify-center flex-shrink-0"
             style={{ color: '#FBBF24' }}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-10 w-10"
+              className="h-8 w-8"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -283,14 +271,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
             {user && userRole === 'admin' && (
               <Link
                 href="/admin"
-                className={`font-medium transition-colors px-4 py-2 rounded-lg ${
-                  pathname.startsWith('/admin')
-                    ? "text-white font-bold"
-                    : "text-gray-200 hover:text-white"
-                }`}
-                style={{
-                  backgroundColor: pathname.startsWith('/admin') ? '#1B9BFF' : 'transparent'
-                }}
+                className="font-semibold transition-colors px-4 py-2 rounded-lg bg-[#FBBF24] text-white hover:bg-amber-400"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Admin Dashboard
@@ -299,14 +280,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
             {user && userRole === 'student' && (
               <Link
                 href="/student"
-                className={`font-medium transition-colors px-4 py-2 rounded-lg ${
-                  pathname.startsWith('/student')
-                    ? "text-white font-bold"
-                    : "text-gray-200 hover:text-white"
-                }`}
-                style={{
-                  backgroundColor: pathname.startsWith('/student') ? '#1B9BFF' : 'transparent'
-                }}
+                className="font-semibold transition-colors px-4 py-2 rounded-lg bg-[#FBBF24] text-white hover:bg-amber-400"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Student Dashboard
@@ -315,14 +289,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
             {user && userRole === 'lecturer' && (
               <Link
                 href="/lecturer"
-                className={`font-medium transition-colors px-4 py-2 rounded-lg ${
-                  pathname.startsWith('/lecturer')
-                    ? "text-white font-bold"
-                    : "text-gray-200 hover:text-white"
-                }`}
-                style={{
-                  backgroundColor: pathname.startsWith('/lecturer') ? '#1B9BFF' : 'transparent'
-                }}
+                className="font-semibold transition-colors px-4 py-2 rounded-lg bg-[#FBBF24] text-white hover:bg-amber-400"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Lecturer Dashboard
