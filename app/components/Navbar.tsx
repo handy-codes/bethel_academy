@@ -101,10 +101,10 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
     >
       <div className="container mx-auto px-4 flex justify-between items-center">
         <div className="flex items-center gap-2 min-w-0 flex-1 md:flex-initial">
-          {/* Logo: separate container on mobile so it never shrinks */}
+          {/* Logo: smaller on mobile only, full size from md up */}
           <Link
             href="/"
-            className="flex-shrink-0 rounded-full overflow-hidden w-12 h-12 focus:outline-none"
+            className="flex-shrink-0 rounded-full overflow-hidden w-9 h-9 md:w-12 md:h-12 focus:outline-none"
             onClick={() => setMobileMenuOpen(false)}
             aria-label="Bethel Academy home"
           >
@@ -113,17 +113,17 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
               alt="Bethel Academy Logo"
               width={48}
               height={48}
-              className="w-12 h-12 object-cover"
+              className="w-9 h-9 md:w-12 md:h-12 object-cover"
             />
           </Link>
-          {/* Title: separate container; smaller on mobile to give logo space */}
+          {/* Title: larger on mobile now that logo is smaller */}
           <Link
             href="/"
             className="min-w-0 flex items-center"
             onClick={() => setMobileMenuOpen(false)}
           >
             <span
-              className={`font-bold truncate text-lg sm:text-xl md:text-2xl lg:text-3xl text-[#1D4ED8] ${isAdminRoute || isStudentRoute || isScrolled ? 'md:text-[#1D4ED8]' : 'md:text-white'}`}
+              className={`font-bold truncate text-xl sm:text-2xl md:text-2xl lg:text-3xl text-[#1D4ED8] ${isAdminRoute || isStudentRoute || isScrolled ? 'md:text-[#1D4ED8]' : 'md:text-white'}`}
             >
               The Bethel Academy
             </span>
