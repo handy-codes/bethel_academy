@@ -4,6 +4,7 @@ export const revalidate = 0;
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
+import { clerkClient } from '@clerk/nextjs/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,11 +14,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Get parent info
-    const parent = await prisma.parent.findFirst({
-      where: { 
-        email: { contains: userId } // This will be updated to use proper Clerk email lookup
-      },
+    const clerkUser = await clerkClient.users.getUser(userId);
+    const email = clerkUser.emailAddresses.find((e) => e.id === clerkUser.primaryEmailAddressId)?.emailAddress ?? clerkUser.emailAddresses[0]?.emailAddress;
+    if (!email) {
+      return NextResponse.json({ error: 'No email found for this account' }, { status: 400 });
+    }
+
+    const parent = await prisma.parent.findUnique({
+      where: { email },
       include: {
         student: true
       }

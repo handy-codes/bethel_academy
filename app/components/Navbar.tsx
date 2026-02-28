@@ -179,6 +179,14 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
                   Lecturer Dashboard
                 </Link>
               )}
+              {userRole === 'parent' && (
+                <Link
+                  href="/parent"
+                  className="font-semibold transition-colors bg-[#FBBF24] text-white hover:bg-amber-400 px-3 rounded-lg inline-flex items-center h-10 leading-10 box-border"
+                >
+                  Parent Dashboard
+                </Link>
+              )}
               <UserButton 
                 afterSignOutUrl="/"
                 appearance={{
@@ -293,6 +301,15 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Lecturer Dashboard
+              </Link>
+            )}
+            {user && userRole === 'parent' && (
+              <Link
+                href="/parent"
+                className="font-semibold transition-colors px-4 py-2 rounded-lg bg-[#FBBF24] text-white hover:bg-amber-400"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Parent Dashboard
               </Link>
             )}
           </div>

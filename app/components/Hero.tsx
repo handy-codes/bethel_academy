@@ -29,7 +29,7 @@ const Hero = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          To Learn. Lead. Excel.
+          To Learn. Grow. & Excel.
         </motion.button>
       </motion.div>
 

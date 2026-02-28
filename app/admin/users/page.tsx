@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Eye, Mail, User, GraduationCap, BookOpen, CheckCircle, X, RefreshCw } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Mail, User, GraduationCap, BookOpen, CheckCircle, X, RefreshCw, Users } from "lucide-react";
 
 interface User {
   id: string;
@@ -43,8 +43,9 @@ export default function UsersPage() {
     email: "",
     firstName: "",
     lastName: "",
-    role: "student" as "admin" | "student" | "lecturer"
+    role: "student" as "admin" | "student" | "lecturer" | "parent"
   });
+  const [parentStudentEmail, setParentStudentEmail] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
 
@@ -115,31 +116,61 @@ export default function UsersPage() {
 
     try {
       setCreating(true);
+      setErrorMessage("");
+
+      if (newUser.role === "parent") {
+        if (!parentStudentEmail) {
+          setErrorMessage("Please select a student to link to this parent.");
+          return;
+        }
+        const res = await fetch("/api/parent/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: newUser.email.trim(),
+            name: `${newUser.firstName.trim()} ${newUser.lastName.trim()}`.trim(),
+            studentEmail: parentStudentEmail,
+          }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          try {
+            const listRes = await fetch("/api/admin/users", { cache: "no-store" });
+            const listData = await listRes.json();
+            if (listRes.ok) setUsers(listData.users || []);
+          } catch { }
+          setNewUser({ email: "", firstName: "", lastName: "", role: "student" });
+          setParentStudentEmail("");
+          setSuccessMessage(data.message || "Parent created and linked to student.");
+          setShowSuccessToast(true);
+          setTimeout(() => {
+            setShowSuccessToast(false);
+            setShowCreateModal(false);
+          }, 2000);
+        } else {
+          setErrorMessage(data.error || "Failed to create parent.");
+        }
+        return;
+      }
+
       const response = await fetch('/api/admin/create-user', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newUser),
       });
-
       const result = await response.json();
 
       if (response.ok) {
-        // Refresh from API to ensure persistence
         try {
           const res = await fetch('/api/admin/users', { cache: 'no-store' });
           const data = await res.json();
           if (res.ok) setUsers(data.users || []);
         } catch { }
         setNewUser({ email: "", firstName: "", lastName: "", role: "student" });
-
-        // Show success toast
+        setParentStudentEmail("");
         setSuccessMessage("User created successfully!");
         setShowSuccessToast(true);
         setErrorMessage("");
-
-        // Auto-close modal after showing success
         setTimeout(() => {
           setShowSuccessToast(false);
           setShowCreateModal(false);
@@ -164,6 +195,7 @@ export default function UsersPage() {
       case "admin": return <User className="h-4 w-4" />;
       case "student": return <GraduationCap className="h-4 w-4" />;
       case "lecturer": return <BookOpen className="h-4 w-4" />;
+      case "parent": return <Users className="h-4 w-4" />;
       default: return <User className="h-4 w-4" />;
     }
   };
@@ -173,6 +205,7 @@ export default function UsersPage() {
       case "admin": return "bg-red-100 text-red-800";
       case "student": return "bg-blue-100 text-blue-800";
       case "lecturer": return "bg-green-100 text-green-800";
+      case "parent": return "bg-amber-100 text-amber-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };
@@ -555,14 +588,38 @@ export default function UsersPage() {
                 </label>
                 <select
                   value={newUser.role}
-                  onChange={(e) => setNewUser({ ...newUser, role: e.target.value as any })}
+                  onChange={(e) => setNewUser({ ...newUser, role: e.target.value as "admin" | "student" | "lecturer" | "parent" })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   <option value="student">Student</option>
                   <option value="lecturer">Lecturer</option>
+                  <option value="parent">Parent</option>
                   <option value="admin">Administrator</option>
                 </select>
               </div>
+
+              {newUser.role === "parent" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Link to student
+                  </label>
+                  <select
+                    value={parentStudentEmail}
+                    onChange={(e) => setParentStudentEmail(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value="">Select a student...</option>
+                    {users.filter((u) => u.role === "student").map((s) => (
+                      <option key={s.id} value={s.email}>
+                        {s.name} ({s.email})
+                      </option>
+                    ))}
+                  </select>
+                  {users.filter((u) => u.role === "student").length === 0 && (
+                    <p className="text-xs text-amber-600 mt-1">No students yet. Add a student first.</p>
+                  )}
+                </div>
+              )}
 
               {/* Error Message */}
               {errorMessage && (
@@ -591,6 +648,7 @@ export default function UsersPage() {
                     setErrorMessage("");
                     setSuccessMessage("");
                     setShowSuccessToast(false);
+                    setParentStudentEmail("");
                   }}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
@@ -598,10 +656,10 @@ export default function UsersPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={creating}
+                  disabled={creating || (newUser.role === "parent" && !parentStudentEmail) || (newUser.role === "parent" && users.filter((u) => u.role === "student").length === 0)}
                   className={`flex-1 px-4 py-2 text-white rounded-lg ${creating ? 'bg-indigo-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
                 >
-                  {creating ? 'Creating…' : 'Create User'}
+                  {creating ? 'Creating…' : newUser.role === 'parent' ? 'Create Parent' : 'Create User'}
                 </button>
               </div>
             </form>
