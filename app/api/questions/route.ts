@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
+
+type QuestionWithExam = Prisma.QuestionGetPayload<{ include: { exam: true } }>;
 
 // GET /api/questions?subject=&difficulty=
 export async function GET(req: NextRequest) {
@@ -8,15 +11,16 @@ export async function GET(req: NextRequest) {
     const subject = searchParams.get('subject') || undefined;
     const difficulty = searchParams.get('difficulty') || undefined;
 
-    const where: { difficulty?: string; exam?: { subject: string } } = {};
-    if (difficulty) where.difficulty = difficulty as any;
-    if (subject) where.exam = { subject: subject as any };
+    const where = {
+      ...(difficulty && { difficulty }),
+      ...(subject && { exam: { subject } }),
+    } as unknown as Prisma.QuestionWhereInput;
 
     const questions = await prisma.question.findMany({
       where,
       orderBy: { createdAt: 'desc' },
       include: { exam: true },
-    });
+    }) as QuestionWithExam[];
 
     // Map to include subject and createdBy from exam
     const mapped = questions.map(q => ({
@@ -31,8 +35,8 @@ export async function GET(req: NextRequest) {
       explanation: q.explanation,
       difficulty: q.difficulty,
       points: q.points,
-      subject: q.exam.subject,
-      createdBy: q.exam.createdBy,
+      subject: q.exam?.subject ?? '',
+      createdBy: q.exam?.createdBy ?? '',
       examId: q.examId,
       createdAt: q.createdAt,
     }));
