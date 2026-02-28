@@ -235,7 +235,7 @@ export default function UsersPage() {
       email: user.email,
       firstName: firstName,
       lastName: lastName,
-      role: user.role
+      role: user.role === "user" ? "student" : user.role
     });
     setSelectedUser(user);
     setShowEditModal(true);
