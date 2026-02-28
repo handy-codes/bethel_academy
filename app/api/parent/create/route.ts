@@ -43,30 +43,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create parent in Clerk
-    let clerkUser;
+    // Create or update user in Clerk so they have role 'parent'
     try {
-      clerkUser = await clerkClient.users.createUser({
-        emailAddress: [email],
-        firstName: name.split(' ')[0],
-        lastName: name.split(' ').slice(1).join(' ') || '',
-        username: email.split('@')[0].replace(/[^a-zA-Z0-9_-]/g, '_'),
-        password: 'TempParentPass2024!@#',
-        publicMetadata: { role: 'parent' },
-        privateMetadata: { role: 'parent' }
-      });
+      const existingClerk = await clerkClient.users.getUserList({ emailAddress: [email] });
+      if (existingClerk.data.length > 0) {
+        const existing = existingClerk.data[0];
+        await clerkClient.users.updateUser(existing.id, {
+          firstName: name.split(' ')[0],
+          lastName: name.split(' ').slice(1).join(' ') || '',
+          publicMetadata: { ...(existing.publicMetadata as object || {}), role: 'parent' },
+          privateMetadata: { ...(existing.privateMetadata as object || {}), role: 'parent' },
+        });
+      } else {
+        await clerkClient.users.createUser({
+          emailAddress: [email],
+          firstName: name.split(' ')[0],
+          lastName: name.split(' ').slice(1).join(' ') || '',
+          username: email.split('@')[0].replace(/[^a-zA-Z0-9_-]/g, '_'),
+          password: 'TempParentPass2024!@#',
+          publicMetadata: { role: 'parent' },
+          privateMetadata: { role: 'parent' }
+        });
+      }
     } catch (clerkError: any) {
-      console.error('Clerk user creation error:', clerkError);
-      
+      console.error('Clerk user creation/update error:', clerkError);
       if (clerkError.status === 422 || clerkError.errors?.[0]?.code === 'form_identifier_exists') {
         return NextResponse.json(
-          { error: 'This email is already registered in the system' },
+          { error: 'This email is already registered; could not update role.' },
           { status: 400 }
         );
       }
-      
       return NextResponse.json(
-        { error: 'Failed to create parent account. Please try again.' },
+        { error: 'Failed to create or update parent account. Please try again.' },
         { status: 500 }
       );
     }
