@@ -10,6 +10,10 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Bethel Academy - Premier College in Nigeria',
   description: 'Empowering the next generation of African leaders through innovative education.',
+  icons: {
+    icon: '/bethel_logo.jpg',
+    apple: '/bethel_logo.jpg',
+  },
 };
 
 export default function RootLayout({

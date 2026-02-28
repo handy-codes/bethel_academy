@@ -48,20 +48,20 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       <nav className="mt-5 px-2">
         <div className="space-y-1">
           {navigation.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
             return (
               <Link
                 key={item.name}
                 href={item.href}
                 onClick={() => onClose()} // Close sidebar on mobile after navigation
                 className={`${isActive
-                    ? "bg-indigo-100 text-indigo-900"
+                    ? "bg-[#6C47FF]/10 text-[#6C47FF] border-l-4 border-[#6C47FF] font-semibold"
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                  } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`}
+                  } group flex items-center px-2 py-2 text-sm font-medium rounded-r-md transition-colors border-l-4 border-transparent`}
               >
                 <item.icon
-                  className={`${isActive ? "text-indigo-500" : "text-gray-400 group-hover:text-gray-500"
-                    } mr-3 h-5 w-5`}
+                  className={`${isActive ? "text-[#6C47FF]" : "text-gray-400 group-hover:text-gray-500"
+                    } mr-3 h-5 w-5 flex-shrink-0`}
                 />
                 {item.name}
               </Link>

@@ -24,7 +24,7 @@ const Footer = () => {
               {/* <div className="bg-white text-indigo-600 font-bold text-xl p-2 rounded mr-2">BA</div> */}
               <div className="mr-2 rounded-full overflow-hidden w-12 h-12">
                 <Image
-                  src="/bethel_logo2.jpg"
+                  src="/bethel_logo.jpg"
                   alt="Bethel Academy Logo"
                   width={50}
                   height={30}

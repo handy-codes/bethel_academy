@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
@@ -22,6 +23,7 @@ interface ParentSidebarProps {
 }
 
 export default function ParentSidebar({ isOpen, onClose }: ParentSidebarProps) {
+  const pathname = usePathname();
   const { user } = useUser();
 
   const menuItems = [
@@ -51,14 +53,19 @@ export default function ParentSidebar({ isOpen, onClose }: ParentSidebarProps) {
         <nav className="mt-4">
           {menuItems.map((item) => {
             const Icon = item.icon;
+            const isActive = pathname === item.href || (item.href !== '/parent' && pathname.startsWith(item.href));
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors"
+                className={`flex items-center px-4 py-3 rounded-r-md border-l-4 transition-colors ${
+                  isActive
+                    ? 'bg-[#6C47FF]/10 text-[#6C47FF] border-[#6C47FF] font-semibold'
+                    : 'border-transparent text-gray-700 hover:bg-gray-100 hover:text-blue-600'
+                }`}
                 onClick={onClose}
               >
-                <Icon className="h-5 w-5 mr-3" />
+                <Icon className={`h-5 w-5 mr-3 flex-shrink-0 ${isActive ? 'text-[#6C47FF]' : ''}`} />
                 {item.label}
               </Link>
             );
@@ -87,13 +94,18 @@ export default function ParentSidebar({ isOpen, onClose }: ParentSidebarProps) {
         <nav className="flex-1 mt-4 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
+            const isActive = pathname === item.href || (item.href !== '/parent' && pathname.startsWith(item.href));
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors"
+                className={`flex items-center px-4 py-3 rounded-r-md border-l-4 transition-colors ${
+                  isActive
+                    ? 'bg-[#6C47FF]/10 text-[#6C47FF] border-[#6C47FF] font-semibold'
+                    : 'border-transparent text-gray-700 hover:bg-gray-100 hover:text-blue-600'
+                }`}
               >
-                <Icon className="h-5 w-5 mr-3" />
+                <Icon className={`h-5 w-5 mr-3 flex-shrink-0 ${isActive ? 'text-[#6C47FF]' : ''}`} />
                 {item.label}
               </Link>
             );

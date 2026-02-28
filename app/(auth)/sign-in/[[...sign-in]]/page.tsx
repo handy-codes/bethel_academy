@@ -8,6 +8,15 @@ export default function Page() {
       <SignIn
         fallbackRedirectUrl="/"
         appearance={{
+          variables: {
+            colorPrimary: "#6C47FF",
+          },
+          elements: {
+            headerTitle: "text-[#01579B]",
+            headerSubtitle: "text-[#01579B]",
+            formButtonPrimary:
+              "bg-[#6C47FF] hover:opacity-90 text-white border-0",
+          },
           layout: {
             logoImageUrl: "/bethel_logo.jpg",
             logoLinkUrl: "/",

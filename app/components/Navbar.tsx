@@ -109,7 +109,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
             aria-label="Bethel Academy home"
           >
             <Image
-              src="/bethel_logo2.jpg"
+              src="/bethel_logo.jpg"
               alt="Bethel Academy Logo"
               width={48}
               height={48}
@@ -123,7 +123,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
             onClick={() => setMobileMenuOpen(false)}
           >
             <span
-              className={`font-bold truncate text-xl sm:text-2xl md:text-2xl lg:text-3xl text-[#1D4ED8] ${isAdminRoute || isStudentRoute || isScrolled ? 'md:text-[#1D4ED8]' : 'md:text-white'}`}
+              className={`font-bold text-base leading-snug sm:text-xl md:text-2xl lg:text-3xl text-[#1D4ED8] ${isAdminRoute || isStudentRoute || isScrolled ? 'md:text-[#1D4ED8]' : 'md:text-white'} md:leading-normal`}
             >
               The Bethel Academy
             </span>
@@ -220,7 +220,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
             </div>
           ) : (
             <Link href="/sign-in">
-              <button className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium py-1 px-3 rounded-full text-sm transition-all">
+              <button className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium py-1.5 px-2 rounded-sm text-xs whitespace-nowrap transition-all min-w-0">
                 Login
               </button>
             </Link>
