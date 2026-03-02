@@ -66,8 +66,8 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
     
     // Try multiple ways to get the role
     const role = user.publicMetadata?.role as string || 
-                 (user as any).role ||
-                 null;
+      (user as any).role ||
+      null;
     
     console.log('Navbar - User role detection:', {
       userId: user.id,

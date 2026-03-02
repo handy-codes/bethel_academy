@@ -114,7 +114,7 @@ const Footer = () => {
             <address className="not-italic text-blue-200">
               <p className="mb-3">10 Market Road, Ogijo</p>
               <p className="mb-3">Ogun State, Nigeria</p>
-              <p className="mb-3">+234 816 737 6171</p>
+              <p className="mb-3">+2348123456721</p>
               <p className="mb-3">info@bethelacademy.edu.ng</p>
             </address>
           </div>
