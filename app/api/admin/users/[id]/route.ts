@@ -5,10 +5,10 @@ import { prisma } from '@/lib/prisma';
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const user = await prisma.user.findUnique({ where: { id }, select: { email: true } });
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -25,10 +25,10 @@ export async function DELETE(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     const { email, name, role, isActive } = body;
 

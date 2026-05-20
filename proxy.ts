@@ -3,59 +3,72 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 const isPublicRoute = createRouteMatcher([
   '/',
   '/college',
-  '/tutorials', 
+  '/tutorials',
   '/tech',
   '/externals',
   '/sign-in(.*)',
-  '/sign-up(.*)'
+  '/sign-up(.*)',
 ]);
 
-// Define protected routes for each role
 const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 const isStudentRoute = createRouteMatcher(['/student(.*)']);
 const isLecturerRoute = createRouteMatcher(['/lecturer(.*)']);
 const isParentRoute = createRouteMatcher(['/parent(.*)']);
 
-export default clerkMiddleware((auth, req) => {
+export default clerkMiddleware(async (auth, req) => {
   const pathname = req.nextUrl.pathname;
 
-  // TEMPORARILY DISABLE ALL MIDDLEWARE PROTECTION FOR TESTING
+  // TEMPORARILY DISABLE ALL PROXY PROTECTION FOR TESTING
   // Remove this return to re-enable route protection and role-based redirects
   return;
 
-  // Protect routes that are not public
   if (!isPublicRoute(req)) {
-    auth().protect();
+    await auth.protect();
   }
 
-  // If user is signed in, handle role-based access
-  if (auth().userId) {
-    const sessionClaims = auth().sessionClaims;
-    const userRole = (sessionClaims?.publicMetadata as any)?.role ||
-                    (sessionClaims?.privateMetadata as any)?.role ||
-                    (sessionClaims?.metadata as any)?.role;
+  const { userId, sessionClaims } = await auth();
+  if (userId) {
+    const userRole =
+      (sessionClaims?.publicMetadata as { role?: string })?.role ||
+      (sessionClaims?.privateMetadata as { role?: string })?.role ||
+      (sessionClaims?.metadata as { role?: string })?.role;
 
     if (isAdminRoute(req)) {
       if (userRole && userRole !== 'admin') {
-        return Response.redirect(new URL(userRole === 'student' ? '/student' : '/lecturer', req.url));
+        return Response.redirect(
+          new URL(userRole === 'student' ? '/student' : '/lecturer', req.url)
+        );
       }
     }
 
     if (isStudentRoute(req)) {
       if (userRole && userRole !== 'student') {
-        return Response.redirect(new URL(userRole === 'admin' ? '/admin' : '/lecturer', req.url));
+        return Response.redirect(
+          new URL(userRole === 'admin' ? '/admin' : '/lecturer', req.url)
+        );
       }
     }
 
     if (isLecturerRoute(req)) {
       if (userRole && userRole !== 'lecturer') {
-        return Response.redirect(new URL(userRole === 'admin' ? '/admin' : '/student', req.url));
+        return Response.redirect(
+          new URL(userRole === 'admin' ? '/admin' : '/student', req.url)
+        );
       }
     }
 
     if (isParentRoute(req)) {
       if (userRole && userRole !== 'parent') {
-        return Response.redirect(new URL(userRole === 'admin' ? '/admin' : userRole === 'student' ? '/student' : '/lecturer', req.url));
+        return Response.redirect(
+          new URL(
+            userRole === 'admin'
+              ? '/admin'
+              : userRole === 'student'
+                ? '/student'
+                : '/lecturer',
+            req.url
+          )
+        );
       }
     }
 
@@ -71,6 +84,3 @@ export default clerkMiddleware((auth, req) => {
 export const config = {
   matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
 };
-
-
-

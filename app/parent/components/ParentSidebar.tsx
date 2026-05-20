@@ -74,7 +74,7 @@ export default function ParentSidebar({ isOpen, onClose }: ParentSidebarProps) {
 
         <div className="absolute bottom-4 left-4 right-4">
           <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-            <UserButton afterSignOutUrl="/" />
+            <UserButton />
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-900">
                 {user?.firstName} {user?.lastName}
@@ -114,7 +114,7 @@ export default function ParentSidebar({ isOpen, onClose }: ParentSidebarProps) {
 
         <div className="p-4 border-t">
           <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-            <UserButton afterSignOutUrl="/" />
+            <UserButton />
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-900">
                 {user?.firstName} {user?.lastName}

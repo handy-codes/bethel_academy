@@ -9,6 +9,7 @@ module.exports = {
         fadeIn: 'fadeIn 0.5s ease-in forwards',
         bounce: 'bounce 2s infinite',
         scroll: 'scroll 2s infinite',
+        slideInLeft: 'slideInLeft 0.85s ease-out forwards',
       },
       keyframes: {
         fadeIn: {
@@ -18,7 +19,11 @@ module.exports = {
         scroll: {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(10px)' },
-        }
+        },
+        slideInLeft: {
+          '0%': { opacity: 0, transform: 'translateX(-72px)' },
+          '100%': { opacity: 1, transform: 'translateX(0)' },
+        },
       }
     },
   },

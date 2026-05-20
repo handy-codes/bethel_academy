@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import {
   CheckCircle,
   XCircle,
@@ -46,8 +46,10 @@ interface ExamResult {
   approvedAt?: string;
 }
 
-export default function ExamResultPage({ params }: { params: { id: string } }) {
+export default function ExamResultPage() {
   const router = useRouter();
+  const params = useParams();
+  const resultId = params.id as string;
   const [result, setResult] = useState<ExamResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [showDetailedView, setShowDetailedView] = useState(false);
@@ -58,7 +60,7 @@ export default function ExamResultPage({ params }: { params: { id: string } }) {
       const examResults = JSON.parse(localStorage.getItem('examResults') || '[]');
 
       // Find the result with the matching ID
-      const foundResult = examResults.find((result: any) => result.id === params.id);
+      const foundResult = examResults.find((result: any) => result.id === resultId);
 
       if (foundResult) {
         setResult(foundResult);
@@ -72,7 +74,7 @@ export default function ExamResultPage({ params }: { params: { id: string } }) {
     };
 
     loadResult();
-  }, [params.id, router]);
+  }, [resultId, router]);
 
   const getGradeColor = (grade: string) => {
     switch (grade) {

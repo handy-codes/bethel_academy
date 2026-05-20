@@ -23,8 +23,11 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body className={`${inter.className} bg-gradient-to-b from-blue-50 to-indigo-50`}>
+      <html lang="en" suppressHydrationWarning>
+        <body
+          className={`${inter.className} bg-gradient-to-b from-blue-50 to-indigo-50`}
+          suppressHydrationWarning
+        >
           <LayoutWrapper>
             {children}
           </LayoutWrapper>

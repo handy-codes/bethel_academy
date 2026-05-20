@@ -3,9 +3,10 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const exam = await prisma.exam.findUnique({ where: { id: params.id }, include: { questions: true } });
+    const { id } = await params;
+    const exam = await prisma.exam.findUnique({ where: { id }, include: { questions: true } });
     if (!exam) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json({ exam });
   } catch (err) {
@@ -14,13 +15,14 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const data = await req.json();
     const { title, description, subject, duration, isActive, instructions, questions } = data || {};
 
     const exam = await prisma.exam.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title,
         description,
@@ -39,9 +41,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await prisma.exam.delete({ where: { id: params.id } });
+    const { id } = await params;
+    await prisma.exam.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('DELETE /api/exams/[id] error', err);

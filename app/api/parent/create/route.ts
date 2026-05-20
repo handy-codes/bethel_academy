@@ -45,17 +45,18 @@ export async function POST(request: NextRequest) {
 
     // Create or update user in Clerk so they have role 'parent'
     try {
-      const existingClerk = await clerkClient.users.getUserList({ emailAddress: [email] });
+      const client = await clerkClient();
+      const existingClerk = await client.users.getUserList({ emailAddress: [email] });
       if (existingClerk.data.length > 0) {
         const existing = existingClerk.data[0];
-        await clerkClient.users.updateUser(existing.id, {
+        await client.users.updateUser(existing.id, {
           firstName: name.split(' ')[0],
           lastName: name.split(' ').slice(1).join(' ') || '',
           publicMetadata: { ...(existing.publicMetadata as object || {}), role: 'parent' },
           privateMetadata: { ...(existing.privateMetadata as object || {}), role: 'parent' },
         });
       } else {
-        await clerkClient.users.createUser({
+        await client.users.createUser({
           emailAddress: [email],
           firstName: name.split(' ')[0],
           lastName: name.split(' ').slice(1).join(' ') || '',

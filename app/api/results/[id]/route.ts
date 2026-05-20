@@ -5,8 +5,9 @@ const prisma = new PrismaClient();
 
 // PATCH /api/results/[id]
 // body: { isApproved?: boolean, feedback?: string, approvedBy?: string }
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const body = await req.json();
     const { isApproved, feedback, approvedBy } = body || {};
     const data: any = {};
@@ -16,7 +17,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       data.approvedAt = new Date();
       if (approvedBy) data.approvedBy = approvedBy;
     }
-    const result = await prisma.examResult.update({ where: { id: params.id }, data });
+    const result = await prisma.examResult.update({ where: { id }, data });
     return NextResponse.json({ result });
   } catch (err) {
     console.error('PATCH /api/results/[id] error', err);
@@ -24,11 +25,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     // Delete the result. If your schema uses cascading deletes, related rows
     // (answers/attempts) will be handled by the database.
-    await prisma.examResult.delete({ where: { id: params.id } });
+    await prisma.examResult.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('DELETE /api/results/[id] error', err);

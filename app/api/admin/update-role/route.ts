@@ -25,7 +25,8 @@ export async function POST(request: NextRequest) {
     console.log(`Updating role for user ${email} to ${role}`);
 
     // Update user role in Clerk
-    await clerkClient.users.updateUser(userId, {
+    const client = await clerkClient();
+    await client.users.updateUser(userId, {
       publicMetadata: { role },
       privateMetadata: { role }
     });

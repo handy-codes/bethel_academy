@@ -7,9 +7,10 @@ export async function GET(req: NextRequest) {
     const idsParam = searchParams.get('ids');
     if (!idsParam) return NextResponse.json({ users: [] });
     const ids = idsParam.split(',').map(s => s.trim()).filter(Boolean);
+    const client = await clerkClient();
     const users = await Promise.all(ids.map(async (id) => {
       try {
-        const u = await clerkClient.users.getUser(id);
+        const u = await client.users.getUser(id);
         return {
           id,
           name: u.fullName || '',

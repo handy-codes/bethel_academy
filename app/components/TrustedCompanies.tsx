@@ -1,7 +1,7 @@
 // components/TrustedCompanies.tsx
 'use client';
 import React from 'react';
-import Image from 'next/image'; // Make sure to import Image
+import Image from 'next/image';
 
 const TrustedCompanies = () => {
   const companies = [
@@ -22,29 +22,31 @@ const TrustedCompanies = () => {
             Our graduates work at top companies across Nigeria and globally
           </p>
         </div>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center">
           {companies.map((company, index) => (
-            <div 
+            <div
               key={index}
               className="bg-indigo-50 rounded-xl p-6 h-32 flex items-center justify-center transform transition-all hover:scale-105 hover:shadow-md"
             >
-              <div className="text-center">
-                {/* Fixed image container */}
-                <div className="relative w-16 h-16 mx-auto mb-2">
-                  <Image 
-                    src={company.logo}
-                    alt={`${company.name} logo`}
-                    fill
-                    className="object-contain"
-                    onError={(e) => {
-                      // Fallback to blank if image fails to load
-                      e.currentTarget.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-                      e.currentTarget.onerror = null;
-                    }}
-                  />
-                </div>
-                <span className="text-indigo-900 font-medium">{company.name}</span>
+              <div className="text-center w-full">
+                {company.logo ? (
+                  <div className="relative w-16 h-16 mx-auto mb-2">
+                    <Image
+                      src={company.logo}
+                      alt={`${company.name} logo`}
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-indigo-200 flex items-center justify-center">
+                    <span className="text-indigo-800 font-bold text-lg">
+                      {company.name.charAt(0)}
+                    </span>
+                  </div>
+                )}
+                <span className="text-indigo-900 font-medium text-sm">{company.name}</span>
               </div>
             </div>
           ))}

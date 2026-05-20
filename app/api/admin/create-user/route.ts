@@ -70,9 +70,10 @@ export async function POST(request: NextRequest) {
     console.log('Existing DB user check:', existingDbUser ? 'Found' : 'Not found');
 
     // Check if user already exists in Clerk and handle appropriately
+    const client = await clerkClient();
     let clerkUser;
     try {
-      const existingClerkUsers = await clerkClient.users.getUserList({
+      const existingClerkUsers = await client.users.getUserList({
         emailAddress: [email]
       });
       
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest) {
         console.log('User exists in Clerk, updating role...');
         
         // Update user metadata with new role
-        clerkUser = await clerkClient.users.updateUser(clerkUser.id, {
+        clerkUser = await client.users.updateUser(clerkUser.id, {
           publicMetadata: { role },
           privateMetadata: { role }
         });
@@ -96,7 +97,7 @@ export async function POST(request: NextRequest) {
     // Create user in Clerk only if they don't exist
     if (!clerkUser) {
       try {
-        clerkUser = await clerkClient.users.createUser({
+        clerkUser = await client.users.createUser({
           emailAddress: [email],
           firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1),
           lastName: lastName.charAt(0).toUpperCase() + lastName.slice(1),
@@ -112,10 +113,10 @@ export async function POST(request: NextRequest) {
         // If the identifier already exists in Clerk, treat as an update path (success)
         if (clerkError.status === 422 || clerkError.errors?.[0]?.code === 'form_identifier_exists') {
           try {
-            const existingClerkUsers = await clerkClient.users.getUserList({ emailAddress: [email] });
+            const existingClerkUsers = await client.users.getUserList({ emailAddress: [email] });
             if (existingClerkUsers.data.length > 0) {
               clerkUser = existingClerkUsers.data[0];
-              await clerkClient.users.updateUser(clerkUser.id, {
+              await client.users.updateUser(clerkUser.id, {
                 publicMetadata: { role },
                 privateMetadata: { role }
               });

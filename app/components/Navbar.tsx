@@ -14,21 +14,12 @@ interface NavbarProps {
 }
 
 const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) => {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const { user, isLoaded } = useUser();
   const router = useRouter();
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   // Handle click outside to close mobile menu
   useEffect(() => {
@@ -80,7 +71,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
   }, [user, isLoaded]);
 
   const userRole = getUserRole();
-  
+
   // Force re-render when user data changes
   useEffect(() => {
     if (isLoaded && user) {
@@ -90,15 +81,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
   }, [user, isLoaded, getUserRole]);
 
   return (
-    <header
-      className={`fixed w-full z-50 transition-all duration-300 ${
-        isAdminRoute || isStudentRoute
-          ? "bg-white shadow-md py-2" 
-          : isScrolled 
-            ? "bg-white shadow-md py-2" 
-            : "bg-transparent py-4"
-      }`}
-    >
+    <header className="fixed w-full z-50 bg-white shadow-md py-5 transition-shadow duration-300">
       <div className="container mx-auto px-4 flex justify-between items-center">
         <div className="flex items-center gap-2 min-w-0 flex-1 md:flex-initial">
           {/* Logo: smaller on mobile only, full size from md up */}
@@ -122,9 +105,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
             className="min-w-0 flex items-center"
             onClick={() => setMobileMenuOpen(false)}
           >
-            <span
-              className={`font-bold text-lg leading-snug sm:text-xl md:text-2xl lg:text-3xl text-[#1D4ED8] ${isAdminRoute || isStudentRoute || isScrolled ? 'md:text-[#1D4ED8]' : 'md:text-white'} md:leading-normal`}
-            >
+            <span className="font-bold text-lg leading-snug sm:text-xl md:text-2xl lg:text-3xl md:leading-normal text-[#1D4ED8]">
               The Bethel Academy
             </span>
           </Link>
@@ -136,14 +117,8 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
             <Link
               key={link.name}
               href={link.path}
-              className={`font-semibold transition-colors nav-link leading-10 ${
-                pathname === link.path
-                  ? isAdminRoute || isStudentRoute || isScrolled
-                    ? "text-indigo-600 font-bold nav-link-active-scrolled"
-                    : "text-white font-bold nav-link-active"
-                  : isAdminRoute || isStudentRoute || isScrolled
-                  ? "text-indigo-900 hover:text-indigo-600"
-                  : "text-white hover:text-gray-200"
+              className={`font-semibold text-black nav-link leading-10 ${
+                pathname === link.path ? "nav-link-active-scrolled" : ""
               }`}
             >
               {link.name}
@@ -188,7 +163,6 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
                 </Link>
               )}
               <UserButton 
-                afterSignOutUrl="/"
                 appearance={{
                   elements: {
                     avatarBox: "w-8 h-8"
@@ -198,7 +172,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
             </div>
           ) : (
             <Link href="/sign-in">
-          <button className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium py-2 px-6 rounded-full transition-all transform hover:scale-105">
+          <button className="bg-[#BF5800] hover:bg-[#a34700] text-white font-bold py-2 px-6 rounded-md transition-colors">
             Login
           </button>
             </Link>
@@ -231,8 +205,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
           </button>
           {user ? (
             <div className="relative mobile-user-button flex-shrink-0">
-              <UserButton 
-                afterSignOutUrl="/"
+              <UserButton
                 appearance={{
                   elements: {
                     avatarBox: "!w-6 !h-6"
@@ -242,7 +215,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
             </div>
           ) : (
             <Link href="/sign-in">
-              <button className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium py-1.5 px-2 rounded-md text-xs whitespace-nowrap transition-all min-w-0">
+              <button className="bg-[#BF5800] hover:bg-[#a34700] text-white font-bold py-1.5 px-2 rounded-sm text-xs whitespace-nowrap transition-colors min-w-0">
                 Login
               </button>
             </Link>
@@ -254,7 +227,7 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
       {mobileMenuOpen && (
         <div 
           ref={mobileMenuRef}
-          className="md:hidden py-4 px-4 absolute top-full left-0 right-0 shadow-lg"
+          className="md:hidden py-4 px-4 absolute top-full left-0 right-0 shadow-lg z-[60]"
           style={{ backgroundColor: '#2C3E50' }}
         >
           <div className="flex flex-col items-center space-y-4">
@@ -262,9 +235,9 @@ const Navbar = ({ isAdminRoute = false, isStudentRoute = false }: NavbarProps) =
               <Link
                 key={link.name}
                 href={link.path}
-              className={`font-medium transition-colors px-4 py-2 rounded-lg ${
+              className={`font-semibold transition-colors px-4 py-2 rounded-lg ${
                 pathname === link.path
-                  ? "text-white font-bold"
+                  ? "text-white"
                   : "text-gray-200 hover:text-white"
               }`}
               style={{

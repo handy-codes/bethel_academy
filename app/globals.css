@@ -23,32 +23,30 @@
   transition: all 0.3s ease;
 }
 
-/* Clean single line hover effect */
-.nav-link:not(.nav-link-active):hover::after {
+/* Hover — orange bottom border only; link text stays black */
+.nav-link:not(.nav-link-active):not(.nav-link-active-scrolled):hover::after {
   content: '';
   position: absolute;
   bottom: -1px;
   left: 0;
+  width: 100%;
   height: 3px;
-  background: linear-gradient(90deg, #FBBF24, #F59E0B);
+  background: #BF5800;
   border-radius: 2px;
   animation: border-glow 0.5s ease-out forwards;
-  box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
 }
 
-/* Active link styling - default yellow */
+/* Active — orange border only; link text stays black */
 .nav-link-active {
-  border: 2px solid #FBBF24 !important;
+  border: 2px solid #BF5800 !important;
   border-radius: 6px;
-  padding: 4px 12px;
-  /* Remove any hover effects for active links */
+  padding: 1px 8px;
 }
 
-/* Active link styling when scrolled - green */
 .nav-link-active-scrolled {
-  border: 2px solid #10B981 !important;
+  border: 2px solid #BF5800 !important;
   border-radius: 6px;
-  padding: 4px 12px;
+  padding: 1px 8px;
 }
 
 .nav-link-active:hover::after,
@@ -56,6 +54,46 @@
 .nav-link-active-scrolled:hover::after,
 .nav-link-active-scrolled:hover::before {
   display: none !important;
+}
+
+:root {
+  --navbar-height: 5.5rem;
+  --news-marquee-height: 2.75rem;
+}
+
+/* Hero slider text — slide in/out like techxos.com */
+@keyframes sliderHeroEnter {
+  0% {
+    opacity: 0;
+    transform: translateX(-80px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes sliderHeroExit {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(48px);
+  }
+}
+
+.slider-hero-text-enter {
+  animation: sliderHeroEnter 0.95s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.slider-hero-text-exit {
+  animation: sliderHeroExit 0.55s ease-in forwards;
+}
+
+.animate-slide-in-left {
+  animation: sliderHeroEnter 0.95s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 body {

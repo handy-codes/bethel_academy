@@ -13,8 +13,9 @@ export async function POST() {
     let totalCount: number | null = null;
     const skipped: string[] = [];
 
+    const client = await clerkClient();
     while (true) {
-      const response = await clerkClient.users.getUserList({
+      const response = await client.users.getUserList({
         limit,
         offset,
         orderBy: '-created_at',

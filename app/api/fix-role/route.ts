@@ -5,13 +5,14 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const user = await clerkClient.users.getUser(userId);
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
     const primaryId = (user as any).primaryEmailAddressId;
     const emails = user.emailAddresses ?? [];
     const email = primaryId
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
       });
       if (parentRecord) {
         if (currentRole !== 'parent') {
-          await clerkClient.users.updateUser(userId, {
+          await client.users.updateUser(userId, {
             publicMetadata: { ...(user.publicMetadata as object || {}), role: 'parent' },
             privateMetadata: { ...(user.privateMetadata as object || {}), role: 'parent' },
           });
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (currentRole !== role) {
-      await clerkClient.users.updateUser(userId, {
+      await client.users.updateUser(userId, {
         publicMetadata: { ...(user.publicMetadata as object || {}), role },
         privateMetadata: { ...(user.privateMetadata as object || {}), role },
       });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import {
   Clock,
@@ -40,8 +40,10 @@ interface Exam {
   questions: Question[];
 }
 
-export default function ExamPage({ params }: { params: { id: string } }) {
+export default function ExamPage() {
   const router = useRouter();
+  const params = useParams();
+  const examId = params.id as string;
   const { user } = useUser();
   const [studentId, setStudentId] = useState<string>("");
   const [exam, setExam] = useState<Exam | null>(null);
@@ -78,7 +80,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     const loadExam = async () => {
       try {
-        const res = await fetch(`/api/exams/${params.id}`, { cache: 'no-store' });
+        const res = await fetch(`/api/exams/${examId}`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Exam not found');
         const data = await res.json();
         setExam(data.exam);
@@ -91,7 +93,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
     };
 
     if (studentId) loadExam();
-  }, [params.id, router, studentId]);
+  }, [examId, router, studentId]);
 
   const calculateScore = useCallback(() => {
     if (!exam) return { score: 0, total: 0, percentage: 0, grade: 'F' };

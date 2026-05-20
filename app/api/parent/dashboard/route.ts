@@ -8,13 +8,14 @@ import { clerkClient } from '@clerk/nextjs/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     
     if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const clerkUser = await clerkClient.users.getUser(userId);
+    const client = await clerkClient();
+    const clerkUser = await client.users.getUser(userId);
     const email = clerkUser.emailAddresses.find((e) => e.id === clerkUser.primaryEmailAddressId)?.emailAddress ?? clerkUser.emailAddresses[0]?.emailAddress;
     if (!email) {
       return NextResponse.json({ error: 'No email found for this account' }, { status: 400 });

@@ -2,6 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import { useRef, useEffect } from "react";
+import { safeParseResponseJson } from "@/lib/safe-json";
 
 /**
  * When a signed-in user has no role, or has role 'student' but is in the Parent table,
@@ -14,7 +15,7 @@ export default function RoleSync() {
   useEffect(() => {
     if (!isLoaded || !user) return;
     const role = user.publicMetadata?.role as string | undefined;
-    const needsFix = role == null || role === "" || role === "student";
+    const needsFix = role == null || role === "";
     if (!needsFix) return;
     if (triedRef.current) return;
     triedRef.current = true;
@@ -22,7 +23,7 @@ export default function RoleSync() {
     fetch("/api/fix-role", { method: "POST" })
       .then(async (res) => {
         if (!res.ok) return;
-        const data = await res.json().catch(() => ({}));
+        const data = await safeParseResponseJson<{ updated?: boolean }>(res, {});
         if (data.updated) window.location.reload();
       })
       .catch(() => {});

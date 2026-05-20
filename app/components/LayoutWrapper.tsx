@@ -88,7 +88,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
     <div className="min-h-screen flex flex-col">
       <RoleSync />
       <Navbar />
-      <main className="flex-grow">
+      <main className="flex-grow pt-[var(--navbar-height)]">
         {children}
       </main>
       <Footer />
