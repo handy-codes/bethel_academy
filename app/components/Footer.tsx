@@ -115,14 +115,14 @@ const Footer = () => {
               <p className="mb-3">10 Market Road, Ogijo</p>
               <p className="mb-3">Ogun State, Nigeria</p>
               <p className="mb-3">+234 816 737 6171</p>
-              <p className="mb-3">info@bethelacademy.edu.ng</p>
+              <p className="mb-3">info@thebethelacademy.com</p>
             </address>
           </div>
         </div>
 
         <div className="border-t border-indigo-800 pt-8 text-center text-blue-200">
           <p>&copy; {currentYear} Bethel Academy. All rights reserved.</p>
-          <div className="mt-4 flex justify-center space-x-6">
+          {/* <div className="mt-4 flex justify-center space-x-6">
             <Link href="#" className="hover:text-white transition-colors">
               Privacy Policy
             </Link>
@@ -132,7 +132,7 @@ const Footer = () => {
             <Link href="#" className="hover:text-white transition-colors">
               Accessibility
             </Link>
-          </div>
+          </div> */}
         </div>
       </div>
     </footer>
